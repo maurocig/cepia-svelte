@@ -13,7 +13,7 @@
 	export let data: ContactInfo;
 </script>
 
-<div class="flex flex-col space-y-4 text-lg">
+<div class="flex h-full flex-col space-y-4 text-lg">
 	<span class="flex gap-4">
 		<Phone /> Teléfono: {data.phone}
 	</span>

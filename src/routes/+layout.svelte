@@ -1,5 +1,6 @@
 <script>
 	import Nav from '$lib/components/Nav.svelte';
+	import Footer from '@/components/Footer.svelte';
 	import '@fontsource-variable/quicksand';
 	import '../app.css';
 </script>
@@ -10,13 +11,15 @@
 			{ name: 'Inicio', href: '/' },
 			{ name: 'Servicios', href: '/servicios' },
 			{ name: 'Nosotros', href: '/nosotros' },
-			{ name: 'Prestadores', href: '/prestadores' },
+			{ name: 'Galería', href: '/galeria' },
 			{ name: 'Contacto', href: '/contacto' }
 		]}
 	/>
-	<main class="mx-auto mt-[100px] h-full">
+	<main class="mx-auto mt-[90px] h-full">
 		<slot />
 	</main>
+
+	<Footer />
 </div>
 
 <style></style>

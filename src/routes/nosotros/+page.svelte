@@ -8,18 +8,18 @@
 	});
 </script>
 
-<div class="mx-auto mt-8 flex h-full max-w-[1280px] flex-col gap-8 px-4 xl:px-0">
-	<Title>El equipo</Title>
-	<!-- <p class="text-lg">
-		En CEPIA contamos con un equipo interdisciplinario de profesionales especializados en distintas
-		áreas dentro de la terapia del desarrollo y aprendizaje.
-	</p> -->
-
-	<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+<div class="mx-auto mt-8 flex h-full max-w-[1280px] flex-col gap-4 px-4 xl:px-0">
+	<Title>Sobre nosotros</Title>
+	<p class="max-w-[900px] text-xl text-gray-700">
+		Somos un equipo de profesionales certificados en las áreas de <b>psicología</b>,
+		<b>psicomotricidad</b>, <b>fonoaudiología</b> y <b>psicopedagogía</b> especializados en dificultades
+		de aprendizaje.
+	</p>
+	<div class="mt-4 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 		{#each team as { name, role, especialization }}
-			<div class="p-4">
-				<h2 class="font-bold">{name}</h2>
-				<p class="text-slate-600">{role}</p>
+			<div class="min-h-[130px] rounded-md border-slate-900/10 bg-white/70 p-4 shadow-md">
+				<h2 class="text-xl font-bold">{name}</h2>
+				<p class="font-semibold text-slate-700">{role}</p>
 				{#if especialization}
 					<p class="text-slate-600">{especialization}</p>
 				{/if}

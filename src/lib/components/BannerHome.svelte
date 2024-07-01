@@ -1,16 +1,41 @@
 <script>
+	import Carousel from './Carousel.svelte';
+	import ImageBlock from './ImageBlock.svelte';
+
+	import { images } from '$lib/images';
+	import { shuffle } from '$lib/utils';
 </script>
 
-<div class="banner-home grid h-[500px] w-full grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-	<div class="row-span-2 bg-red-500 drop-shadow-lg"></div>
-	<div class="col-span-2 bg-green-500 drop-shadow-md"></div>
-	<div class="bg-yellow-500 drop-shadow-md"></div>
-	<div class="bg-blue-500 drop-shadow-md"></div>
-	<div class="bg-blue-500 drop-shadow-md"></div>
-	<div class="col-span-2 row-span-2 bg-red-500 drop-shadow-md"></div>
-	<div class="row-span-2 bg-green-500 drop-shadow-md"></div>
-	<div class="bg-yellow-500 drop-shadow-md"></div>
-	<div class="bg-green-500 drop-shadow-md"></div>
+<div
+	class="banner-home hidden h-[500px] w-full grid-cols-2 grid-rows-2 gap-4 md:grid md:grid-cols-3 md:grid-rows-3 lg:grid-cols-5"
+>
+	<div class="bg-sky-500 drop-shadow-lg md:row-span-2">
+		<ImageBlock imgs={images} />
+	</div>
+	<div class="bg-green-500 drop-shadow-md md:col-span-2">
+		<ImageBlock imgs={images} />
+	</div>
+	<div class="bg-yellow-500 drop-shadow-md">
+		<ImageBlock imgs={images} />
+	</div>
+	<div class="row-span-2 bg-indigo-500 drop-shadow-md lg:row-span-1">
+		<ImageBlock imgs={images} />
+	</div>
+	<div class="bg-blue-500 drop-shadow-md">
+		<ImageBlock imgs={images} />
+	</div>
+	<div class="bg-red-500 drop-shadow-md lg:col-span-2 lg:row-span-2">
+		<ImageBlock imgs={images} />
+	</div>
+	<div class="row-span-2 hidden bg-green-500 drop-shadow-md lg:block">
+		<ImageBlock imgs={images} />
+	</div>
+	<div class="hidden bg-orange-500 drop-shadow-md lg:block">
+		<ImageBlock imgs={images} />
+	</div>
+	<div class="hidden bg-green-500 drop-shadow-md lg:block">
+		<ImageBlock imgs={images} />
+	</div>
 </div>
 
 <style>

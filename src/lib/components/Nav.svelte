@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import * as Sheet from '$lib/components/ui/sheet';
 	import MobileMenu from './MobileMenu.svelte';
 	import NavLogo from './NavLogo.svelte';
 
@@ -11,9 +12,6 @@
 >
 	<div class="mx-auto flex h-[70px] w-full max-w-[1280px] items-center justify-between">
 		<NavLogo />
-		<script lang="ts">
-			import * as Sheet from '$lib/components/ui/sheet';
-		</script>
 
 		<MobileMenu buttonClass="block md:hidden" {links} />
 		<ul class="font-quicksand hidden gap-6 font-normal text-gray-600 md:flex">
@@ -22,10 +20,16 @@
 					<a
 						class="drop-shadow-sm transition hover:opacity-70"
 						{href}
-						class:active-nav-link={href === $page.url.pathname}>{name}</a
+						aria-current={href === $page.url.pathname}>{name}</a
 					>
 				</li>
 			{/each}
 		</ul>
 	</div>
 </nav>
+
+<style>
+	li a[aria-current='true'] {
+		@apply border-b-2 border-gray-600;
+	}
+</style>

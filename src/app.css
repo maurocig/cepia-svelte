@@ -77,7 +77,3 @@
 		@apply bg-background text-foreground;
 	}
 }
-
-.active-nav-link {
-	@apply border-b-2 border-gray-600
-}

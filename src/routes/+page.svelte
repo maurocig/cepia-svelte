@@ -32,14 +32,14 @@
 			<b>psicomotricidad</b>, <b>fonoaudiología</b> y <b>psicopedagogía</b>, especializados en
 			dificultades de aprendizaje.
 		</Card>
-		<Card title="Nuestros pacientes" href="/beneficiarios">
+		<Card title="Nuestros pacientes" href="/servicios#pacientes">
 			<!-- <Card title="Alcance" href=""> -->
 			<ul>
 				Atendemos a escolares y liceales con dificultades de aprendizaje, así como a niños y
 				adolescentes en situación de discapacidad motriz, sensorial o intelectual.
 			</ul>
 		</Card>
-		<Card title="Prestadores" href="/beneficiarios">
+		<Card title="Prestadores" href="/servicios#prestadores">
 			Nuestros servicios están disponibles para pacientes particulares, al igual que beneficiarios
 			de hospitales, fondos de salud y el Banco de Previsión Social.
 		</Card>
