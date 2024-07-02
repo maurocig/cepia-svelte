@@ -9,7 +9,7 @@
 <div
 	class="banner-home hidden h-[500px] w-full grid-cols-2 grid-rows-2 gap-4 md:grid md:grid-cols-3 md:grid-rows-3 lg:grid-cols-5"
 >
-	<div class="bg-sky-500 drop-shadow-lg md:row-span-2">
+	<div class="bg-blue-500 drop-shadow-lg md:row-span-2">
 		<ImageBlock imgs={images} />
 	</div>
 	<div class="bg-green-500 drop-shadow-md md:col-span-2">
@@ -27,10 +27,10 @@
 	<div class="bg-red-500 drop-shadow-md lg:col-span-2 lg:row-span-2">
 		<ImageBlock imgs={images} />
 	</div>
-	<div class="row-span-2 hidden bg-green-500 drop-shadow-md lg:block">
+	<div class="row-span-2 hidden bg-yellow-500 drop-shadow-md lg:block">
 		<ImageBlock imgs={images} />
 	</div>
-	<div class="hidden bg-orange-500 drop-shadow-md lg:block">
+	<div class="hidden bg-red-500 drop-shadow-md lg:block">
 		<ImageBlock imgs={images} />
 	</div>
 	<div class="hidden bg-green-500 drop-shadow-md lg:block">

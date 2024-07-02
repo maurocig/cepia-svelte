@@ -28,11 +28,13 @@
 		<div class="space-y-4">
 			<h1 class="text-2xl font-semibold">Información de contacto</h1>
 			<ContactInfo
+				className="ml-4"
 				data={{
 					phone: '092837',
 					whatsapp: '23987',
 					address: 'Calle 22 y 15, Atlántida, Canelones',
-					email: 'ejemplo@gmail.com'
+					email: 'ejemplo@gmail.com',
+					hours: 'Lunes a viernes de 9 a 18hs'
 				}}
 			/>
 		</div>

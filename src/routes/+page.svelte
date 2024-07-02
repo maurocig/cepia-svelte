@@ -20,29 +20,36 @@
 		comprometidos con la salud y la educación, brindando un apoyo integral e interdisciplinario.
 	</p>
 
-	<section class="mx-auto grid max-w-[1000px] gap-4 md:grid-cols-2">
-		<Card title="Servicios" href="/servicios">
-			<div>
-				Brindamos <b>orientación</b>, <b>diagnóstico</b> y <b>tratamiento</b> dirigido a lactantes, niños,
-				adolescentes y jóvenes adultos, acompañando y orientando al núcleo familiar en el proceso.
-			</div>
-		</Card>
-		<Card title="Nuestro equipo" href="/nosotros"
-			>Somos un equipo de profesionales certificados en las áreas de <b>psicología</b>,
-			<b>psicomotricidad</b>, <b>fonoaudiología</b> y <b>psicopedagogía</b>, especializados en
-			dificultades de aprendizaje.
-		</Card>
-		<Card title="Nuestros pacientes" href="/servicios#pacientes">
-			<!-- <Card title="Alcance" href=""> -->
-			<ul>
-				Atendemos a escolares y liceales con dificultades de aprendizaje, así como a niños y
-				adolescentes en situación de discapacidad motriz, sensorial o intelectual.
-			</ul>
-		</Card>
-		<Card title="Prestadores" href="/servicios#prestadores">
-			Nuestros servicios están disponibles para pacientes particulares, al igual que beneficiarios
-			de hospitales, fondos de salud y el Banco de Previsión Social.
-		</Card>
+	<section class="mx-auto grid max-w-[1000px] auto-rows-fr gap-4 md:grid-cols-2">
+		<a href="/servicios">
+			<Card title="Servicios">
+				<div>
+					Brindamos <b>orientación</b>, <b>diagnóstico</b> y <b>tratamiento</b> dirigido a lactantes,
+					niños, adolescentes y jóvenes adultos, acompañando y orientando al núcleo familiar en el proceso.
+				</div>
+			</Card>
+		</a>
+		<a href="/nosotros">
+			<Card title="Nuestro equipo">
+				Somos un equipo de profesionales certificados en las áreas de <b>psicología</b>,
+				<b>psicomotricidad</b>, <b>fonoaudiología</b> y <b>psicopedagogía</b>, especializados en
+				dificultades de aprendizaje.
+			</Card>
+		</a>
+		<a href="/servicios#pacientes">
+			<Card title="Nuestros pacientes">
+				<ul>
+					Atendemos a escolares y liceales con dificultades de aprendizaje, así como a niños y
+					adolescentes en situación de discapacidad motriz, sensorial o intelectual.
+				</ul>
+			</Card>
+		</a>
+		<a href="/servicios#prestadores">
+			<Card title="Prestadores">
+				Nuestros servicios están disponibles para pacientes particulares, al igual que beneficiarios
+				de hospitales, fondos de salud y el Banco de Previsión Social.
+			</Card>
+		</a>
 	</section>
 
 	<section></section>

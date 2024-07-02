@@ -17,9 +17,9 @@
 </script>
 
 <div
-	class="my-auto flex h-fit items-center justify-center gap-4 rounded-lg border border-slate-700/20 bg-white/50 p-4 shadow-sm md:p-8"
+	class="my-auto flex h-auto items-center justify-center gap-4 rounded-lg border border-slate-700/20 bg-white/50 p-4 shadow-sm md:p-8"
 >
-	<form method="POST" use:enhance class="h-full w-full space-y-4">
+	<form method="POST" use:enhance class="mb-3 h-full w-full space-y-4">
 		<Form.Field {form} name="name">
 			<Form.Control let:attrs>
 				<Form.Label>Nombre</Form.Label>

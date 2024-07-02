@@ -6,11 +6,11 @@
 </script>
 
 <div
-	class="group flex flex-col gap-4 rounded-lg border bg-white/70 p-4 transition-all duration-500 hover:border-gray-900/10 hover:bg-white/90 hover:shadow-sm lg:p-8 {className}"
+	class="group flex h-full flex-col gap-4 rounded-lg border bg-gradient-to-b from-white/70 to-white/40 p-4 shadow-sm transition-all duration-500 hover:border-gray-900/10 hover:bg-white/90 hover:shadow-md md:p-4 lg:p-8 {className}"
 >
-	<a {href} class="space-y-3">
+	<div class="space-y-3">
 		<h2
-			class="flex items-center gap-2 text-xl font-bold transition-transform duration-500 ease-in-out"
+			class="flex items-center gap-2 text-[1.4rem] font-semibold drop-shadow-lg transition-transform duration-500 ease-in-out"
 		>
 			{title}
 			{#if showArrow}
@@ -23,5 +23,5 @@
 				<slot />
 			</p>
 		</div>
-	</a>
+	</div>
 </div>

@@ -1,3 +1,6 @@
+@import '@fontsource-variable/quicksand';
+@import '@fontsource/averia-serif-libre';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

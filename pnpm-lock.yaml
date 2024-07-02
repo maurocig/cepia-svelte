@@ -8,6 +8,9 @@ dependencies:
   '@fontsource-variable/quicksand':
     specifier: ^5.0.18
     version: 5.0.18
+  '@fontsource/averia-serif-libre':
+    specifier: ^5.0.19
+    version: 5.0.19
   '@fontsource/quicksand':
     specifier: ^5.0.18
     version: 5.0.18
@@ -341,6 +344,10 @@ packages:
 
   /@fontsource-variable/quicksand@5.0.18:
     resolution: {integrity: sha512-avlweYmAdhqBt4GIm++G4bhlwejKy+1Rkv6wjesJM+K4z8SEid3b0RP1gZ/eneWhjTIVUhxS/SeMrdMaswQqWQ==}
+    dev: false
+
+  /@fontsource/averia-serif-libre@5.0.19:
+    resolution: {integrity: sha512-6gyTAOq8PagfSe/b3/XSZS7q0H0bY/LjZ5UFKTQlRH0pbDB9uxciud27b9UduLR4qWL+uPtY14XOSCPSR4VeHg==}
     dev: false
 
   /@fontsource/quicksand@5.0.18:
