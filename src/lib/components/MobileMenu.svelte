@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { afterNavigate } from '$app/navigation';
 	import { navigating, page } from '$app/stores';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Menu, MenuIcon } from 'lucide-svelte';
@@ -8,6 +9,7 @@
 
 	let isOpen = false;
 	// $: if (navigating) isOpen = false;
+	afterNavigate(() => scrollTo({ top: 0, behavior: 'instant' }));
 </script>
 
 <Sheet.Root bind:open={isOpen}>
