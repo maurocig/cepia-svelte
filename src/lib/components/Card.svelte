@@ -6,7 +6,7 @@
 </script>
 
 <div
-	class="group flex h-full flex-col gap-4 rounded-lg border bg-gradient-to-b from-white/70 to-white/40 p-4 shadow-sm transition-all duration-500 hover:border-gray-900/10 hover:bg-transparent hover:shadow-md hover:backdrop-blur-lg md:p-4 lg:p-8 {className}"
+	class="group flex h-full flex-col gap-4 rounded-lg border bg-gradient-to-b from-white/70 to-white/40 p-4 shadow-sm transition-all duration-500 hover:border-gray-900/10 hover:bg-white/20 hover:shadow-md hover:backdrop-blur-lg md:p-4 lg:p-8 {className}"
 >
 	<div class="space-y-3">
 		<h2
