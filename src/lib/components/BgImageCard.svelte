@@ -14,7 +14,7 @@
 	<Card
 		{title}
 		{showArrow}
-		className="h-full md:from-white/70 bg-white/20 md:bg-transparent md:backdrop-blur-0 md:bg-gradient-to-b md:to-emerald-200/40 md:via-white/30 duration-700 border-slate-900/20 hover:border-slate-900/20 hover:bg-white/30 hover:backdrop-blur-md transition group"
+		className="h-full md:from-white/70 hover:bg-white/20 md:bg-transparent md:backdrop-blur-0 md:bg-gradient-to-b md:to-emerald-200/40 md:via-white/30 duration-700 border-slate-900/20 hover:border-slate-900/20 hover:backdrop-blur-lg transition group"
 	>
 		<p class="group text-[17px] transition duration-700 group-hover:opacity-100 md:opacity-0">
 			{description}
