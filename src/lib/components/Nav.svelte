@@ -18,7 +18,6 @@
 			{#each links as { name, href }, i}
 				<li>
 					<a
-						target="_top"
 						class="drop-shadow-sm transition hover:opacity-70"
 						{href}
 						aria-current={href === $page.url.pathname}>{name}</a

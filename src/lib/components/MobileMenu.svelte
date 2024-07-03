@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, disableScrollHandling } from '$app/navigation';
 	import { navigating, page } from '$app/stores';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Menu, MenuIcon } from 'lucide-svelte';
@@ -8,8 +8,13 @@
 	export let links;
 
 	let isOpen = false;
-	// $: if (navigating) isOpen = false;
-	afterNavigate(() => scrollTo({ top: 0, behavior: 'instant' }));
+
+	// afterNavigate(() => {
+	// 	disableScrollHandling();
+	// 	setTimeout(() => {
+	// 		scrollTo({ top: 0, behavior: 'instant' });
+	// 	}, 200);
+	// });
 </script>
 
 <Sheet.Root bind:open={isOpen}>
@@ -18,7 +23,11 @@
 		<ul class="mt-8 flex flex-col gap-4 px-6 text-lg">
 			{#each links as { name, href }, i}
 				<li>
-					<a {href} on:click={() => (isOpen = false)} aria-current={href === $page.url.pathname}
+					<a
+						{href}
+						on:click={() => (isOpen = false)}
+						target="_top"
+						aria-current={href === $page.url.pathname}
 						>{name}
 					</a>
 				</li>

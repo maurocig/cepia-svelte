@@ -46,7 +46,8 @@
 		/>
 	</div>
 
-	<div id="pacientes">
+	<div id="pacientes" class="mt-[-70px] pb-[55px]"></div>
+	<div id="">
 		<Card title="¿A quienes atendemos?" showArrow={false}>
 			<List
 				items={[
@@ -59,7 +60,8 @@
 		</Card>
 	</div>
 
-	<div id="prestadores">
+	<div id="prestadores" class="mt-[-70px] pb-[55px]"></div>
+	<div id="">
 		<Card title="Atención y prestadores" showArrow={false}>
 			<List
 				items={[
@@ -72,8 +74,9 @@
 		</Card>
 	</div>
 
+	<div id="areas-abordaje" class="mt-[-70px] pb-[55px]"></div>
 	<div class="grid w-full gap-4 md:grid-cols-2 xl:gap-8">
-		<div id="areas-abordaje">
+		<div>
 			<Card title="Áreas de abordaje" showArrow={false}>
 				<List
 					dot={true}
