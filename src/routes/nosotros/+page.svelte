@@ -9,8 +9,8 @@
 </script>
 
 <div class="mx-auto mt-8 flex h-full max-w-[1280px] flex-col gap-4 px-4 xl:px-0">
-	<Title>El equipo</Title>
-	<p class="max-w-[900px] text-xl text-gray-700">
+	<Title>Sobre nosotros</Title>
+	<p class="max-w-[900px] text-lg text-gray-700">
 		Somos un equipo de profesionales certificados en las áreas de <b>psicología</b>,
 		<b>psicomotricidad</b>, <b>fonoaudiología</b> y <b>psicopedagogía</b> especializados en dificultades
 		de aprendizaje.
