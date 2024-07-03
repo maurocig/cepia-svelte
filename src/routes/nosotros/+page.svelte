@@ -8,13 +8,13 @@
 	});
 </script>
 
-<div class="mx-auto mt-8 flex h-full max-w-[1280px] flex-col gap-4 px-4 xl:px-0">
-	<Title>Sobre nosotros</Title>
-	<p class="max-w-[900px] text-lg text-gray-700">
+<div class="mx-auto mt-8 flex h-full max-w-[1280px] flex-col px-4 xl:px-0">
+	<Title>Nuestro equipo</Title>
+	<!-- <p class="max-w-[900px] text-lg text-gray-700">
 		Somos un equipo de profesionales certificados en las áreas de <b>psicología</b>,
-		<b>psicomotricidad</b>, <b>fonoaudiología</b> y <b>psicopedagogía</b> especializados en dificultades
+		<b>psicomotricidad</b>, <b>fonoaudiología</b>, <b>psicopedagogía</b> especializados en dificultades
 		de aprendizaje.
-	</p>
+	</p> -->
 	<div class="mt-4 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 		{#each team as { name, role, especialization }}
 			<div
