@@ -11,10 +11,10 @@
 	});
 </script>
 
-<div class="mx-auto mt-8 flex h-full max-w-[1280px] flex-col gap-4 px-4 lg:gap-8 xl:px-0">
+<div class="mx-auto mt-8 flex h-full max-w-[1280px] flex-col gap-4 px-4 xl:gap-8 xl:px-0">
 	<Title>Servicios</Title>
 
-	<div class="grid auto-rows-fr gap-4 lg:grid-cols-2 lg:gap-8">
+	<div class="grid auto-rows-fr gap-4 lg:grid-cols-2 xl:gap-8">
 		<BgImageCard
 			title="Servicios de Psicología y Psiquiatría"
 			description="Ofrecemos terapias individuales con especialistas en psicología y psiquiatría para afrontar trastornos, problemas emocionales y mentales. Nuestros profesionales están comprometidos en proporcionar el apoyo necesario a través de tratamientos personalizados que promueven la salud mental y el bienestar emocional de nuestros pacientes."
@@ -72,7 +72,7 @@
 		</Card>
 	</div>
 
-	<div class="grid w-full gap-4 md:grid-cols-2 lg:gap-8">
+	<div class="grid w-full gap-4 md:grid-cols-2 xl:gap-8">
 		<div id="areas-abordaje">
 			<Card title="Áreas de abordaje" showArrow={false}>
 				<List
