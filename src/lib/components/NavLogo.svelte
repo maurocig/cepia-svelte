@@ -1,7 +1,7 @@
 <script lang="ts">
 </script>
 
-<a href="/" class="flex h-full w-full items-center gap-1 py-3 text-3xl">
+<a href="/" class="flex h-[90%] w-full items-center gap-1 py-3 text-3xl">
 	<img
 		src="icons/logo-ana.svg"
 		alt="logo"
