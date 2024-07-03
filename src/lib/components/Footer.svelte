@@ -7,10 +7,15 @@
 <div
 	class="mt-10 flex h-[250px] w-full items-center justify-center border border-slate-900/10 bg-slate-200 py-4 shadow-inner"
 >
-	<div class="grid w-full max-w-[1280px] items-start justify-center md:grid-cols-2">
+	<div
+		class="grid w-full max-w-[1280px] grid-cols-1 items-start justify-center px-4 md:grid-cols-2 md:px-0"
+	>
 		<!-- logo -->
-		<div class="flex h-full w-full justify-end pr-6">
-			<a href="/" class="bor flex h-full w-fit flex-col items-center py-3 text-2xl opacity-80">
+		<div class="flex h-full w-full justify-start pr-6 md:justify-end">
+			<a
+				href="/"
+				class="bor flex h-full w-fit items-center gap-2 py-3 text-2xl opacity-80 md:flex-col md:gap-0"
+			>
 				<img
 					src="icons/logo-ana.svg"
 					alt="logo"
@@ -22,7 +27,7 @@
 				>
 			</a>
 		</div>
-		<div class="border-l border-gray-800/20 md:pl-6">
+		<div class="border-gray-800/20 md:border-l md:pl-6">
 			<ContactInfo
 				className="text-sm text-gray-500/80"
 				data={{
