@@ -9,6 +9,8 @@
 
 	let isOpen = false;
 
+	// // this is a good fix for scroll to top but breaks the links to specific # id scroll locations.
+	// // using target="_top" for each ancher tag instead.
 	// afterNavigate(() => {
 	// 	disableScrollHandling();
 	// 	setTimeout(() => {
@@ -26,8 +28,8 @@
 					<a
 						{href}
 						on:click={() => (isOpen = false)}
-						target="_top"
 						aria-current={href === $page.url.pathname}
+						target="_top"
 						>{name}
 					</a>
 				</li>
