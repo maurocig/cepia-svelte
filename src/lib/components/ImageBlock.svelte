@@ -44,7 +44,7 @@
 	});
 </script>
 
-<div class="h-full w-full">
+<div class="relative h-full w-full">
 	{#if currentIndex % 2 === 0 && getRandomIndex(10) < 6}
 		<img
 			transition:fade={{ duration: 2000, easing: quintOut }}
@@ -55,7 +55,7 @@
 	{:else}
 		<div
 			transition:fade={{ duration: 1000, easing: quintOut }}
-			class="absolute h-full w-full bg-{getRandomColor()}-500 shadow-inner"
+			class="h-full w-full bg-{getRandomColor()}-500 absolute shadow-inner"
 		></div>
 	{/if}
 </div>

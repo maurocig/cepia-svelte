@@ -7,7 +7,7 @@
 </script>
 
 <div
-	class="banner-home hidden h-[500px] w-full grid-cols-2 grid-rows-2 gap-4 md:grid md:grid-cols-3 md:grid-rows-3 lg:grid-cols-5"
+	class="banner-home relative hidden h-[500px] w-full grid-cols-2 grid-rows-2 gap-4 md:grid md:grid-cols-3 md:grid-rows-3 lg:grid-cols-5"
 >
 	<div class="bg-blue-500 drop-shadow-lg md:row-span-2">
 		<ImageBlock imgs={images} />

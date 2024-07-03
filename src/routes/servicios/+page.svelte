@@ -11,10 +11,10 @@
 	});
 </script>
 
-<div class="mx-auto mt-8 flex h-full max-w-[1280px] flex-col gap-8 px-4 xl:px-0">
+<div class="mx-auto mt-8 flex h-full max-w-[1280px] flex-col gap-4 px-4 lg:gap-8 xl:px-0">
 	<Title>Servicios</Title>
 
-	<div class="grid auto-rows-fr gap-8 lg:grid-cols-2">
+	<div class="grid auto-rows-fr gap-4 lg:grid-cols-2 lg:gap-8">
 		<BgImageCard
 			title="Servicios de Psicología y Psiquiatría"
 			description="Ofrecemos terapias individuales con especialistas en psicología y psiquiatría para afrontar trastornos, problemas emocionales y mentales. Nuestros profesionales están comprometidos en proporcionar el apoyo necesario a través de tratamientos personalizados que promueven la salud mental y el bienestar emocional de nuestros pacientes."
@@ -47,7 +47,7 @@
 	</div>
 
 	<div id="pacientes">
-		<Card title="¿A quienes atendemos?" showArrow={false} className="pointer-events-none">
+		<Card title="¿A quienes atendemos?" showArrow={false}>
 			<List
 				items={[
 					'Niños/as, adolescentes y adultos jóvenes en evaluación o atención terapéutica en las diferentes áreas.',
@@ -60,7 +60,7 @@
 	</div>
 
 	<div id="prestadores">
-		<Card title="Atención y prestadores" showArrow={false} className="pointer-events-none">
+		<Card title="Atención y prestadores" showArrow={false}>
 			<List
 				items={[
 					'Beneficiarios/as de AYEX.  Ayuda Extraordinaria que brinda el Banco de Previsión Social.',
@@ -70,5 +70,40 @@
 				]}
 			/>
 		</Card>
+	</div>
+
+	<div class="grid w-full gap-4 md:grid-cols-2 lg:gap-8">
+		<div id="areas-abordaje">
+			<Card title="Áreas de abordaje" showArrow={false}>
+				<List
+					dot={true}
+					items={[
+						'Psicología',
+						'Psiquiatría',
+						'Psicopedagogía',
+						'Psicomotricidad',
+						'Fonoaudiología',
+						'Fisioterapia',
+						'Terapia Ocupacional',
+						'Apoyo Escolar y Liceal',
+						'Tratamientos de Áreas Integradas para niños, niñas y adolescentes.'
+					]}
+				/>
+			</Card>
+		</div>
+
+		<div id="abordajes">
+			<Card title="Abordajes terapéuticos" showArrow={false}>
+				<List
+					dot={true}
+					items={[
+						'Tratamientos individuales en las áreas de atención demandadas.',
+						'Dispositivos grupales en las áreas Psicopedagógica, Psicológica y Psicomotriz',
+						'Tratamientos grupales de Áreas Integradas: grupos de niños, niñas adolescentes, con la participación de dos profesionales de las distintas áreas de intervención.',
+						'Talleres de expresión creativa en plástica, dramatización, narración, etc.'
+					]}
+				/>
+			</Card>
+		</div>
 	</div>
 </div>

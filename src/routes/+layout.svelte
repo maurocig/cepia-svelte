@@ -14,7 +14,7 @@
 			{ name: 'Inicio', href: '/' },
 			{ name: 'Servicios', href: '/servicios' },
 			{ name: 'Nosotros', href: '/nosotros' },
-			{ name: 'Galería', href: '/galeria' },
+			// { name: 'Galería', href: '/galeria' },
 			{ name: 'Contacto', href: '/contacto' }
 		]}
 	/>

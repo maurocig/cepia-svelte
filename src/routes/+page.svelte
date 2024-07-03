@@ -9,7 +9,9 @@
 	});
 </script>
 
-<BannerHome />
+<div class="relative">
+	<BannerHome />
+</div>
 
 <div class="mx-auto mt-8 flex h-full max-w-[1280px] flex-col gap-8 px-4 lg:px-0">
 	<LogoHome />

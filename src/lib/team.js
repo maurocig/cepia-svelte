@@ -34,6 +34,11 @@ export const team = [
 		role: 'Maestra',
 		especialization: 'Esp. en Primera infancia'
 	},
+	{
+		name: 'Dra Madelon Rodríguez',
+		role: 'Psiquiatra de niñas/os y adolescentes',
+		especialization: 'Dirección técnica'
+	},
 	{ name: 'Mercedes Otero', role: 'Lic. en Psicología' },
 	{ name: 'Natalia Fuente', role: 'Lic. en Psicología' },
 	{ name: 'Mag Daniela Viera', role: 'Lic. en Psicomotricidad' },
