@@ -17,17 +17,19 @@
 	<div class="grid auto-rows-fr gap-4 lg:grid-cols-2 xl:gap-8">
 		<BgImageCard
 			title="Servicios de Psicología y Psiquiatría"
-			description="Ofrecemos terapias individuales con especialistas en psicología y psiquiatría para afrontar trastornos, problemas emocionales y mentales. Nuestros profesionales están comprometidos en proporcionar el apoyo necesario a través de tratamientos personalizados que promueven la salud mental y el bienestar emocional de nuestros pacientes."
+			description="Ofrecemos terapias individuales con especialistas en infancia y adolescencia para afrontar las problemáticas del desarrollo. Nuestros profesionales proporcionan el apoyo terapéutico necesario, ofreciendo tratamientos personalizados que promueven la salud mental y el bienestar emocional de nuestros pacientes y su núcleo familiar."
 			image="/img/chenga-colores.jpg"
 		/>
 		<BgImageCard
 			title="Programas de Desarrollo y Rehabilitación"
-			description="Disponemos de tratamiento especializado en psicopedagogía, psicomotricidad, fonoaudiología,
-				fisioterapia y terapia ocupacional. Estos servicios están diseñados para niños, niñas y
-				adolescentes que requieran apoyo en su desarrollo o rehabilitación, ya sea por dificultades
-				de aprendizaje, de lenguaje o motoras, adaptando las técnicas a las necesidades individuales
-				de cada paciente."
+			description="Disponemos de tratamiento especializado en Psicomotricidad, Fonoaudiología, Maestra especializada, Fisioterapia y Terapia ocupacional. Estos servicios están diseñados para niños, niñas y adolescentes que requieran apoyo en su desarrollo o rehabilitación, adaptando las técnicas a las necesidades individuales de cada paciente."
 			image="/img/mano-pintada.jpg"
+		/>
+		<BgImageCard
+			title="Atención Psicopedagógica"
+			showArrow={false}
+			description="Ofrecemos tratamientos a escolares y liceales que presentan dificultades de aprendizaje. Nuestro equipo de Psicopedagogos, Fonoaudiólogos, Psicomotricistas y Psicólogos abordan de forma interdisciplinaria esta problemática, articulando intervenciones con las instituciones educativas."
+			image="/img/arcilla.jpg"
 		/>
 		<BgImageCard
 			title="Tratamientos Grupales Multidisciplinares"
@@ -43,6 +45,12 @@
 			image="/img/pintando-diarios.jpg"
 			showArrow={false}
 			description=" Organizamos talleres que estimulan la expresión creativa mediante diversas disciplinas como la plástica, dramatización y narración. Estos espacios permiten a los participantes explorar sus emociones y pensamientos a través de la creatividad, lo cual es un complemento vital a los tratamientos de salud mental y apoyo educativo que proporcionamos."
+		/>
+		<BgImageCard
+			title="Programas de Formación"
+			showArrow={false}
+			description="Realizamos jornadas y seminarios dirigido a profesionales de la salud y educación, brindando un espacio de encuentro, reflexión y formación. Estos dispositivos apuntan al desarrollo de herramientas y estrategias que nos posibiliten acompañar el crecimiento saludable de las infancias y adolescencias."
+			image="/img/tomando-apuntes.jpg"
 		/>
 	</div>
 
