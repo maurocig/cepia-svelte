@@ -33,7 +33,7 @@
 					phone: '092837',
 					whatsapp: '23987',
 					address: 'Calle 22 y 15, Atlántida, Canelones',
-					email: 'ejemplo@gmail.com',
+					email: 'centrocepia@gmail.com',
 					hours: 'Lunes a viernes de 9 a 18hs'
 				}}
 			/>

@@ -32,6 +32,12 @@
 			image="/img/arcilla.jpg"
 		/>
 		<BgImageCard
+			title="Talleres de Expresión Creativa"
+			image="/img/pintando-diarios.jpg"
+			showArrow={false}
+			description=" Organizamos talleres que estimulan la expresión creativa mediante diversas disciplinas como la plástica, dramatización y narración. Estos espacios permiten a los participantes explorar sus emociones y pensamientos a través de la creatividad, lo cual es un complemento vital a los tratamientos de salud mental y apoyo educativo que proporcionamos."
+		/>
+		<BgImageCard
 			title="Tratamientos Grupales Multidisciplinares"
 			showArrow={false}
 			description="Implementamos tratamientos grupales donde niños, niñas o adolescentes pueden beneficiarse de
@@ -41,15 +47,9 @@
 			image="/img/mascaras-barro.jpg"
 		/>
 		<BgImageCard
-			title="Talleres de Expresión Creativa"
-			image="/img/pintando-diarios.jpg"
-			showArrow={false}
-			description=" Organizamos talleres que estimulan la expresión creativa mediante diversas disciplinas como la plástica, dramatización y narración. Estos espacios permiten a los participantes explorar sus emociones y pensamientos a través de la creatividad, lo cual es un complemento vital a los tratamientos de salud mental y apoyo educativo que proporcionamos."
-		/>
-		<BgImageCard
 			title="Programas de Formación"
 			showArrow={false}
-			description="Realizamos jornadas y seminarios dirigido a profesionales de la salud y educación, brindando un espacio de encuentro, reflexión y formación. Estos dispositivos apuntan al desarrollo de herramientas y estrategias que nos posibiliten acompañar el crecimiento saludable de las infancias y adolescencias."
+			description="Realizamos jornadas y seminarios dirigidos a profesionales de la salud y educación, brindando un espacio de encuentro, reflexión y formación. Estos dispositivos apuntan al desarrollo de herramientas y estrategias que nos posibiliten acompañar el crecimiento saludable de las infancias y adolescencias."
 			image="/img/tomando-apuntes.jpg"
 		/>
 	</div>

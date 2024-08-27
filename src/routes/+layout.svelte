@@ -5,6 +5,8 @@
 	import Nav from '$lib/components/Nav.svelte';
 	import Footer from '@/components/Footer.svelte';
 	import '@fontsource-variable/quicksand';
+	import FaWhatsapp from 'svelte-icons/fa/FaWhatsapp.svelte';
+
 	import '../app.css';
 </script>
 
@@ -21,6 +23,13 @@
 	<main class="mx-auto mt-[90px] h-full">
 		<slot />
 	</main>
+
+	<a
+		href="https://wa.me/59898400860"
+		class="fixed bottom-6 right-6 z-50 h-[60px] w-[60px] rounded-full bg-green-500/80 p-[12px] text-white shadow-md backdrop-blur"
+	>
+		<FaWhatsapp class="text-[20px] text-white" />
+	</a>
 
 	<Footer />
 </div>

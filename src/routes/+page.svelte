@@ -33,9 +33,9 @@
 		</a>
 		<a href="/nosotros">
 			<Card title="Nuestro equipo">
-				Somos un equipo de profesionales certificados en las áreas de <b>psicología</b>,
-				<b>psicomotricidad</b>, <b>fonoaudiología</b> y <b>psicopedagogía</b>, especializados en
-				dificultades de aprendizaje.
+				Somos un equipo de profesionales en las áreas de <b>Psicología</b>,
+				<b>Psicomotricidad</b>, <b>Fisioterapia</b>, <b>Fonoaudiología</b> y <b>Psicopedagogía</b> especializados
+				en dificultades de aprendizaje.
 			</Card>
 		</a>
 		<a href="/servicios#pacientes">
@@ -47,9 +47,9 @@
 			</Card>
 		</a>
 		<a href="/servicios#prestadores">
-			<Card title="Prestadores">
-				Nuestros servicios están disponibles para pacientes particulares, al igual que beneficiarios
-				de hospitales, fondos de salud y el Banco de Previsión Social.
+			<Card title="Atención y prestadores">
+				Nuestros servicios están disponibles para pacientes particulares, beneficiarios de AYEX
+				(Banco de Previsión Social) y otros convenios.
 			</Card>
 		</a>
 	</section>

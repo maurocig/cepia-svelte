@@ -22,7 +22,7 @@
 					class=" h-[35px] object-contain object-left drop-shadow-md"
 				/>
 				<span
-					class="font-quicksand text-center font-semibold tracking-wide text-gray-500 drop-shadow-lg"
+					class="text-center font-quicksand font-semibold tracking-wide text-gray-500 drop-shadow-lg"
 					>cepia</span
 				>
 			</a>
@@ -31,10 +31,10 @@
 			<ContactInfo
 				className="text-sm text-gray-500/80"
 				data={{
-					phone: '092837',
-					whatsapp: '23987',
+					phone: '437 22794',
+					whatsapp: '098 400 860',
 					address: 'Calle 22 y 15, Atlántida, Canelones',
-					email: 'ejemplo@gmail.com'
+					email: 'centrocepia@gmail.com'
 				}}
 			/>
 		</div>
