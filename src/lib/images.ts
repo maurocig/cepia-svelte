@@ -138,10 +138,6 @@ export const featuredImages = [
 		src: '/img/entrevista.jpeg'
 	},
 	{
-		title: 'Pelicula',
-		src: '/img/pelicula.jpeg'
-	},
-	{
 		title: 'Arcilla',
 		src: '/img/arcilla.jpg'
 	},
