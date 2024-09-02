@@ -30,8 +30,8 @@
 			<ContactInfo
 				className="ml-4"
 				data={{
-					phone: '092837',
-					whatsapp: '23987',
+					phone: '437 22794',
+					whatsapp: '098 400 860',
 					address: 'Calle 22 y 15, Atlántida, Canelones',
 					email: 'centrocepia@gmail.com',
 					hours: 'Lunes a viernes de 9 a 18hs'

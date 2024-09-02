@@ -44,6 +44,7 @@ export const team = [
 	{
 		name: 'Lucía Golfarini',
 		role: 'Maestra',
+		image: 'lucia-golfarini.jpeg',
 		especialization: 'Esp. en Primera infancia'
 	},
 	{ name: 'Mikaela Grollmus', role: 'Lic. en Fisioterapia' }

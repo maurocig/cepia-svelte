@@ -11,6 +11,7 @@
 	export let imgs: ImageType[];
 	export let delay = 2000;
 	export let delayStart = false;
+	export let isFeatured = false;
 
 	let src = '/img/chenga-colores.jpg';
 	let alt = 'Niño jugando Jenga';
@@ -46,6 +47,13 @@
 
 <div class="relative h-full w-full">
 	{#if currentIndex % 2 === 0 && getRandomIndex(10) < 6}
+		<img
+			transition:fade={{ duration: 2000, easing: quintOut }}
+			src={imgs[getRandomIndex(imgs.length - 1)].src}
+			alt={imgs[currentIndex].title}
+			class="absolute h-full w-full object-cover transition"
+		/>
+	{:else if isFeatured}
 		<img
 			transition:fade={{ duration: 2000, easing: quintOut }}
 			src={imgs[getRandomIndex(imgs.length - 1)].src}

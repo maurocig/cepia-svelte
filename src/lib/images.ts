@@ -88,5 +88,69 @@ export const images = [
 	{
 		title: 'materas',
 		src: '/img/materas-2.jpg'
+	},
+	{
+		title: 'Computadora',
+		src: '/img/computadora.jpeg'
+	},
+	{
+		title: 'Entrevista',
+		src: '/img/entrevista.jpeg'
+	},
+	{
+		title: 'Pelicula',
+		src: '/img/pelicula.jpeg'
+	}
+];
+
+export const featuredImages = [
+	{
+		title: 'Jugando Jenga',
+		src: '/img/chenga-colores.jpg'
+	},
+	{
+		title: 'Haciendo collage',
+		src: '/img/collage-girl.jpg'
+	},
+	{
+		title: 'Dibujando en pizarrón',
+		src: '/img/dibujando-pizarron.jpg'
+	},
+	{
+		title: 'Manos pintadas',
+		src: '/img/mano-pintada.jpg'
+	},
+
+	{
+		title: 'Mesa con collage',
+		src: '/img/mesa-collage.jpg'
+	},
+	{
+		title: 'Pintando',
+		src: '/img/pintando-diarios.jpg'
+	},
+	{
+		title: 'Computadora',
+		src: '/img/computadora.jpeg'
+	},
+	{
+		title: 'Entrevista',
+		src: '/img/entrevista.jpeg'
+	},
+	{
+		title: 'Pelicula',
+		src: '/img/pelicula.jpeg'
+	},
+	{
+		title: 'Arcilla',
+		src: '/img/arcilla.jpg'
+	},
+	{
+		title: 'Máscaras de barro',
+		src: '/img/mascaras-barro.jpg'
+	},
+	{
+		title: 'Vidrio',
+		src: '/img/vidrio.jpg'
 	}
 ];

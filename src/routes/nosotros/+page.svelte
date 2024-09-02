@@ -18,23 +18,28 @@
 	<div class="mt-4 grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
 		{#each team as { name, role, especialization, image }}
 			<div class="grid">
-				<div
+				<!-- <div
 					class="object z-40 mx-auto mb-[-20px] aspect-square w-[70px] overflow-hidden rounded-full border-2 border-green-600/90 shadow-md"
-				>
-					<img
-						src="img/profile/{image || 'default2.jpg'}"
-						alt="Imagen de {name}"
-						class="h-full w-full object-cover object-center"
-					/>
-				</div>
+				> -->
 				<div
-					class="z-20 rounded-md border-slate-900/10 bg-white/70 p-4 pt-8 shadow-sm transition duration-500 hover:shadow-md md:min-h-[150px]"
+					class="z-20 flex gap-4 rounded-md border-slate-900/10 bg-white/70 p-4 shadow-sm transition duration-500 hover:shadow-md md:min-h-[140px]"
 				>
-					<h2 class="text-xl font-bold">{name}</h2>
-					<p class="font-semibold text-slate-700">{role}</p>
-					{#if especialization}
-						<p class="text-slate-600">{especialization}</p>
-					{/if}
+					<div
+						class="z-40 aspect-square h-fit w-[20%] overflow-hidden rounded-full border-[3px] border-green-600/90 shadow-md"
+					>
+						<img
+							src="img/profile/{image || 'default2.jpg'}"
+							alt="Imagen de {name}"
+							class="h-full w-full object-cover object-center"
+						/>
+					</div>
+					<div class="w-[80%]">
+						<h2 class="text-xl font-bold">{name}</h2>
+						<p class="font-semibold text-slate-700">{role}</p>
+						{#if especialization}
+							<p class="text-slate-600">{especialization}</p>
+						{/if}
+					</div>
 				</div>
 			</div>
 		{/each}

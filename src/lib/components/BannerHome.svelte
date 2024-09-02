@@ -2,7 +2,7 @@
 	import Carousel from './Carousel.svelte';
 	import ImageBlock from './ImageBlock.svelte';
 
-	import { images } from '$lib/images';
+	import { featuredImages, images } from '$lib/images';
 	import { shuffle } from '$lib/utils';
 </script>
 
@@ -25,7 +25,7 @@
 		<ImageBlock imgs={images} />
 	</div>
 	<div class="bg-red-500 drop-shadow-md lg:col-span-2 lg:row-span-2">
-		<ImageBlock imgs={images} />
+		<ImageBlock imgs={featuredImages} isFeatured />
 	</div>
 	<div class="row-span-2 hidden bg-yellow-500 drop-shadow-md lg:block">
 		<ImageBlock imgs={images} />
