@@ -41,6 +41,7 @@
 		"formsnap": "^1.0.1",
 		"input": "^1.0.1",
 		"lucide-svelte": "^0.394.0",
+		"resend": "^4.0.0",
 		"shadcn-svelte": "^0.10.7",
 		"svelte-icons": "^2.1.0",
 		"tailwind-merge": "^2.3.0",

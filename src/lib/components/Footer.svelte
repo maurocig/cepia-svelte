@@ -17,7 +17,7 @@
 				class="bor flex h-full w-fit items-center gap-2 py-3 text-2xl opacity-80 md:flex-col md:gap-0"
 			>
 				<img
-					src="icons/logo-ana.svg"
+					src="/icons/logo-ana.svg"
 					alt="logo"
 					class=" h-[35px] object-contain object-left drop-shadow-md"
 				/>
