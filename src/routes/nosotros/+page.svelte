@@ -1,11 +1,7 @@
 <script>
 	import { team } from '$lib/team.js';
+	import Seo from '@/components/Seo.svelte';
 	import Title from '@/components/Title.svelte';
-	import { onMount } from 'svelte';
-
-	onMount(() => {
-		document.title = 'Nosotros - CEPIA';
-	});
 </script>
 
 <div class="mx-auto mt-8 flex h-full max-w-[1280px] flex-col px-4 xl:px-0">
@@ -45,3 +41,5 @@
 		{/each}
 	</div>
 </div>
+
+<Seo title="Nosotros | CEPIA" description="Conocé a nuestro equipo" />

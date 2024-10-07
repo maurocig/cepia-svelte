@@ -1,11 +1,7 @@
 <script lang="ts">
 	import ContactInfo from '@/components/ContactInfo.svelte';
 	import GoogleMap from '@/components/GoogleMap.svelte';
-	import Seo from '@/components/Seo.svelte';
-	import ContactForm from './ContactForm.svelte';
-
-	export let data;
-
+	import { CheckCircle, CheckCircle2 } from 'lucide-svelte';
 	let width: number;
 </script>
 
@@ -14,8 +10,16 @@
 >
 	<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
 		<div class="space-y-4">
-			<h1 class="text-2xl font-semibold">Dejanos tu consulta</h1>
-			<ContactForm data={data.contactForm} />
+			<h1 class="text-2xl font-semibold">Contacto</h1>
+			<div
+				class="my-auto flex h-auto flex-col items-center justify-center gap-4 rounded-lg border border-slate-700/20 bg-white/50 p-4 shadow-sm md:p-8"
+			>
+				<div class="text-emerald-400">
+					<CheckCircle2 size={50} color="green" class="text-emerald-400" />
+				</div>
+				<p>Gracias por contactarte con nosotros.</p>
+				<p>Responderemos tu consulta a la breevedad.</p>
+			</div>
 		</div>
 		<div class="space-y-4" bind:clientWidth={width}>
 			<h1 class="text-2xl font-semibold">Mapa</h1>
@@ -37,5 +41,3 @@
 	</div>
 	<!-- <div class="space-y-4" bind:offsetWidth={width}></div> -->
 </div>
-
-<Seo title="Contacto | CEPIA" description="Dejanos tu consulta" />

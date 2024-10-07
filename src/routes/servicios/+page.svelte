@@ -2,13 +2,9 @@
 	import BgImageCard from '@/components/BgImageCard.svelte';
 	import Card from '@/components/Card.svelte';
 	import List from '@/components/List.svelte';
+	import Seo from '@/components/Seo.svelte';
 	import Subtitle from '@/components/Subtitle.svelte';
 	import Title from '@/components/Title.svelte';
-	import { onMount } from 'svelte';
-
-	onMount(() => {
-		document.title = 'Servicios - CEPIA';
-	});
 </script>
 
 <div class="mx-auto mt-8 flex h-full max-w-[1280px] flex-col gap-4 px-4 xl:gap-8 xl:px-0">
@@ -118,3 +114,5 @@
 		</div>
 	</div>
 </div>
+
+<Seo title="Servicios | CEPIA" description="Nuestros servicios" />

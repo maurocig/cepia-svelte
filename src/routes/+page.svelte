@@ -2,11 +2,7 @@
 	import BannerHome from '@/components/BannerHome.svelte';
 	import Card from '@/components/Card.svelte';
 	import LogoHome from '@/components/LogoHome.svelte';
-	import { onMount } from 'svelte';
-
-	onMount(() => {
-		document.title = 'Inicio - CEPIA';
-	});
+	import Seo from '@/components/Seo.svelte';
 </script>
 
 <div class="relative">
@@ -56,3 +52,5 @@
 
 	<section></section>
 </div>
+
+<Seo title="Inicio | CEPIA" />
