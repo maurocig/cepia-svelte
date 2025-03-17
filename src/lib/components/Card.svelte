@@ -1,8 +1,13 @@
-<script>
-	export let href = '';
-	export let title = '';
-	export let showArrow = true;
-	export let className = '';
+<script lang="ts">
+	interface Props {
+		href?: string;
+		title?: string;
+		showArrow?: boolean;
+		className?: string;
+		children?: import('svelte').Snippet;
+	}
+
+	let { href = '', title = '', showArrow = true, className = '', children }: Props = $props();
 </script>
 
 <div
@@ -18,10 +23,10 @@
 			{/if}
 		</h2>
 		<div class="h-full">
-			<p class="">
+			<span class="">
 				<!-- {body} -->
-				<slot />
-			</p>
+				{@render children?.()}
+			</span>
 		</div>
 	</div>
 </div>

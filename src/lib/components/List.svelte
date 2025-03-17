@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { Check, Dot, Plus } from 'lucide-svelte';
 
-	export let items: string[] = [];
-	export let dot = false;
+	interface Props {
+		items?: string[];
+		dot?: boolean;
+	}
+
+	let { items = [], dot = false }: Props = $props();
 </script>
 
 <ul class="flex flex-col gap-4 md:ml-4">

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	// Supports weights 300-700
 	import '@fontsource-variable/quicksand';
 
@@ -8,6 +8,11 @@
 	import FaWhatsapp from 'svelte-icons/fa/FaWhatsapp.svelte';
 
 	import '../app.css';
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
+
+	let { children }: Props = $props();
 </script>
 
 <div class="slate-200 w-full bg-slate-100 text-gray-700">
@@ -21,7 +26,7 @@
 		]}
 	/>
 	<main class="mx-auto mt-[90px] h-full">
-		<slot />
+		{@render children?.()}
 	</main>
 
 	<a

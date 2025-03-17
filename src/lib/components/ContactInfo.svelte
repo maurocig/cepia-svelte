@@ -12,8 +12,12 @@
 		facebook?: string;
 	};
 
-	export let data: ContactInfo;
-	export let className: string = '';
+	interface Props {
+		data: ContactInfo;
+		className?: string;
+	}
+
+	let { data, className = '' }: Props = $props();
 </script>
 
 <div class={`flex h-full flex-col space-y-2 ${className}`}>

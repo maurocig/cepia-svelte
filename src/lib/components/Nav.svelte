@@ -4,7 +4,7 @@
 	import MobileMenu from './MobileMenu.svelte';
 	import NavLogo from './NavLogo.svelte';
 
-	export let links;
+	let { links } = $props();
 </script>
 
 <nav

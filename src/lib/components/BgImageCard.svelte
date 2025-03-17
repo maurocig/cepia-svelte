@@ -1,10 +1,19 @@
 <script lang="ts">
 	import Card from './Card.svelte';
 
-	export let image = '';
-	export let showArrow = false;
-	export let title = '';
-	export let description = '';
+	interface Props {
+		image?: string;
+		showArrow?: boolean;
+		title?: string;
+		description?: string;
+	}
+
+	let {
+		image = '',
+		showArrow = false,
+		title = '',
+		description = ''
+	}: Props = $props();
 </script>
 
 <div

@@ -1,5 +1,9 @@
 <script lang="ts">
-	export let width: number;
+	interface Props {
+		width: number;
+	}
+
+	let { width }: Props = $props();
 </script>
 
 <div class="w-full overflow-hidden rounded-lg border border-gray-700/20 shadow-sm">

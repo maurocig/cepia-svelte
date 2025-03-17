@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
-	export let title: string;
-	export let description: string =
-		'El Centro Psicopedagógico Integral de Atlántida es una institución dedicada a brindar atención integral a niños y adolescentes con dificultades en su desarrollo.';
+	interface Props {
+		title: string;
+		description?: string;
+	}
+
+	let { title, description = 'El Centro Psicopedagógico Integral de Atlántida es una institución dedicada a brindar atención integral a niños y adolescentes con dificultades en su desarrollo.' }: Props = $props();
 </script>
 
 <svelte:head>

@@ -8,10 +8,19 @@
 		src: string;
 	};
 
-	export let imgs: ImageType[];
-	export let delay = 2000;
-	export let delayStart = false;
-	export let isFeatured = false;
+	interface Props {
+		imgs: ImageType[];
+		delay?: number;
+		delayStart?: boolean;
+		isFeatured?: boolean;
+	}
+
+	let {
+		imgs,
+		delay = 2000,
+		delayStart = $bindable(false),
+		isFeatured = false
+	}: Props = $props();
 
 	let src = '/img/chenga-colores.jpg';
 	let alt = 'Niño jugando Jenga';
@@ -27,7 +36,7 @@
 	}
 
 	let show = true;
-	let currentIndex = 0;
+	let currentIndex = $state(0);
 
 	onMount(() => {
 		const intervalId = setInterval(

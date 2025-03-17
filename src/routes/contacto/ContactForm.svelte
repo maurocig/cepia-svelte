@@ -6,7 +6,11 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { formSchema, type FormSchema } from './schema';
 
-	export let data: SuperValidated<Infer<FormSchema>>;
+	interface Props {
+		data: SuperValidated<Infer<FormSchema>>;
+	}
+
+	let { data }: Props = $props();
 	export const title = 'Contacto';
 
 	const form = superForm(data, {
@@ -21,26 +25,32 @@
 >
 	<form method="POST" use:enhance class="mb-3 h-full w-full space-y-4">
 		<Form.Field {form} name="name">
-			<Form.Control let:attrs>
-				<Form.Label>Nombre</Form.Label>
-				<Input {...attrs} bind:value={$formData.name} />
-			</Form.Control>
+			<Form.Control >
+				{#snippet children({ attrs })}
+								<Form.Label>Nombre</Form.Label>
+					<Input {...attrs} bind:value={$formData.name} />
+											{/snippet}
+						</Form.Control>
 			<!-- <Form.Description>This is your public display name.</Form.Description> -->
 			<Form.FieldErrors />
 		</Form.Field>
 		<Form.Field {form} name="email">
-			<Form.Control let:attrs>
-				<Form.Label>Email</Form.Label>
-				<Input {...attrs} bind:value={$formData.email} />
-				<Form.FieldErrors />
-			</Form.Control>
+			<Form.Control >
+				{#snippet children({ attrs })}
+								<Form.Label>Email</Form.Label>
+					<Input {...attrs} bind:value={$formData.email} />
+					<Form.FieldErrors />
+											{/snippet}
+						</Form.Control>
 		</Form.Field>
 		<Form.Field {form} name="message">
-			<Form.Control let:attrs>
-				<Form.Label>Su mensaje</Form.Label>
-				<Textarea {...attrs} bind:value={$formData.message} />
-				<Form.FieldErrors />
-			</Form.Control>
+			<Form.Control >
+				{#snippet children({ attrs })}
+								<Form.Label>Su mensaje</Form.Label>
+					<Textarea {...attrs} bind:value={$formData.message} />
+					<Form.FieldErrors />
+											{/snippet}
+						</Form.Control>
 		</Form.Field>
 		<Form.Button>Enviar</Form.Button>
 	</form>

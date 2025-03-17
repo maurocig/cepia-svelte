@@ -4,10 +4,9 @@
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Menu, MenuIcon } from 'lucide-svelte';
 
-	export let buttonClass;
-	export let links;
+	let { buttonClass, links } = $props();
 
-	let isOpen = false;
+	let isOpen = $state(false);
 
 	// // this is a good fix for scroll to top but breaks the links to specific # id scroll locations.
 	// // using target="_top" for each ancher tag instead.
@@ -27,7 +26,7 @@
 				<li>
 					<a
 						{href}
-						on:click={() => (isOpen = false)}
+						onclick={() => (isOpen = false)}
 						aria-current={href === $page.url.pathname}
 						target="_top"
 						>{name}

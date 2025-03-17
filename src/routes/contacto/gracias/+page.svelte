@@ -2,7 +2,7 @@
 	import ContactInfo from '@/components/ContactInfo.svelte';
 	import GoogleMap from '@/components/GoogleMap.svelte';
 	import { CheckCircle, CheckCircle2 } from 'lucide-svelte';
-	let width: number;
+	let width: number = $state();
 </script>
 
 <div
