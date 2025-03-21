@@ -6,10 +6,10 @@ https://svelte.dev/e/node_invalid_placement -->
 		<p>[nombre] ([email]) te ha enviado un mensaje:</p>
 		<p>[mensaje]</p>
 	</body>
-
-	<style>
-		h1 {
-			font-size: 2rem;
-		}
-	</style>
 </html>
+
+<style>
+	h1 {
+		font-size: 2rem;
+	}
+</style>
