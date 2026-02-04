@@ -10,12 +10,12 @@
 		/>
 	</div>
 	<h1
-		class="font-quicksand text-center text-6xl font-bold tracking-tight text-gray-700 drop-shadow-md"
+		class="text-center font-quicksand text-6xl font-bold tracking-tight text-gray-700 drop-shadow-md"
 	>
 		cepia
 	</h1>
 	<p
-		class="font-quicksand mt-3 max-w-[250px] text-center text-sm font-semibold uppercase text-gray-700"
+		class="mt-3 max-w-[250px] text-center font-quicksand text-sm font-semibold uppercase text-gray-700"
 	>
 		Centro psicopedagógico integral de Atlántida
 	</p>
