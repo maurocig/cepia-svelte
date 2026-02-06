@@ -37,8 +37,8 @@
 	</Sheet.Content>
 </Sheet.Root>
 
-<style>
+<!-- <style>
 	li a[aria-current='true'] {
 		@apply border-b-2 border-gray-600;
 	}
-</style>
+</style> -->

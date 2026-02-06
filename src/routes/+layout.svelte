@@ -1,36 +1,52 @@
 <script lang="ts">
-	import { setUserState } from '@/components/state/user-state.svelte';
-
-	// Supports weights 300-700
 	import Footer from '@/components/Footer.svelte';
 	import Nav from '@/components/Nav.svelte';
+	import { setUserState } from '@/components/state/user-state.svelte';
 	import '@fontsource-variable/quicksand';
 	import FaWhatsapp from 'svelte-icons/fa/FaWhatsapp.svelte';
-
 	import '../app.css';
+
+	import { invalidate } from '$app/navigation';
+
 	interface Props {
 		children?: import('svelte').Snippet;
 	}
 
-	// SUPABASE: listener for Auth events on the client, to handle session refreshes and signouts.
-	import { invalidate } from '$app/navigation';
-	import { onMount } from 'svelte';
-
 	let { data, children } = $props();
-	let { session, supabase } = $derived(data);
 
-	let userState = setUserState({ session: data.session, supabase: data.supabase, user: data.user });
+	const session = $derived(data.session);
+	const supabase = $derived(data.supabase);
+	const user = $derived(data.user);
+
+	// ✅ crear sin capturar supabase tampoco
+	const userState = setUserState({
+		session: null,
+		supabase: null,
+		user: null
+	});
+
+	// ✅ setear todo desde effect
+	$effect(() => {
+		userState.updateState({ session, supabase, user });
+	});
 
 	$effect(() => {
-		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
-			userState.updateState({ session: newSession, supabase, user: newSession?.user || null });
+		// ✅ este effect corre cuando supabase cambia; si supabase es null al inicio, salimos
+		if (!supabase) return;
+
+		const { data: authListener } = supabase.auth.onAuthStateChange((_, newSession) => {
+			userState.updateState({
+				session: newSession,
+				supabase,
+				user: newSession?.user || null
+			});
 
 			if (newSession?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');
 			}
 		});
 
-		return () => data.subscription.unsubscribe();
+		return () => authListener.subscription.unsubscribe();
 	});
 </script>
 
@@ -41,7 +57,6 @@
 			{ name: 'Inicio', href: '/' },
 			{ name: 'Servicios', href: '/servicios' },
 			{ name: 'Nosotros', href: '/nosotros' },
-			// { name: 'Galería', href: '/galeria' },
 			{ name: 'Contacto', href: '/contacto' }
 		]}
 	/>

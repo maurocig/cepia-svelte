@@ -29,7 +29,7 @@
 		<NavLogo />
 
 		<MobileMenu buttonClass="block md:hidden" {links} />
-		<ul class="hidden gap-6 font-quicksand font-normal text-gray-600 md:flex">
+		<ul class="font-quicksand hidden gap-6 font-normal text-gray-600 md:flex">
 			{#each links as { name, href }, i}
 				<li>
 					<a
@@ -57,8 +57,8 @@
 	</div>
 </nav>
 
-<style>
-	li a[aria-current='true'] {
-		@apply border-b-2 border-gray-600;
-	}
-</style>
+<!-- <style>
+			li a[aria-current='true'] {
+			@apply border-b-2 border-gray-600;
+		}
+</style> -->
