@@ -18,9 +18,8 @@ export const enrollmentSchema = z
 			.enum(agreementOrganizationOptions)
 			.optional()
 			.or(z.literal(''))
-			.default('')
-			.nullable(),
-		agreementOtherName: z.string().optional().or(z.literal('')).default('').nullable()
+			.default(''),
+		agreementOtherName: z.string().optional().or(z.literal('')).default('')
 	})
 	.refine(
 		(data) => {

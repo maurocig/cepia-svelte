@@ -22,7 +22,7 @@
 		</a>
 		<ul class="">
 			<li>
-				<a href="/" class="flex gap-4 rounded-md p-2 transition hover:bg-gray-200"
+				<a href="/admin/dashboard" class="flex gap-4 rounded-md p-2 transition hover:bg-gray-200"
 					><HomeIcon size="22" /> Inicio</a
 				>
 			</li>

@@ -43,7 +43,6 @@
 						</Select.Content>
 					</Select.Root>
 
-					<!-- Non-native controls need a hidden input so the POST includes the value -->
 					<input type="hidden" name="enrollmentStatus" value={$formData.enrollmentStatus} />
 				{/snippet}
 			</Form.Control>
@@ -71,7 +70,6 @@
 			<Form.Control>
 				{#snippet children({ props }: { props: Record<string, any> })}
 					<Form.Label>Modo de inscripción</Form.Label>
-
 					<Select.Root
 						type="single"
 						bind:value={$formData.admissionMode}
@@ -96,7 +94,6 @@
 							<Select.Item value="agreement" label="Convenio">Convenio</Select.Item>
 						</Select.Content>
 					</Select.Root>
-
 					<input type="hidden" name="admissionMode" value={$formData.admissionMode} />
 				{/snippet}
 			</Form.Control>
@@ -106,13 +103,12 @@
 			<Form.FieldErrors />
 		</Form.Field>
 
+		<!-- Convenios -->
 		{#if $formData.admissionMode === 'agreement'}
-			<!-- Institución responsable del convenio -->
 			<Form.Field {form} name="agreementOrganization">
 				<Form.Control>
 					{#snippet children({ props }: { props: Record<string, any> })}
 						<Form.Label>Institución responsable del convenio</Form.Label>
-
 						<Select.Root
 							type="single"
 							bind:value={$formData.agreementOrganization}
@@ -148,7 +144,6 @@
 								<Select.Item value="other" label="Otro">Otro</Select.Item>
 							</Select.Content>
 						</Select.Root>
-
 						<input
 							type="hidden"
 							name="agreementOrganization"
@@ -160,8 +155,8 @@
 				<Form.FieldErrors />
 			</Form.Field>
 
+			<!-- Otras instituciones -->
 			{#if $formData.agreementOrganization === 'other'}
-				<!-- Otro nombre de convenio (native input posts normally) -->
 				<Form.Field {form} name="agreementOtherName">
 					<Form.Control>
 						{#snippet children({ props }: { props: Record<string, any> })}
@@ -182,11 +177,10 @@
 				</Form.Field>
 			{/if}
 		{/if}
-	</div>
 
+		<!--  -->
+	</div>
 	<Form.Button type="submit" class="mt-6 w-[200px]">Guardar</Form.Button>
 </form>
 
-<pre class="mt-6 text-xs opacity-70">
-  {JSON.stringify($formData, null, 2)}
-</pre>
+<pre class="mt-6 text-xs opacity-70">{JSON.stringify($formData, null, 2)}</pre>
