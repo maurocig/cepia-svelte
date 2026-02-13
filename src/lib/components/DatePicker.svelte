@@ -8,7 +8,17 @@
 	// Designed to work with shadcn-svelte + formsnap/superforms.
 	// `value` is an ISO date string: YYYY-MM-DD
 	// `id`/`name`/aria attributes are provided via `{...props}` from `<Form.Control>`.
-	let { value = $bindable(''), ...props }: { value?: string; [key: string]: any } = $props();
+	let {
+		value = $bindable(''),
+		min,
+		max,
+		...props
+	}: {
+		value?: string;
+		min?: 'past' | 'today' | 'future';
+		max?: 'past' | 'today' | 'future';
+		[key: string]: any;
+	} = $props();
 
 	let open = $state(false);
 	let calValue = $state<CalendarDate | undefined>();
@@ -16,6 +26,25 @@
 	// Keep internal CalendarDate in sync when the bound ISO value changes.
 	$effect(() => {
 		calValue = value ? parseDate(value) : undefined;
+	});
+
+	const tz = getLocalTimeZone();
+	const todayDate = today(tz);
+
+	const minValue = $derived(() => {
+		if (!min) return undefined;
+		if (min === 'today') return todayDate;
+		if (min === 'future') return todayDate.add({ days: 1 });
+		if (min === 'past') return undefined;
+		return undefined;
+	});
+
+	const maxValue = $derived(() => {
+		if (!max) return undefined;
+		if (max === 'today') return todayDate;
+		if (max === 'past') return todayDate.subtract({ days: 1 });
+		if (max === 'future') return undefined;
+		return undefined;
 	});
 
 	const fmt = new Intl.DateTimeFormat('es-UY', {
@@ -61,7 +90,8 @@
 				onValueChange={onPick}
 				captionLayout="dropdown"
 				locale="es-UY"
-				maxValue={today(getLocalTimeZone())}
+				minValue={minValue()}
+				maxValue={maxValue()}
 			/>
 		</Popover.Content>
 	</Popover.Root>

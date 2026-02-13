@@ -1,13 +1,11 @@
 <script lang="ts">
-	let { data } = $props();
-	let { notes } = $derived(data);
+	import Button from '@/components/ui/button/button.svelte';
+	import Input from '@/components/ui/input/input.svelte';
+	const { data } = $props();
 </script>
 
 <div>
-	<h1>Private Notes</h1>
-	<ul>
-		{#each notes as note}
-			<li>{note.note}</li>
-		{/each}
-	</ul>
+	<h1>Dashboard de <strong>{data.user.email}</strong></h1>
 </div>
+
+<Button href="/admin/pacientes/nuevo">Agregar nuevo paciente</Button>

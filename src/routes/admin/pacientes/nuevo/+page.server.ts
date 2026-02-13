@@ -4,10 +4,18 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 import { enrollmentSchema } from './schema';
 
+const enrollmentValidator = zod4(enrollmentSchema);
+
+const devLog = (...args: any[]) => {
+	// avoid noisy logs in prod
+	if (process.env.NODE_ENV !== 'production') console.log(...args);
+};
+
 export const load: PageServerLoad = async () => {
-	return {
-		form: await superValidate(zod4(enrollmentSchema))
-	};
+	const t0 = performance.now();
+	const form = await superValidate(enrollmentValidator);
+	devLog('[nuevo paciente] load superValidate ms', Math.round(performance.now() - t0));
+	return { form };
 };
 
 export const actions: Actions = {
@@ -21,7 +29,7 @@ export const actions: Actions = {
 		}
 		console.log('--- RAW FORMDATA END ---');
 
-		const form = await superValidate(event, zod4(enrollmentSchema));
+		const form = await superValidate(event, enrollmentValidator);
 		console.log('FORM VALID:', form.valid);
 		if (!form.valid) {
 			console.log('FORM ERRORS:', form.errors);
@@ -42,31 +50,6 @@ export const actions: Actions = {
 			agreement_other_name: emptyToNull(form.data.agreementOtherName)
 		};
 
-		console.log('NORMALIZED FORM DATA:', normalized);
-
-		// Insert into Supabase (server-side client expected on locals)
-		const supabase = (event.locals as any).supabase;
-		if (!supabase) {
-			console.error('Supabase client not found on event.locals.supabase');
-			return fail(500, { form, message: 'Server misconfigured: Supabase client not available.' });
-		}
-
-		const { data: inserted, error } = await supabase
-			.from('enrollments')
-			.insert(normalized)
-			.select('*')
-			.single();
-
-		if (error) {
-			console.error('Supabase insert error:', error);
-			return fail(400, { form, message: error.message });
-		}
-
-		console.log('INSERTED ENROLLMENT:', inserted);
-
-		return {
-			form,
-			inserted
-		};
+		console.log('INSERTED ENROLLMENT:');
 	}
 };
