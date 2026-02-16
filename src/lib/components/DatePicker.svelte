@@ -75,7 +75,7 @@
 				<Button
 					{...triggerProps}
 					variant="outline"
-					class="h-9 w-full justify-between font-normal"
+					class="h-9 w-full justify-between font-normal hover:bg-slate-50/10"
 					aria-invalid={triggerProps['aria-invalid']}
 				>
 					{display()}

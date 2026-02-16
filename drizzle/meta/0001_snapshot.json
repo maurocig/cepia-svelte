@@ -1,6 +1,6 @@
 {
-  "id": "606b4973-8ba5-46be-b672-f3e2d8604792",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "37de64f6-d8c1-48b9-b037-bf25ca916406",
+  "prevId": "606b4973-8ba5-46be-b672-f3e2d8604792",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -184,6 +184,26 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "form_status": {
+          "name": "form_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'draft'"
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},

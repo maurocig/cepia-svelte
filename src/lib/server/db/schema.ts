@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { boolean, index, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { boolean, date, index, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
@@ -96,3 +96,25 @@ export const accountRelations = relations(account, ({ one }) => ({
 		references: [user.id]
 	})
 }));
+
+// enrollment-related tables
+export const enrollments = pgTable('enrollments', {
+	id: text('id').primaryKey(),
+	status: text('status').notNull(),
+	admissionDate: date('admission_date', { mode: 'string' }).notNull(),
+	admissionMode: text('admission_mode'),
+	agreementOrganization: text('agreement_organization'),
+	agreementOtherName: text('agreement_other_name'),
+	agreementExpirationDate: date('agreement_expiration_date', { mode: 'string' }),
+	createdByUserId: text('created_by_user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at')
+		.defaultNow()
+		.$onUpdate(() => new Date())
+		.notNull(),
+	formStatus: text('form_status').notNull().default('draft'),
+	completedAt: timestamp('completed_at')
+});
