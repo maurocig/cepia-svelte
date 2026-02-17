@@ -1,4 +1,5 @@
 import { enrollmentSchema } from '$lib/schemas/enrollment';
+import { patientSchema } from '$lib/schemas/patient';
 import { db } from '$lib/server/db';
 import { enrollments } from '$lib/server/db/schema';
 import { fail } from '@sveltejs/kit';
@@ -9,6 +10,7 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 
 const enrollmentValidator = zod4(enrollmentSchema);
+const patientValidator = zod4(patientSchema);
 
 const devLog = (...args: any[]) => {
 	// avoid noisy logs in prod
@@ -17,9 +19,10 @@ const devLog = (...args: any[]) => {
 
 export const load: PageServerLoad = async () => {
 	const t0 = performance.now();
-	const form = await superValidate(enrollmentValidator);
+	const enrollmentForm = await superValidate(enrollmentValidator);
+	const patientForm = await superValidate(patientValidator);
 	devLog('[nuevo paciente] load superValidate ms', Math.round(performance.now() - t0));
-	return { form };
+	return { enrollmentForm, patientForm };
 };
 
 export const actions: Actions = {
@@ -33,20 +36,29 @@ export const actions: Actions = {
 				? enrollmentIdFromForm
 				: null;
 
-		const form = await superValidate(formData, enrollmentValidator);
-		devLog('[nuevo paciente] action intent', intent);
-		console.log('FORM VALID:', form.valid);
-		if (!form.valid) {
-			console.log('FORM ERRORS:', form.errors);
-		}
-		if (!form.valid) {
-			return fail(400, { form });
-		}
-
 		const shouldPersistDraft = intent === 'create-draft' || intent === 'update-draft';
 
+		// Step 1 submit should NOT validate Step 2 fields.
+		// We only validate patient fields for non-Step-1 intents.
+		const enrollmentForm = await superValidate(formData, enrollmentValidator);
+		const patientForm = shouldPersistDraft
+			? await superValidate(patientValidator)
+			: await superValidate(formData, patientValidator);
+
+		devLog('[nuevo paciente] action intent', intent);
+		devLog('[nuevo paciente] enrollment valid', enrollmentForm.valid);
+		if (!shouldPersistDraft) devLog('[nuevo paciente] patient valid', patientForm.valid);
+
+		if (!enrollmentForm.valid || (!shouldPersistDraft && !patientForm.valid)) {
+			if (!enrollmentForm.valid)
+				devLog('[nuevo paciente] enrollment errors', enrollmentForm.errors);
+			if (!shouldPersistDraft && !patientForm.valid)
+				devLog('[nuevo paciente] patient errors', patientForm.errors);
+			return fail(400, { enrollmentForm, patientForm });
+		}
+
 		if (!shouldPersistDraft) {
-			return { form, enrollmentId: enrollmentId ?? undefined };
+			return { enrollmentForm, patientForm, enrollmentId: enrollmentId ?? undefined };
 		}
 
 		// Require an authenticated session (set in hooks.server.ts via betterauth)
@@ -55,7 +67,7 @@ export const actions: Actions = {
 		devLog('[nuevo paciente] session present', Boolean(user), 'userId', userId);
 		if (!userId) {
 			devLog('[nuevo paciente] abort: no userId in session');
-			return fail(401, { form, message: 'No autorizado' });
+			return fail(401, { enrollmentForm, patientForm, message: 'No autorizado' });
 		}
 
 		// Normalize empty strings to null (preserves literal unions)
@@ -68,12 +80,12 @@ export const actions: Actions = {
 
 		const normalized = {
 			id: effectiveEnrollmentId,
-			status: form.data.enrollmentStatus,
-			admissionDate: form.data.admissionDate,
-			admissionMode: form.data.admissionMode ?? null,
-			agreementOrganization: emptyToNull(form.data.agreementOrganization),
-			agreementOtherName: emptyToNull(form.data.agreementOtherName),
-			agreementExpirationDate: emptyToNull(form.data.agreementExpirationDate),
+			status: enrollmentForm.data.enrollmentStatus,
+			admissionDate: enrollmentForm.data.admissionDate,
+			admissionMode: enrollmentForm.data.admissionMode ?? null,
+			agreementOrganization: emptyToNull(enrollmentForm.data.agreementOrganization),
+			agreementOtherName: emptyToNull(enrollmentForm.data.agreementOtherName),
+			agreementExpirationDate: emptyToNull(enrollmentForm.data.agreementExpirationDate),
 			formStatus: 'draft' as const,
 			createdByUserId: userId
 		};
@@ -111,10 +123,14 @@ export const actions: Actions = {
 
 				if (!updated?.id) {
 					// Either not found, or not owned by this user
-					return fail(404, { form, message: 'No se encontró el borrador a actualizar' });
+					return fail(404, {
+						enrollmentForm,
+						patientForm,
+						message: 'No se encontró el borrador a actualizar'
+					});
 				}
 
-				return { form, enrollmentId: updated.id };
+				return { enrollmentForm, patientForm, enrollmentId: updated.id };
 			}
 
 			// No enrollmentId provided: create a new draft
@@ -130,10 +146,10 @@ export const actions: Actions = {
 				inserted?.id
 			);
 
-			return { form, enrollmentId: inserted?.id ?? effectiveEnrollmentId };
+			return { enrollmentForm, patientForm, enrollmentId: inserted?.id ?? effectiveEnrollmentId };
 		} catch (err) {
 			console.error('[nuevo paciente] insert enrollment error', err);
-			return fail(500, { form, message: 'Error al guardar el paciente' });
+			return fail(500, { enrollmentForm, patientForm, message: 'Error al guardar el paciente' });
 		}
 	}
 };

@@ -12,9 +12,9 @@
 	import { tick } from 'svelte';
 	import type { Infer } from 'zod/v4';
 
-	let { data }: { data: { form: SuperValidated<Infer<EnrollmentSchema>> } } = $props();
+	let { data }: { data: { enrollmentForm: SuperValidated<Infer<EnrollmentSchema>> } } = $props();
 
-	const enrollmentForm = superForm(data.form, {
+	const enrollmentForm = superForm(data.enrollmentForm, {
 		validators: zod4Client(enrollmentSchema),
 		resetForm: false,
 		onResult: async ({ result }) => {
@@ -495,7 +495,26 @@
 
 					<div class="space-y-2">
 						<label class="text-sm font-medium">Turno</label>
-						<Input bind:value={patient.schoolShift} placeholder="Mañana / tarde / noche" />
+						<Select.Root type="single" bind:value={patient.schoolShift}>
+							<Select.Trigger class="h-10 w-full justify-between">
+								{#if patient.schoolShift === 'morning'}
+									Mañana
+								{:else if patient.schoolShift === 'afternoon'}
+									Tarde
+								{:else if patient.schoolShift === 'night'}
+									Noche
+								{:else}
+									Seleccionar
+								{/if}
+							</Select.Trigger>
+
+							<Select.Content>
+								<Select.Item value="morning" label="Mañana">Mañana</Select.Item>
+								<Select.Item value="afternoon" label="Tarde">Tarde</Select.Item>
+								<Select.Item value="night" label="Noche">Noche</Select.Item>
+							</Select.Content>
+						</Select.Root>
+
 						<input type="hidden" name="schoolShift" value={patient.schoolShift} />
 					</div>
 
