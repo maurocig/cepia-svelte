@@ -5,7 +5,7 @@
 </script>
 
 <div>
-	<h1>Dashboard de <strong>{data.user.email}</strong></h1>
+	<h1>Dashboard de <strong>{data.user?.email ?? 'usuario'}</strong></h1>
 </div>
 
 <Button href="/admin/pacientes/nuevo">Agregar nuevo paciente</Button>

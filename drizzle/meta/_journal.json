@@ -15,6 +15,20 @@
       "when": 1771263131822,
       "tag": "0001_lying_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771373131896,
+      "tag": "0002_safe_manta",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1771396797447,
+      "tag": "0003_round_machine_man",
+      "breakpoints": true
     }
   ]
 }

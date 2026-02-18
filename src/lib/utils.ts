@@ -20,6 +20,13 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
+export type DocumentIdType = 'CI' | 'DNI' | 'PAS' | '' | null | undefined;
+
+export function sanitizeDocumentNumber(value: string, idType: DocumentIdType): string {
+	if (idType === 'PAS') return value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+	return value.replace(/\D/g, '');
+}
+
 type FlyAndScaleParams = {
 	y?: number;
 	x?: number;

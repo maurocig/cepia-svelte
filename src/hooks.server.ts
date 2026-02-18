@@ -11,7 +11,19 @@ const authHandle: Handle = async ({ event, resolve }) => {
 
 const sessionHandle: Handle = async ({ event, resolve }) => {
 	// const t0 = performance.now();
-	const session = await auth.api.getSession({ headers: event.request.headers });
+	let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
+	for (let attempt = 1; attempt <= 2; attempt++) {
+		try {
+			session = await auth.api.getSession({ headers: event.request.headers });
+			break;
+		} catch (err) {
+			const isLastAttempt = attempt === 2;
+			console.error(`[auth] getSession failed (attempt ${attempt}/2)`, err);
+			if (!isLastAttempt) {
+				await new Promise((resolve) => setTimeout(resolve, 100));
+			}
+		}
+	}
 	// console.log('getSession ms', Math.round(performance.now() - t0));
 	event.locals.user = session?.user;
 

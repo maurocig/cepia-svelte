@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { boolean, date, index, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { boolean, date, index, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
@@ -106,6 +106,25 @@ export const enrollments = pgTable('enrollments', {
 	agreementOrganization: text('agreement_organization'),
 	agreementOtherName: text('agreement_other_name'),
 	agreementExpirationDate: date('agreement_expiration_date', { mode: 'string' }),
+
+	// titular (persona que viene a inscribir)
+	holderFirstName: text('holder_first_name').notNull().default(''),
+	holderLastName: text('holder_last_name').notNull().default(''),
+	holderIdType: text('holder_id_type'),
+	holderIdNumber: text('holder_id_number').notNull().default(''),
+	holderPhone: text('holder_phone').notNull().default(''),
+
+	// tratamientos
+	psychology: boolean('psychology').notNull().default(false),
+	psychomotricity: boolean('psychomotricity').notNull().default(false),
+	speechTherapy: boolean('speech_therapy').notNull().default(false),
+	psychopedagogy: boolean('psychopedagogy').notNull().default(false),
+	pedagogicalSupport: boolean('pedagogical_support').notNull().default(false),
+	physiotherapy: boolean('physiotherapy').notNull().default(false),
+	occupationalTherapy: boolean('occupational_therapy').notNull().default(false),
+	workshops: boolean('workshops').notNull().default(false),
+	treatmentsNotes: text('treatments_notes').notNull().default(''),
+
 	createdByUserId: text('created_by_user_id')
 		.notNull()
 		.references(() => user.id, { onDelete: 'cascade' }),
@@ -117,4 +136,40 @@ export const enrollments = pgTable('enrollments', {
 		.notNull(),
 	formStatus: text('form_status').notNull().default('draft'),
 	completedAt: timestamp('completed_at')
+});
+
+export const patients = pgTable('patients', {
+	enrollmentId: text('enrollment_id')
+		.primaryKey()
+		.references(() => enrollments.id, { onDelete: 'cascade' }),
+
+	enrolledFirstName: text('enrolled_first_name').notNull(),
+	enrolledLastName: text('enrolled_last_name').notNull(),
+	enrolledDob: date('enrolled_dob', { mode: 'string' }).notNull(),
+	enrolledIdType: text('enrolled_id_type').notNull(),
+	enrolledIdNumber: text('enrolled_id_number').notNull(),
+	enrolledAddress: text('enrolled_address').notNull(),
+
+	responsibleAdultName: text('responsible_adult_name').notNull(),
+	responsibleAdultPhone: text('responsible_adult_phone').notNull(),
+	consultationReason: text('consultation_reason').notNull(),
+
+	attendsSchool: boolean('attends_school').notNull().default(false),
+	schoolType: text('school_type'),
+	schoolName: text('school_name'),
+	schoolGrade: text('school_grade'),
+	schoolShift: text('school_shift'),
+
+	motherDob: date('mother_dob', { mode: 'string' }),
+	motherOccupation: text('mother_occupation'),
+	fatherDob: date('father_dob', { mode: 'string' }),
+	fatherOccupation: text('father_occupation'),
+	siblingsCount: integer('siblings_count'),
+	familyNotes: text('family_notes'),
+
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at')
+		.defaultNow()
+		.$onUpdate(() => new Date())
+		.notNull()
 });

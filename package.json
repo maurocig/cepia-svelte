@@ -53,6 +53,7 @@
 		"better-auth": "^1.4.18",
 		"button": "^1.1.1",
 		"clsx": "^2.1.1",
+		"country-flag-icons": "^1.6.13",
 		"dotenv": "^17.2.4",
 		"drizzle-kit": "^0.31.9",
 		"drizzle-orm": "^0.45.1",
@@ -64,7 +65,9 @@
 		"postgres": "^3.4.8",
 		"resend": "^4.1.2",
 		"shadcn-svelte": "^0.10.7",
+		"svelte-french-toast": "^1.2.0",
 		"svelte-icons": "^2.1.0",
+		"svelte-tel-input": "^3.6.1",
 		"tailwind-merge": "^2.6.0",
 		"tsx": "^4.21.0"
 	},

@@ -8,6 +8,7 @@
 		href: string;
 		label: string;
 		match?: 'exact' | 'prefix';
+		rightText?: string;
 	};
 
 	let { userEmail, links } = $props<{
@@ -33,23 +34,18 @@
 	}
 </script>
 
-<aside class="flex h-fit w-[300px] flex-col gap-2 rounded-lg bg-white/80 p-4 shadow-md">
-	<a
-		href="/admin/profile"
-		class={'flex items-center gap-4 rounded-md p-2 pb-4 text-slate-500 transition hover:bg-gray-200 ' +
-			(String($page.url.pathname) === '/admin/profile' ? 'bg-gray-200' : '')}
-	>
-		<CircleUserRoundIcon size="22" />
-		<span class="truncate">{userEmail}</span>
-	</a>
-
-	<ul class="flex flex-col gap-1 rounded-lg bg-slate-100 p-2">
+<aside
+	class="sticky flex h-fit w-[300px] flex-col gap-2 self-start rounded-lg bg-white/70 p-4 shadow-md"
+>
+	<ul class="flex flex-col gap-1">
 		{#each links as link (link.href)}
 			<li>
 				<a
 					href={link.href}
-					class={'flex items-center gap-4 rounded-md p-2 text-slate-700 transition transition hover:text-gray-500' +
-						(isActive(link) ? 'border border-slate-800/10 bg-white shadow-xs' : '')}
+					class={'flex items-center gap-4 rounded-md p-2 px-4 text-slate-700 transition hover:text-gray-500' +
+						(isActive(link)
+							? 'border border-1 border-slate-900/10 bg-slate-100 font-semibold shadow-xs'
+							: '')}
 				>
 					{#if iconKeyFor(link.href) === 'home'}
 						<HomeIcon size="22" />
@@ -64,9 +60,22 @@
 						<span class="inline-block h-[22px] w-[22px]"></span>
 					{/if}
 					<span>{link.label}</span>
+					{#if link.rightText}
+						<span class="ml-auto text-sm font-medium text-slate-500">{link.rightText}</span>
+					{/if}
 				</a>
 			</li>
 		{/each}
 	</ul>
+
+	<a
+		href="/admin/profile"
+		class={'mt-8 flex items-center gap-4 rounded-md p-2 pb-4 text-slate-500 transition hover:bg-gray-200 ' +
+			(String($page.url.pathname) === '/admin/profile' ? 'bg-gray-200' : '')}
+	>
+		<CircleUserRoundIcon size="22" />
+		<span class="truncate">{userEmail}</span>
+	</a>
+
 	<Logout />
 </aside>

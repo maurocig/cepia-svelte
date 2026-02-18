@@ -9,7 +9,7 @@
 	// `value` is an ISO date string: YYYY-MM-DD
 	// `id`/`name`/aria attributes are provided via `{...props}` from `<Form.Control>`.
 	let {
-		value = $bindable(''),
+		value = $bindable<string | undefined>(),
 		min,
 		max,
 		...props
@@ -65,10 +65,10 @@
 	}
 </script>
 
-<div class="flex flex-col gap-3">
-	{#if props.name}
-		<input type="hidden" name={props.name} {value} />
-	{/if}
+	<div class="flex flex-col gap-3">
+		{#if props.name}
+			<input type="hidden" name={props.name} value={value ?? ''} />
+		{/if}
 	<Popover.Root bind:open>
 		<Popover.Trigger id={props.id}>
 			{#snippet child({ props: triggerProps })}
