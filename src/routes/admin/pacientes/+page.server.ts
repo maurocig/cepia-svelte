@@ -18,7 +18,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 			updatedAt: enrollments.updatedAt,
 			enrolledFirstName: patients.enrolledFirstName,
 			enrolledLastName: patients.enrolledLastName,
-			enrolledIdNumber: patients.enrolledIdNumber
+			enrolledIdNumber: patients.enrolledIdNumber,
+			responsibleAdultName: patients.responsibleAdultName,
+			responsibleAdultPhone: patients.responsibleAdultPhone,
+			attendsSchool: patients.attendsSchool,
+			schoolName: patients.schoolName,
+			consultationReason: patients.consultationReason
 		})
 		.from(enrollments)
 		.innerJoin(patients, eq(patients.enrollmentId, enrollments.id))

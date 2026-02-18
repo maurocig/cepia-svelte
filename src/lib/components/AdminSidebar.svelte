@@ -44,7 +44,7 @@
 					href={link.href}
 					class={'flex items-center gap-4 rounded-md p-2 px-4 text-slate-700 transition hover:text-gray-500' +
 						(isActive(link)
-							? 'border border-1 border-slate-900/10 bg-slate-100 font-semibold shadow-xs'
+							? 'border border-1 border-slate-900/10 bg-white font-semibold shadow-xs'
 							: '')}
 				>
 					{#if iconKeyFor(link.href) === 'home'}
