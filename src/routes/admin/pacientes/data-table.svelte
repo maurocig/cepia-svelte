@@ -1,9 +1,16 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { FlexRender, createSvelteTable } from '$lib/components/ui/data-table/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
+	import {
+		defaultPatientsTableState,
+		patientsTableState
+	} from '$lib/stores/patients-table';
 	import * as Table from '$lib/components/ui/table/index.js';
+	import { get } from 'svelte/store';
 	import {
 		getCoreRowModel,
 		getFilteredRowModel,
@@ -17,31 +24,45 @@
 	import type { PatientRow } from './columns';
 
 	let { data, columns }: { data: PatientRow[]; columns: ColumnDef<PatientRow>[] } = $props();
+	const persistedState = get(patientsTableState);
 
 	let columnFilters = $state<ColumnFiltersState>([]);
-	let columnVisibility = $state<VisibilityState>({
-		responsibleAdultName: false,
-		responsibleAdultPhone: false,
-		attendsSchoolLabel: false,
-		schoolName: false,
-		consultationReason: false
-	});
+	let filterColumnId = $state(persistedState.filterColumnId ?? defaultPatientsTableState.filterColumnId);
+	let filterValue = $state(persistedState.filterValue ?? defaultPatientsTableState.filterValue);
+	let columnVisibility = $state<VisibilityState>(
+		persistedState.columnVisibility ?? defaultPatientsTableState.columnVisibility
+	);
 	let pagination = $state<PaginationState>({
 		pageIndex: 0,
 		pageSize: 10
 	});
 
 	function columnLabel(id: string) {
-		if (id === 'patientName') return 'paciente';
-		if (id === 'enrolledIdNumber') return 'documento';
-		if (id === 'statusLabel') return 'estado';
-		if (id === 'admissionDate') return 'fecha inscripción';
-		if (id === 'responsibleAdultName') return 'adulto responsable';
-		if (id === 'responsibleAdultPhone') return 'tel. responsable';
-		if (id === 'attendsSchoolLabel') return 'asiste a colegio';
-		if (id === 'schoolName') return 'centro educativo';
-		if (id === 'consultationReason') return 'motivo de consulta';
+		if (id === 'patientName') return 'Nombre';
+		if (id === 'enrolledIdNumber') return 'Documento';
+		if (id === 'statusLabel') return 'Estado';
+		if (id === 'admissionModeLabel') return 'Modo de inscripción';
+		if (id === 'admissionDate') return 'Fecha de inscripción';
+		if (id === 'responsibleAdultName') return 'Adulto responsable';
+		if (id === 'attendsSchoolLabel') return 'Asiste a colegio';
+		if (id === 'schoolName') return 'Centro educativo';
 		return id;
+	}
+
+	function getFilterableVisibleColumns() {
+		return table.getAllColumns().filter((column) => column.getCanFilter() && column.getIsVisible());
+	}
+
+	function applySingleColumnFilter(columnId: string, value: string) {
+		columnFilters = value ? [{ id: columnId, value }] : [];
+	}
+
+	function persistTableState() {
+		patientsTableState.set({
+			filterColumnId,
+			filterValue,
+			columnVisibility
+		});
 	}
 
 	const table = createSvelteTable({
@@ -65,6 +86,7 @@
 		},
 		onColumnVisibilityChange: (updater) => {
 			columnVisibility = updater instanceof Function ? updater(columnVisibility) : updater;
+			persistTableState();
 		},
 		onPaginationChange: (updater) => {
 			pagination = updater instanceof Function ? updater(pagination) : updater;
@@ -73,26 +95,63 @@
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel()
 	});
+
+	$effect(() => {
+		const visibleFilterableColumns = getFilterableVisibleColumns();
+		if (!visibleFilterableColumns.length) {
+			columnFilters = [];
+			return;
+		}
+
+		const selectedIsVisible = visibleFilterableColumns.some(
+			(column) => column.id === filterColumnId
+		);
+		if (!selectedIsVisible) {
+			filterColumnId = visibleFilterableColumns[0].id;
+			return;
+		}
+
+		applySingleColumnFilter(filterColumnId, filterValue);
+		persistTableState();
+	});
 </script>
 
 <div class="mt-4 space-y-4">
 	<div class="relative flex flex-col gap-4 sm:flex-row sm:items-center">
-		<Input
-			placeholder="Filtrar por Nombre..."
-			value={(table.getColumn('patientName')?.getFilterValue() as string) ?? ''}
-			oninput={(event: any) =>
-				table.getColumn('patientName')?.setFilterValue((event.target as HTMLInputElement).value)}
-			class="w-50 shadow-xs sm:max-w-sm"
-		/>
-		<Input
-			placeholder="Filtrar por documento..."
-			value={(table.getColumn('enrolledIdNumber')?.getFilterValue() as string) ?? ''}
-			oninput={(event: any) =>
-				table
-					.getColumn('enrolledIdNumber')
-					?.setFilterValue((event.target as HTMLInputElement).value)}
-			class="w-50 shadow-xs sm:max-w-sm"
-		/>
+		<div class="flex h-10 w-full overflow-hidden rounded-md border shadow-xs sm:w-auto">
+			<Select.Root
+				type="single"
+				bind:value={filterColumnId}
+				onValueChange={() => {
+					applySingleColumnFilter(filterColumnId, filterValue);
+					persistTableState();
+				}}
+			>
+				<Select.Trigger
+					class="mt-px h-10 w-fit items-center justify-between rounded-none border-0 border-r border-slate-200 shadow-none"
+				>
+					{columnLabel(filterColumnId)}
+				</Select.Trigger>
+				<Select.Content>
+					{#each getFilterableVisibleColumns() as column (column.id)}
+						<Select.Item value={column.id} label={columnLabel(column.id)}>
+							{columnLabel(column.id)}
+						</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+			<Input
+				placeholder={`Filtrar por ${columnLabel(filterColumnId)}...`}
+				value={filterValue}
+				oninput={(event: any) => {
+					filterValue = (event.target as HTMLInputElement).value;
+					applySingleColumnFilter(filterColumnId, filterValue);
+					persistTableState();
+				}}
+				class="h-10 w-full min-w-0 rounded-none border-0 shadow-none focus-visible:ring-0 sm:w-60 sm:flex-none"
+			/>
+		</div>
+
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger>
 				{#snippet child({ props })}
@@ -114,9 +173,10 @@
 		</DropdownMenu.Root>
 	</div>
 
-	<div class="rounded-md border shadow-sm">
-		<Table.Root>
-			<Table.Header class="bg-muted/40">
+	<div class="min-w-0 rounded-md border bg-white/90 shadow-sm">
+		<div class="max-w-full overflow-x-auto">
+			<Table.Root class="min-w-max">
+			<Table.Header class="bg-muted/80">
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 					<Table.Row>
 						{#each headerGroup.headers as header (header.id)}
@@ -135,7 +195,18 @@
 			<Table.Body>
 				{#if table.getRowModel().rows.length}
 					{#each table.getRowModel().rows as row (row.id)}
-						<Table.Row class="border-t">
+						<Table.Row
+							class="hover:bg-muted/30 cursor-pointer border-t transition-colors"
+							role="button"
+							tabindex="0"
+							onclick={() => goto(`/admin/pacientes/${row.original.enrollmentId}`)}
+							onkeydown={(event: any) => {
+								if (event.key === 'Enter' || event.key === ' ') {
+									event.preventDefault();
+									void goto(`/admin/pacientes/${row.original.enrollmentId}`);
+								}
+							}}
+						>
 							{#each row.getVisibleCells() as cell (cell.id)}
 								<Table.Cell class="px-3 py-2">
 									<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
@@ -154,7 +225,8 @@
 					</Table.Row>
 				{/if}
 			</Table.Body>
-		</Table.Root>
+			</Table.Root>
+		</div>
 	</div>
 
 	<div class="flex items-center justify-end gap-2">

@@ -20,11 +20,12 @@
 	});
 </script>
 
-<h1 class="text-xl">Pacientes</h1>
+<h1 class="text-xl font-semibold">Pacientes</h1>
 
 <DataTable data={data.patients} {columns} />
-<div class="my-4 flex min-w-full justify-center gap-3">
+
+<!-- <div class="my-4 flex min-w-full justify-center gap-3">
 	<LoadingButton href="/admin/pacientes/nuevo" preloadData="hover" loading={Boolean($navigating)}
 		><Plus size={20} /> Nuevo paciente</LoadingButton
 	>
-</div>
+</div> -->

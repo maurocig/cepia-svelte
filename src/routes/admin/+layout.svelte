@@ -20,7 +20,7 @@
 		]}
 	/>
 
-	<main class="h-fit w-full rounded-lg bg-white/70 shadow-md md:min-h-[300px] md:p-6 lg:p-8">
+	<main class="h-fit min-w-0 w-full rounded-lg bg-white/70 shadow-md md:min-h-[300px] md:p-6 lg:p-8">
 		{@render children()}
 	</main>
 </div>

@@ -1,5 +1,6 @@
 import { z } from 'zod/v4';
 import { getInvalidSupportedPhoneMessage, isValidSupportedInternationalPhone } from '$lib/phone';
+import { idTypeValues, schoolShiftValues, schoolTypeValues } from '$lib/domain/select-options';
 
 const dateYYYYMMDD = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato inválido (YYYY-MM-DD)');
 
@@ -23,7 +24,7 @@ export const patientSchema = z
 		enrolledLastName: nonEmpty('Apellido es requerido'),
 		enrolledDob: dateYYYYMMDD,
 
-		enrolledIdType: z.enum(['CI', 'DNI', 'PAS'], {
+		enrolledIdType: z.enum(idTypeValues, {
 			error: 'Tipo de documento inválido'
 		}),
 		enrolledIdNumber: nonEmpty('Número de documento es requerido'),
@@ -36,10 +37,10 @@ export const patientSchema = z
 
 		attendsSchool: checkboxBool,
 
-		schoolType: emptyToUndefined(z.enum(['kindergarten', 'primary', 'secondary']).optional()),
+		schoolType: emptyToUndefined(z.enum(schoolTypeValues).optional()),
 		schoolName: z.string().optional().or(z.literal('')),
 		schoolGrade: emptyToUndefined(z.enum(['1', '2', '3', '4', '5', '6']).optional()),
-		schoolShift: emptyToUndefined(z.enum(['morning', 'afternoon', 'night']).optional()),
+		schoolShift: emptyToUndefined(z.enum(schoolShiftValues).optional()),
 
 		// núcleo familiar
 		motherDob: dateYYYYMMDD.optional().or(z.literal('')),

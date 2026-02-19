@@ -23,8 +23,8 @@
 
 <AlertDialog.Root>
 	<AlertDialog.Trigger
-		class={buttonVariants({ variant: 'outline' }) +
-			'mt-4 w-full justify-start font-extralight text-gray-500 hover:cursor-pointer'}
+		class={buttonVariants({ variant: 'ghost' }) +
+			'mt-4 w-full justify-start border border-transparent font-normal text-gray-500 hover:cursor-pointer hover:border-slate-300'}
 		disabled={loading}
 	>
 		<LogOutIcon size="22" class="mr-2" />

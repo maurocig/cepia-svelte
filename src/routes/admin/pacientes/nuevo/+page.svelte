@@ -10,6 +10,14 @@
 	import { PhoneInput } from '$lib/components/ui/phone-input/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import {
+		admissionModeOptions,
+		agreementOrganizationOptions,
+		getOptionLabel,
+		idTypeOptions,
+		schoolShiftOptions,
+		schoolTypeOptions
+	} from '$lib/domain/select-options';
 	import { sanitizeDocumentNumber } from '$lib/utils.js';
 	import DatePicker from '@/components/DatePicker.svelte';
 	import Checkbox from '@/components/ui/checkbox/checkbox.svelte';
@@ -272,17 +280,18 @@
 								}}
 							>
 								<Select.Trigger {...props} class="h-10 w-full justify-between">
-									{#if $enrollmentData.admissionMode === 'private'}
-										Particular
-									{:else if $enrollmentData.admissionMode === 'agreement'}
-										Convenio
-									{:else}
-										Seleccionar
-									{/if}
+									{getOptionLabel(
+										admissionModeOptions,
+										$enrollmentData.admissionMode,
+										'Seleccionar'
+									)}
 								</Select.Trigger>
 								<Select.Content>
-									<Select.Item value="private" label="Particular">Particular</Select.Item>
-									<Select.Item value="agreement" label="Convenio">Convenio</Select.Item>
+									{#each admissionModeOptions as option (option.value)}
+										<Select.Item value={option.value} label={option.label}
+											>{option.label}</Select.Item
+										>
+									{/each}
 								</Select.Content>
 							</Select.Root>
 							<input type="hidden" name="admissionMode" value={$enrollmentData.admissionMode} />
@@ -310,29 +319,18 @@
 									}}
 								>
 									<Select.Trigger {...props} class="h-10 w-full justify-between">
-										{#if $enrollmentData.agreementOrganization === 'BPS'}
-											Banco de Previsión Social
-										{:else if $enrollmentData.agreementOrganization === 'militarTutorship'}
-											Tutela militar
-										{:else if $enrollmentData.agreementOrganization === 'policeTutorship'}
-											Tutela policial
-										{:else if $enrollmentData.agreementOrganization === 'other'}
-											Otro
-										{:else}
-											Seleccionar
-										{/if}
+										{getOptionLabel(
+											agreementOrganizationOptions,
+											$enrollmentData.agreementOrganization,
+											'Seleccionar'
+										)}
 									</Select.Trigger>
 									<Select.Content>
-										<Select.Item value="BPS" label="Banco de Previsión Social">
-											Banco de Previsión Social
-										</Select.Item>
-										<Select.Item value="militarTutorship" label="Tutela militar">
-											Tutela militar
-										</Select.Item>
-										<Select.Item value="policeTutorship" label="Tutela policial">
-											Tutela policial
-										</Select.Item>
-										<Select.Item value="other" label="Otro">Otro</Select.Item>
+										{#each agreementOrganizationOptions as option (option.value)}
+											<Select.Item value={option.value} label={option.label}
+												>{option.label}</Select.Item
+											>
+										{/each}
 									</Select.Content>
 								</Select.Root>
 								<input
@@ -429,14 +427,14 @@
 							<Form.Label>Tipo de documento</Form.Label>
 							<Select.Root type="single" bind:value={$enrollmentData.holderIdType}>
 								<Select.Trigger {...props} class="h-10 w-full justify-between">
-									{$enrollmentData.holderIdType === 'PAS'
-										? 'Pasaporte'
-										: $enrollmentData.holderIdType || 'Seleccionar'}
+									{getOptionLabel(idTypeOptions, $enrollmentData.holderIdType, 'Seleccionar')}
 								</Select.Trigger>
 								<Select.Content>
-									<Select.Item value="CI" label="CI">CI</Select.Item>
-									<Select.Item value="DNI" label="DNI">DNI</Select.Item>
-									<Select.Item value="PAS" label="Pasaporte">Pasaporte</Select.Item>
+									{#each idTypeOptions as option (option.value)}
+										<Select.Item value={option.value} label={option.label}
+											>{option.label}</Select.Item
+										>
+									{/each}
 								</Select.Content>
 							</Select.Root>
 							<input type="hidden" name="holderIdType" value={$enrollmentData.holderIdType} />
@@ -629,16 +627,14 @@
 							<Form.Label>Tipo de documento</Form.Label>
 							<Select.Root type="single" bind:value={$patientData.enrolledIdType}>
 								<Select.Trigger {...props} class="h-10 w-full justify-between">
-									{#if $patientData.enrolledIdType}
-										{$patientData.enrolledIdType}
-									{:else}
-										Seleccionar
-									{/if}
+									{getOptionLabel(idTypeOptions, $patientData.enrolledIdType, 'Seleccionar')}
 								</Select.Trigger>
 								<Select.Content>
-									<Select.Item value="CI" label="CI">CI</Select.Item>
-									<Select.Item value="DNI" label="DNI">DNI</Select.Item>
-									<Select.Item value="PAS" label="Pasaporte">Pasaporte</Select.Item>
+									{#each idTypeOptions as option (option.value)}
+										<Select.Item value={option.value} label={option.label}
+											>{option.label}</Select.Item
+										>
+									{/each}
 								</Select.Content>
 							</Select.Root>
 							<input type="hidden" name="enrolledIdType" value={$patientData.enrolledIdType} />
@@ -779,20 +775,14 @@
 									}}
 								>
 									<Select.Trigger {...props} class="h-10 w-full justify-between">
-										{#if $patientData.schoolType === 'kindergarten'}
-											Preescolar
-										{:else if $patientData.schoolType === 'primary'}
-											Escolar
-										{:else if $patientData.schoolType === 'secondary'}
-											Liceal
-										{:else}
-											Seleccionar
-										{/if}
+										{getOptionLabel(schoolTypeOptions, $patientData.schoolType, 'Seleccionar')}
 									</Select.Trigger>
 									<Select.Content>
-										<Select.Item value="kindergarten" label="Jardín">Preescolar</Select.Item>
-										<Select.Item value="primary" label="Escuela">Escolar</Select.Item>
-										<Select.Item value="secondary" label="Liceo">Liceal</Select.Item>
+										{#each schoolTypeOptions as option (option.value)}
+											<Select.Item value={option.value} label={option.label}
+												>{option.label}</Select.Item
+											>
+										{/each}
 									</Select.Content>
 								</Select.Root>
 								<input type="hidden" name="schoolType" value={$patientData.schoolType} />
@@ -841,20 +831,14 @@
 								<Form.Label>Turno</Form.Label>
 								<Select.Root type="single" bind:value={$patientData.schoolShift}>
 									<Select.Trigger {...props} class="h-10 w-full justify-between">
-										{#if $patientData.schoolShift === 'morning'}
-											Mañana
-										{:else if $patientData.schoolShift === 'afternoon'}
-											Tarde
-										{:else if $patientData.schoolShift === 'night'}
-											Noche
-										{:else}
-											Seleccionar
-										{/if}
+										{getOptionLabel(schoolShiftOptions, $patientData.schoolShift, 'Seleccionar')}
 									</Select.Trigger>
 									<Select.Content>
-										<Select.Item value="morning" label="Mañana">Mañana</Select.Item>
-										<Select.Item value="afternoon" label="Tarde">Tarde</Select.Item>
-										<Select.Item value="night" label="Noche">Noche</Select.Item>
+										{#each schoolShiftOptions as option (option.value)}
+											<Select.Item value={option.value} label={option.label}
+												>{option.label}</Select.Item
+											>
+										{/each}
 									</Select.Content>
 								</Select.Root>
 								<input type="hidden" name="schoolShift" value={$patientData.schoolShift} />

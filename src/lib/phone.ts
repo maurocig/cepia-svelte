@@ -1,4 +1,17 @@
-export type PhoneCountryCode = 'UY' | 'AR' | 'BR' | 'CL' | 'US';
+export type PhoneCountryCode =
+	| 'AR'
+	| 'BO'
+	| 'BR'
+	| 'CL'
+	| 'CO'
+	| 'EC'
+	| 'GY'
+	| 'PY'
+	| 'PE'
+	| 'SR'
+	| 'UY'
+	| 'VE'
+	| 'US';
 
 type PhoneCountryMeta = {
 	code: PhoneCountryCode;
@@ -13,24 +26,24 @@ type PhoneCountryMeta = {
 
 export const phoneCountries: PhoneCountryMeta[] = [
 	{
-		code: 'UY',
-		name: 'Uruguay',
-		label: 'UY +598',
-		dialCode: '598',
-		nationalMin: 8,
-		nationalMax: 8,
-		groupSizes: [2, 3, 3],
-		example: '+59899123456'
-	},
-	{
 		code: 'AR',
 		name: 'Argentina',
 		label: 'AR +54',
 		dialCode: '54',
 		nationalMin: 10,
-		nationalMax: 10,
+		nationalMax: 11,
 		groupSizes: [2, 4, 4],
 		example: '+5491122334455'
+	},
+	{
+		code: 'BO',
+		name: 'Bolivia',
+		label: 'BO +591',
+		dialCode: '591',
+		nationalMin: 8,
+		nationalMax: 8,
+		groupSizes: [2, 3, 3],
+		example: '+59171234567'
 	},
 	{
 		code: 'BR',
@@ -51,6 +64,86 @@ export const phoneCountries: PhoneCountryMeta[] = [
 		nationalMax: 9,
 		groupSizes: [1, 4, 4],
 		example: '+56991234567'
+	},
+	{
+		code: 'CO',
+		name: 'Colombia',
+		label: 'CO +57',
+		dialCode: '57',
+		nationalMin: 10,
+		nationalMax: 10,
+		groupSizes: [3, 3, 4],
+		example: '+573001234567'
+	},
+	{
+		code: 'EC',
+		name: 'Ecuador',
+		label: 'EC +593',
+		dialCode: '593',
+		nationalMin: 9,
+		nationalMax: 9,
+		groupSizes: [2, 3, 4],
+		example: '+593991234567'
+	},
+	{
+		code: 'GY',
+		name: 'Guyana',
+		label: 'GY +592',
+		dialCode: '592',
+		nationalMin: 7,
+		nationalMax: 7,
+		groupSizes: [3, 4],
+		example: '+5926123456'
+	},
+	{
+		code: 'PY',
+		name: 'Paraguay',
+		label: 'PY +595',
+		dialCode: '595',
+		nationalMin: 9,
+		nationalMax: 9,
+		groupSizes: [3, 3, 3],
+		example: '+595981234567'
+	},
+	{
+		code: 'PE',
+		name: 'Perú',
+		label: 'PE +51',
+		dialCode: '51',
+		nationalMin: 9,
+		nationalMax: 9,
+		groupSizes: [3, 3, 3],
+		example: '+51912345678'
+	},
+	{
+		code: 'SR',
+		name: 'Surinam',
+		label: 'SR +597',
+		dialCode: '597',
+		nationalMin: 7,
+		nationalMax: 7,
+		groupSizes: [3, 4],
+		example: '+5978123456'
+	},
+	{
+		code: 'UY',
+		name: 'Uruguay',
+		label: 'UY +598',
+		dialCode: '598',
+		nationalMin: 8,
+		nationalMax: 8,
+		groupSizes: [2, 3, 3],
+		example: '+59899123456'
+	},
+	{
+		code: 'VE',
+		name: 'Venezuela',
+		label: 'VE +58',
+		dialCode: '58',
+		nationalMin: 10,
+		nationalMax: 10,
+		groupSizes: [3, 3, 4],
+		example: '+584121234567'
 	},
 	{
 		code: 'US',

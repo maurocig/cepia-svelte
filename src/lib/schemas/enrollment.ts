@@ -1,5 +1,11 @@
 import { z } from 'zod/v4';
 import { getInvalidSupportedPhoneMessage, isValidSupportedInternationalPhone } from '$lib/phone';
+import {
+	admissionModeValues,
+	agreementOrganizationValues,
+	enrollmentStatusValues,
+	idTypeValues
+} from '$lib/domain/select-options';
 
 const nonEmpty = (msg: string) => z.string().trim().min(1, msg);
 
@@ -11,16 +17,10 @@ const checkboxBool = z.preprocess((v) => {
 	return s === 'true' || s === 'on' || s === '1';
 }, z.boolean());
 
-export const idTypeOptions = ['CI', 'DNI', 'PAS'] as const;
-
-export const enrollmentStatusOptions = ['active', 'inactive'] as const;
-export const admissionModeOptions = ['private', 'agreement'] as const;
-export const agreementOrganizationOptions = [
-	'BPS',
-	'militarTutorship',
-	'policeTutorship',
-	'other'
-] as const;
+export const idTypeOptions = idTypeValues;
+export const enrollmentStatusOptions = enrollmentStatusValues;
+export const admissionModeOptions = admissionModeValues;
+export const agreementOrganizationOptions = agreementOrganizationValues;
 
 export const enrollmentSchema = z
 	.object({

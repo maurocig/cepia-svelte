@@ -2,6 +2,7 @@ import { enrollmentSchema } from '$lib/schemas/enrollment';
 import { patientSchema } from '$lib/schemas/patient';
 import { db } from '$lib/server/db';
 import { enrollments, patients } from '$lib/server/db/schema';
+import { formatPersonName, normalizeWhitespace } from '$lib/utils';
 import { fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
@@ -89,6 +90,15 @@ export const actions: Actions = {
 				if (v == null || v === '') return null;
 				return v;
 			};
+			const normalizeText = (v: string) => normalizeWhitespace(v);
+			const normalizeOptionalText = (v?: string | null) => {
+				if (v == null || v === '') return null;
+				return normalizeWhitespace(v);
+			};
+			const normalizeOptionalName = (v?: string | null) => {
+				if (v == null || v === '') return null;
+				return formatPersonName(v);
+			};
 
 			try {
 				await db.transaction(async (tx) => {
@@ -109,50 +119,50 @@ export const actions: Actions = {
 						.insert(patients)
 						.values({
 							enrollmentId,
-							enrolledFirstName: patientForm.data.enrolledFirstName,
-							enrolledLastName: patientForm.data.enrolledLastName,
+							enrolledFirstName: normalizeText(patientForm.data.enrolledFirstName),
+							enrolledLastName: normalizeText(patientForm.data.enrolledLastName),
 							enrolledDob: patientForm.data.enrolledDob,
 							enrolledIdType: patientForm.data.enrolledIdType,
 							enrolledIdNumber: patientForm.data.enrolledIdNumber,
-							enrolledAddress: patientForm.data.enrolledAddress,
-							responsibleAdultName: patientForm.data.responsibleAdultName,
+							enrolledAddress: normalizeText(patientForm.data.enrolledAddress),
+							responsibleAdultName: normalizeText(patientForm.data.responsibleAdultName),
 							responsibleAdultPhone: patientForm.data.responsibleAdultPhone,
-							consultationReason: patientForm.data.consultationReason,
+							consultationReason: normalizeText(patientForm.data.consultationReason),
 							attendsSchool: patientForm.data.attendsSchool,
-							schoolType: emptyToNull(patientForm.data.schoolType ?? null),
-							schoolName: emptyToNull(patientForm.data.schoolName),
+							schoolType: normalizeOptionalText(patientForm.data.schoolType ?? null),
+							schoolName: normalizeOptionalName(patientForm.data.schoolName),
 							schoolGrade: emptyToNull(patientForm.data.schoolGrade ?? null),
-							schoolShift: emptyToNull(patientForm.data.schoolShift ?? null),
+							schoolShift: normalizeOptionalText(patientForm.data.schoolShift ?? null),
 							motherDob: emptyToNull(patientForm.data.motherDob),
-							motherOccupation: emptyToNull(patientForm.data.motherOccupation),
+							motherOccupation: normalizeOptionalText(patientForm.data.motherOccupation),
 							fatherDob: emptyToNull(patientForm.data.fatherDob),
-							fatherOccupation: emptyToNull(patientForm.data.fatherOccupation),
+							fatherOccupation: normalizeOptionalText(patientForm.data.fatherOccupation),
 							siblingsCount: patientForm.data.siblingsCount ?? null,
-							familyNotes: emptyToNull(patientForm.data.familyNotes)
+							familyNotes: normalizeOptionalText(patientForm.data.familyNotes)
 						})
 						.onConflictDoUpdate({
 							target: patients.enrollmentId,
 							set: {
-								enrolledFirstName: patientForm.data.enrolledFirstName,
-								enrolledLastName: patientForm.data.enrolledLastName,
+								enrolledFirstName: normalizeText(patientForm.data.enrolledFirstName),
+								enrolledLastName: normalizeText(patientForm.data.enrolledLastName),
 								enrolledDob: patientForm.data.enrolledDob,
 								enrolledIdType: patientForm.data.enrolledIdType,
 								enrolledIdNumber: patientForm.data.enrolledIdNumber,
-								enrolledAddress: patientForm.data.enrolledAddress,
-								responsibleAdultName: patientForm.data.responsibleAdultName,
+								enrolledAddress: normalizeText(patientForm.data.enrolledAddress),
+								responsibleAdultName: normalizeText(patientForm.data.responsibleAdultName),
 								responsibleAdultPhone: patientForm.data.responsibleAdultPhone,
-								consultationReason: patientForm.data.consultationReason,
+								consultationReason: normalizeText(patientForm.data.consultationReason),
 								attendsSchool: patientForm.data.attendsSchool,
-								schoolType: emptyToNull(patientForm.data.schoolType ?? null),
-								schoolName: emptyToNull(patientForm.data.schoolName),
+								schoolType: normalizeOptionalText(patientForm.data.schoolType ?? null),
+								schoolName: normalizeOptionalName(patientForm.data.schoolName),
 								schoolGrade: emptyToNull(patientForm.data.schoolGrade ?? null),
-								schoolShift: emptyToNull(patientForm.data.schoolShift ?? null),
+								schoolShift: normalizeOptionalText(patientForm.data.schoolShift ?? null),
 								motherDob: emptyToNull(patientForm.data.motherDob),
-								motherOccupation: emptyToNull(patientForm.data.motherOccupation),
+								motherOccupation: normalizeOptionalText(patientForm.data.motherOccupation),
 								fatherDob: emptyToNull(patientForm.data.fatherDob),
-								fatherOccupation: emptyToNull(patientForm.data.fatherOccupation),
+								fatherOccupation: normalizeOptionalText(patientForm.data.fatherOccupation),
 								siblingsCount: patientForm.data.siblingsCount ?? null,
-								familyNotes: emptyToNull(patientForm.data.familyNotes),
+								familyNotes: normalizeOptionalText(patientForm.data.familyNotes),
 								updatedAt: new Date()
 							}
 						});
@@ -180,6 +190,15 @@ export const actions: Actions = {
 		// Normalize empty strings to null (preserves literal unions)
 		const emptyToNull = <T extends string>(v: T | null): Exclude<T, ''> | null =>
 			v === '' ? null : (v as Exclude<T, ''>);
+		const normalizeText = (v: string) => normalizeWhitespace(v);
+		const normalizeOptionalText = <T extends string>(v: T | null): Exclude<T, ''> | null => {
+			if (v === '' || v == null) return null;
+			return normalizeWhitespace(v) as Exclude<T, ''>;
+		};
+		const normalizeOptionalName = <T extends string>(v: T | null): Exclude<T, ''> | null => {
+			if (v === '' || v == null) return null;
+			return formatPersonName(v) as Exclude<T, ''>;
+		};
 
 		// Build a DB payload (Drizzle table property names)
 		// If we have an enrollmentId already, we update that row instead of creating a new one.
@@ -191,12 +210,12 @@ export const actions: Actions = {
 			admissionDate: enrollmentForm.data.admissionDate,
 			admissionMode: enrollmentForm.data.admissionMode ?? null,
 			agreementOrganization: emptyToNull(enrollmentForm.data.agreementOrganization),
-			agreementOtherName: emptyToNull(enrollmentForm.data.agreementOtherName),
+			agreementOtherName: normalizeOptionalName(enrollmentForm.data.agreementOtherName),
 			agreementExpirationDate: emptyToNull(enrollmentForm.data.agreementExpirationDate),
 
 			// titular
-			holderFirstName: enrollmentForm.data.holderFirstName,
-			holderLastName: enrollmentForm.data.holderLastName,
+			holderFirstName: normalizeText(enrollmentForm.data.holderFirstName),
+			holderLastName: normalizeText(enrollmentForm.data.holderLastName),
 			holderIdType: emptyToNull(enrollmentForm.data.holderIdType),
 			holderIdNumber: enrollmentForm.data.holderIdNumber,
 			holderPhone: enrollmentForm.data.holderPhone,

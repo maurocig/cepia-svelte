@@ -3,6 +3,8 @@
 	import { CircleUserRoundIcon, HomeIcon, PlusIcon, UserIcon, UsersIcon } from 'lucide-svelte';
 	import type { Snippet } from 'svelte';
 	import Logout from './Logout.svelte';
+	import { buttonVariants } from './ui/button';
+	import Button from './ui/button/button.svelte';
 
 	export type AdminNavLink = {
 		href: string;
@@ -35,7 +37,7 @@
 </script>
 
 <aside
-	class="sticky flex h-fit w-[300px] flex-col gap-2 self-start rounded-lg bg-white/70 p-4 shadow-md"
+	class="sticky flex h-fit w-[300px] flex-col gap-2 self-start rounded-lg bg-slate-50/70 p-4 shadow-md"
 >
 	<ul class="flex flex-col gap-1">
 		{#each links as link (link.href)}
@@ -68,14 +70,16 @@
 		{/each}
 	</ul>
 
-	<a
+	<div class="my-4"></div>
+
+	<Button
 		href="/admin/profile"
-		class={'mt-8 flex items-center gap-4 rounded-md p-2 pb-4 text-slate-500 transition hover:bg-gray-200 ' +
-			(String($page.url.pathname) === '/admin/profile' ? 'bg-gray-200' : '')}
+		class={buttonVariants({ variant: 'ghost' }) +
+			'flex w-full justify-start gap-2 border border-transparent bg-transparent font-normal text-gray-500 hover:cursor-pointer hover:border-slate-300'}
 	>
 		<CircleUserRoundIcon size="22" />
 		<span class="truncate">{userEmail}</span>
-	</a>
+	</Button>
 
 	<Logout />
 </aside>

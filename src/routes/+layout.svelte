@@ -15,7 +15,7 @@
 	let { children } = $props();
 </script>
 
-<div class="slate-200 w-full bg-slate-100 text-gray-700">
+<div class="slate-200 w-full bg-slate-200/80 text-gray-700">
 	<Nav
 		links={[
 			{ name: 'Inicio', href: '/' },

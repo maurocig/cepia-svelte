@@ -27,6 +27,28 @@ export function sanitizeDocumentNumber(value: string, idType: DocumentIdType): s
 	return value.replace(/\D/g, '');
 }
 
+export function normalizeWhitespace(value: string): string {
+	return value.trim().replace(/\s+/g, ' ');
+}
+
+export function toTitleCase(value: string): string {
+	const lower = value.toLocaleLowerCase('es-UY');
+	return lower.replace(/(^|[\s'’-])([a-záéíóúüñ])/giu, (match, prefix, letter) => {
+		return `${prefix}${letter.toLocaleUpperCase('es-UY')}`;
+	});
+}
+
+export function formatPersonName(value: string): string {
+	return toTitleCase(normalizeWhitespace(value));
+}
+
+export function formatDateUy(date?: string | null): string {
+	if (!date) return '-';
+	const [year, month, day] = date.split('-').map((v) => Number(v));
+	if (!year || !month || !day) return '-';
+	return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+}
+
 type FlyAndScaleParams = {
 	y?: number;
 	x?: number;
