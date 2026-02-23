@@ -1,6 +1,7 @@
 import { z } from 'zod/v4';
 import { getInvalidSupportedPhoneMessage, isValidSupportedInternationalPhone } from '$lib/phone';
 import { idTypeValues, schoolShiftValues, schoolTypeValues } from '$lib/domain/select-options';
+import { todayYyyyMmDd } from '$lib/utils';
 
 const dateYYYYMMDD = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato inválido (YYYY-MM-DD)');
 
@@ -89,6 +90,29 @@ export const patientSchema = z
 		}
 	)
 	.superRefine((d, ctx) => {
+		const today = todayYyyyMmDd();
+		if (d.enrolledDob > today) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['enrolledDob'],
+				message: 'La fecha de nacimiento no puede ser futura'
+			});
+		}
+		if (d.motherDob && d.motherDob > today) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['motherDob'],
+				message: 'La fecha de nacimiento no puede ser futura'
+			});
+		}
+		if (d.fatherDob && d.fatherDob > today) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['fatherDob'],
+				message: 'La fecha de nacimiento no puede ser futura'
+			});
+		}
+
 		if (d.responsibleAdultPhone.trim() && !isValidSupportedInternationalPhone(d.responsibleAdultPhone)) {
 			ctx.addIssue({
 				code: 'custom',

@@ -49,6 +49,39 @@ export function formatDateUy(date?: string | null): string {
 	return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
 }
 
+export function todayYyyyMmDd(): string {
+	const now = new Date();
+	const yyyy = now.getFullYear();
+	const mm = String(now.getMonth() + 1).padStart(2, '0');
+	const dd = String(now.getDate()).padStart(2, '0');
+	return `${yyyy}-${mm}-${dd}`;
+}
+
+export function ageFromDob(dob?: string | null): number | null {
+	if (!dob) return null;
+	const [year, month, day] = dob.split('-').map((v) => Number(v));
+	if (!year || !month || !day) return null;
+
+	const today = new Date();
+	let age = today.getFullYear() - year;
+	const hasHadBirthday =
+		today.getMonth() + 1 > month || (today.getMonth() + 1 === month && today.getDate() >= day);
+	if (!hasHadBirthday) age -= 1;
+
+	return age >= 0 ? age : null;
+}
+
+export const treatmentLabels = [
+	['psychology', 'Psicología'],
+	['psychomotricity', 'Psicomotricidad'],
+	['speechTherapy', 'Fonoaudiología'],
+	['psychopedagogy', 'Psicopedagogía'],
+	['pedagogicalSupport', 'Apoyo pedagógico'],
+	['physiotherapy', 'Fisioterapia'],
+	['occupationalTherapy', 'Terapia ocupacional'],
+	['workshops', 'Talleres']
+] as const;
+
 type FlyAndScaleParams = {
 	y?: number;
 	x?: number;

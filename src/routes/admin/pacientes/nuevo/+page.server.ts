@@ -204,14 +204,18 @@ export const actions: Actions = {
 		// If we have an enrollmentId already, we update that row instead of creating a new one.
 		const effectiveEnrollmentId = enrollmentId ?? nanoid();
 
-		const normalized = {
-			id: effectiveEnrollmentId,
-			status: enrollmentForm.data.enrollmentStatus,
-			admissionDate: enrollmentForm.data.admissionDate,
-			admissionMode: enrollmentForm.data.admissionMode ?? null,
-			agreementOrganization: emptyToNull(enrollmentForm.data.agreementOrganization),
-			agreementOtherName: normalizeOptionalName(enrollmentForm.data.agreementOtherName),
-			agreementExpirationDate: emptyToNull(enrollmentForm.data.agreementExpirationDate),
+			const normalized = {
+				id: effectiveEnrollmentId,
+				status: enrollmentForm.data.enrollmentStatus,
+				admissionDate: enrollmentForm.data.admissionDate,
+				admissionMode: enrollmentForm.data.admissionMode ?? null,
+				agreementOrganization: emptyToNull(enrollmentForm.data.agreementOrganization),
+				agreementOtherName: normalizeOptionalName(enrollmentForm.data.agreementOtherName),
+				agreementExpirationDate:
+					enrollmentForm.data.admissionMode === 'agreement' &&
+					enrollmentForm.data.agreementOrganization === 'BPS'
+						? emptyToNull(enrollmentForm.data.agreementExpirationDate)
+						: null,
 
 			// titular
 			holderFirstName: normalizeText(enrollmentForm.data.holderFirstName),

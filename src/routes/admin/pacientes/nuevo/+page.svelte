@@ -316,6 +316,9 @@
 										if (v !== 'other') {
 											$enrollmentData.agreementOtherName = '';
 										}
+										if (v !== 'BPS') {
+											$enrollmentData.agreementExpirationDate = '';
+										}
 									}}
 								>
 									<Select.Trigger {...props} class="h-10 w-full justify-between">
@@ -370,26 +373,28 @@
 						</Form.Field>
 					{/if}
 
-					<!-- Vencimiento del convenio -->
-					<Form.Field form={enrollmentForm} name="agreementExpirationDate">
-						<Form.Control>
-							{#snippet children({ props }: { props: Record<string, any> })}
-								<Form.Label>Vencimiento del convenio</Form.Label>
-								<DatePicker min="today" bind:value={$enrollmentData.agreementExpirationDate} />
-								<input
-									type="hidden"
-									name="agreementExpirationDate"
-									value={$enrollmentData.agreementExpirationDate}
-								/>
-							{/snippet}
-						</Form.Control>
-						<!-- <Form.Description
-								>Fecha hasta la cual el convenio se encuentra vigente.</Form.Description
-							> -->
-						<Form.FieldErrors />
-					</Form.Field>
-				{/if}
-			</div>
+						{#if $enrollmentData.agreementOrganization === 'BPS'}
+							<!-- Vencimiento del convenio -->
+							<Form.Field form={enrollmentForm} name="agreementExpirationDate">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Form.Label>Vencimiento del convenio</Form.Label>
+										<DatePicker min="today" bind:value={$enrollmentData.agreementExpirationDate} />
+										<input
+											type="hidden"
+											name="agreementExpirationDate"
+											value={$enrollmentData.agreementExpirationDate}
+										/>
+									{/snippet}
+								</Form.Control>
+								<!-- <Form.Description
+										>Fecha hasta la cual el convenio se encuentra vigente.</Form.Description
+									> -->
+								<Form.FieldErrors />
+							</Form.Field>
+						{/if}
+					{/if}
+				</div>
 
 			<h2 class="mt-6 mb-3 text-base font-semibold">Información del Titular</h2>
 			<div class="mb-4 grid gap-3 md:grid-cols-2 md:gap-4">

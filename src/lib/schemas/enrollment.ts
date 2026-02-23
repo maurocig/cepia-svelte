@@ -6,6 +6,7 @@ import {
 	enrollmentStatusValues,
 	idTypeValues
 } from '$lib/domain/select-options';
+import { todayYyyyMmDd } from '$lib/utils';
 
 const nonEmpty = (msg: string) => z.string().trim().min(1, msg);
 
@@ -86,11 +87,12 @@ export const enrollmentSchema = z
 	.refine(
 		(data) => {
 			if (data.admissionMode !== 'agreement') return true;
+			if (data.agreementOrganization !== 'BPS') return true;
 			return Boolean(data.agreementExpirationDate);
 		},
 		{
 			path: ['agreementExpirationDate'],
-			message: 'Ingresá la fecha de vencimiento del convenio'
+			message: 'Ingresá la fecha de vencimiento del convenio BPS'
 		}
 	)
 	.refine(
@@ -149,6 +151,28 @@ export const enrollmentSchema = z
 		}
 	)
 	.superRefine((data, ctx) => {
+		const today = todayYyyyMmDd();
+		if (data.admissionDate && data.admissionDate > today) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['admissionDate'],
+				message: 'La fecha de inscripción no puede ser futura'
+			});
+		}
+
+		if (
+			data.admissionMode === 'agreement' &&
+			data.agreementOrganization === 'BPS' &&
+			data.agreementExpirationDate &&
+			data.agreementExpirationDate < today
+		) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['agreementExpirationDate'],
+				message: 'La fecha de vencimiento no puede ser anterior a hoy'
+			});
+		}
+
 		if (!data.holderPhone.trim()) return;
 		if (isValidSupportedInternationalPhone(data.holderPhone)) return;
 		ctx.addIssue({
