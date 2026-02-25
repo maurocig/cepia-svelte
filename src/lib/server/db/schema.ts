@@ -147,7 +147,7 @@ export const patients = pgTable('patients', {
 	enrolledLastName: text('enrolled_last_name').notNull(),
 	enrolledDob: date('enrolled_dob', { mode: 'string' }).notNull(),
 	enrolledIdType: text('enrolled_id_type').notNull(),
-	enrolledIdNumber: text('enrolled_id_number').notNull(),
+	enrolledIdNumber: text('enrolled_id_number').notNull().unique(),
 	enrolledAddress: text('enrolled_address').notNull(),
 
 	responsibleAdultName: text('responsible_adult_name').notNull(),

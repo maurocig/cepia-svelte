@@ -7,6 +7,7 @@ import {
 	treatmentsEditSchema
 } from '$lib/schemas/edit-sections';
 import { db } from '$lib/server/db';
+import { isDuplicatePatientDocumentError } from '$lib/server/db/errors';
 import { enrollments, patients } from '$lib/server/db/schema';
 import {
 	formatPersonName,
@@ -200,21 +201,35 @@ export const actions: Actions = {
 			return fail(400, { patientEditForm });
 		}
 
-		await db
-			.update(patients)
-			.set({
-				enrolledFirstName: formatPersonName(patientEditForm.data.enrolledFirstName),
-				enrolledLastName: formatPersonName(patientEditForm.data.enrolledLastName),
-				enrolledIdType: patientEditForm.data.enrolledIdType,
-				enrolledIdNumber: sanitizeDocumentNumber(
-					patientEditForm.data.enrolledIdNumber,
-					patientEditForm.data.enrolledIdType as DocumentIdType
-				),
-				enrolledDob: patientEditForm.data.enrolledDob,
-				enrolledAddress: normalizeWhitespace(patientEditForm.data.enrolledAddress),
-				consultationReason: normalizeWhitespace(patientEditForm.data.consultationReason)
-			})
-			.where(eq(patients.enrollmentId, enrollmentId));
+		try {
+			await db
+				.update(patients)
+				.set({
+					enrolledFirstName: formatPersonName(patientEditForm.data.enrolledFirstName),
+					enrolledLastName: formatPersonName(patientEditForm.data.enrolledLastName),
+					enrolledIdType: patientEditForm.data.enrolledIdType,
+					enrolledIdNumber: sanitizeDocumentNumber(
+						patientEditForm.data.enrolledIdNumber,
+						patientEditForm.data.enrolledIdType as DocumentIdType
+					),
+					enrolledDob: patientEditForm.data.enrolledDob,
+					enrolledAddress: normalizeWhitespace(patientEditForm.data.enrolledAddress),
+					consultationReason: normalizeWhitespace(patientEditForm.data.consultationReason)
+				})
+				.where(eq(patients.enrollmentId, enrollmentId));
+		} catch (err) {
+			if (isDuplicatePatientDocumentError(err)) {
+				patientEditForm.valid = false;
+				patientEditForm.errors.enrolledIdNumber = ['Ya existe un paciente con ese documento'];
+				return fail(400, { patientEditForm });
+			}
+
+			console.error('[editar paciente] update patient error', err);
+			return fail(500, {
+				patientEditForm,
+				message: 'No se pudieron guardar los cambios.'
+			});
+		}
 
 		return { success: true, patientEditForm };
 	},

@@ -20,6 +20,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			enrolledFirstName: patients.enrolledFirstName,
 			enrolledLastName: patients.enrolledLastName,
 			enrolledIdNumber: patients.enrolledIdNumber,
+			holderFirstName: enrollments.holderFirstName,
+			holderLastName: enrollments.holderLastName,
 			responsibleAdultName: patients.responsibleAdultName,
 			responsibleAdultPhone: patients.responsibleAdultPhone,
 			attendsSchool: patients.attendsSchool,

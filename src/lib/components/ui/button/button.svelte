@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { Button as ButtonPrimitive } from "bits-ui";
-	import { type Events, type Props, buttonVariants } from "./index.js";
+	import { type VariantProps } from "tailwind-variants";
+	import { buttonVariants } from "./index.js";
 	import { cn } from "$lib/utils.js";
 
-	type $$Props = Props;
-	type $$Events = Events;
+	type Variant = VariantProps<typeof buttonVariants>["variant"];
+	type Size = VariantProps<typeof buttonVariants>["size"];
 
 	interface Props_1 {
-		class?: $$Props["class"];
-		variant?: $$Props["variant"];
-		size?: $$Props["size"];
-		builders?: $$Props["builders"];
+		class?: string;
+		variant?: Variant;
+		size?: Size;
 		children?: import('svelte').Snippet;
 		[key: string]: any
 	}
@@ -19,7 +19,6 @@
 		class: className = undefined,
 		variant = "default",
 		size = "default",
-		builders = [],
 		children,
 		...rest
 	}: Props_1 = $props();
@@ -27,12 +26,9 @@
 </script>
 
 <ButtonPrimitive.Root
-	{builders}
 	class={cn(buttonVariants({ variant, size, className }))}
 	type="button"
 	{...rest}
-	on:click
-	on:keydown
 >
 	{@render children?.()}
 </ButtonPrimitive.Root>

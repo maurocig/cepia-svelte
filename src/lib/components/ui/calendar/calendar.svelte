@@ -1,15 +1,17 @@
 <script lang="ts">
+	// @ts-nocheck
 	import { cn, type WithoutChildrenOrChild } from '$lib/utils.js';
 	import { isEqualMonth, type DateValue } from '@internationalized/date';
 	import { Calendar as CalendarPrimitive } from 'bits-ui';
 	import type { Snippet } from 'svelte';
-	import type { ButtonVariant } from '../button/button.svelte';
+	import type { ButtonVariant } from '../button/index.js';
 	import * as Calendar from './index.js';
 
 	let {
 		ref = $bindable(null),
 		value = $bindable(),
 		placeholder = $bindable(),
+		type = 'single',
 		class: className,
 		weekdayFormat = 'short',
 		buttonVariant = 'ghost',
@@ -47,6 +49,7 @@ get along, so we shut typescript up by casting `value` to `never`.
 	bind:value={value as never}
 	bind:ref
 	bind:placeholder
+	{type}
 	{weekdayFormat}
 	{disableDaysOutsideMonth}
 	class={cn(

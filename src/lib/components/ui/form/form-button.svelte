@@ -6,11 +6,8 @@
 	}
 
 	let { children, ...rest }: Props = $props();
-
-	type $$Props = Button.Props;
-	type $$Events = Button.Events;
 </script>
 
-<Button.Root type="submit" on:click on:keydown {...rest}>
+<Button.Root type="submit" {...rest}>
 	{@render children?.()}
 </Button.Root>

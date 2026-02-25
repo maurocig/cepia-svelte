@@ -40,6 +40,7 @@
 	function columnLabel(id: string) {
 		if (id === 'patientName') return 'Nombre';
 		if (id === 'enrolledIdNumber') return 'Documento';
+		if (id === 'holderName') return 'Titular';
 		if (id === 'statusLabel') return 'Estado';
 		if (id === 'admissionModeLabel') return 'Modo de inscripción';
 		if (id === 'admissionDate') return 'Fecha de inscripción';
@@ -196,10 +197,10 @@
 				{#if table.getRowModel().rows.length}
 					{#each table.getRowModel().rows as row (row.id)}
 						<Table.Row
-							class="hover:bg-muted/30 cursor-pointer border-t transition-colors"
-							role="button"
-							tabindex="0"
-							onclick={() => goto(`/admin/pacientes/${row.original.enrollmentId}`)}
+								class="hover:bg-muted/30 cursor-pointer border-t transition-colors"
+								role="button"
+								tabindex={0}
+								onclick={() => goto(`/admin/pacientes/${row.original.enrollmentId}`)}
 							onkeydown={(event: any) => {
 								if (event.key === 'Enter' || event.key === ' ') {
 									event.preventDefault();

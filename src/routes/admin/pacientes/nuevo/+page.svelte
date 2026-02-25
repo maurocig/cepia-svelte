@@ -21,6 +21,7 @@
 	import { sanitizeDocumentNumber } from '$lib/utils.js';
 	import DatePicker from '@/components/DatePicker.svelte';
 	import Checkbox from '@/components/ui/checkbox/checkbox.svelte';
+	import { toast } from 'svelte-french-toast';
 	import { tick } from 'svelte';
 	import type { Infer } from 'zod/v4';
 
@@ -52,6 +53,10 @@
 				return;
 			}
 			scrollUp();
+			if (result.type === 'failure') {
+				toast.error(result.data?.message ?? 'No se pudo guardar la inscripción.');
+				return;
+			}
 
 			if (result.type !== 'success') return;
 			const id = result.data?.enrollmentId as string | undefined;
@@ -88,10 +93,18 @@
 				return;
 			}
 			scrollUp();
+			if (result.type === 'failure') {
+				toast.error(result.data?.message ?? 'No se pudo completar el alta del paciente.');
+				return;
+			}
 		}
 	});
 
-	const { form: patientData, enhance: enhanceStep2, submitting: submittingStep2 } = patientForm;
+	const {
+		form: patientData,
+		enhance: enhanceStep2,
+		submitting: submittingStep2
+	} = patientForm;
 
 	type TreatmentKey =
 		| 'psychology'
@@ -121,6 +134,7 @@
 
 	let enrollmentValid = $state(false);
 	let enrollmentId = $state('');
+	let didNormalizePatientDates = $state(false);
 
 	let savedStep1Key = $state('');
 
@@ -174,10 +188,13 @@
 	});
 
 	$effect(() => {
-		// DatePicker expects string values; prevent undefined during initial hydration.
+		// DatePicker expects string values; normalize only once to avoid
+		// triggering extra client-side validations that can clear server errors.
+		if (didNormalizePatientDates) return;
 		if ($patientData.enrolledDob === undefined) $patientData.enrolledDob = '';
 		if ($patientData.motherDob === undefined) $patientData.motherDob = '';
 		if ($patientData.fatherDob === undefined) $patientData.fatherDob = '';
+		didNormalizePatientDates = true;
 	});
 
 	function back() {
@@ -212,7 +229,7 @@
 	<!-- STEP 1: INSCRIPCIÓN   -->
 	<!-- ===================== -->
 	<Tabs.Content value="1" class="space-y-6">
-		<form method="POST" use:enhanceStep1>
+		<form method="POST" action="?/saveEnrollment" use:enhanceStep1>
 			<input type="hidden" name="enrollmentId" value={enrollmentId} />
 			<h2 class="mb-4 text-base font-semibold">Detalles de la inscripción</h2>
 
@@ -502,7 +519,7 @@
 									<Checkbox
 										class="h-5 w-5"
 										checked={($enrollmentData as any)[t.key] as boolean}
-										onCheckedChange={(v: string) => setTreatment(t.key, Boolean(v))}
+										onCheckedChange={(v: boolean | 'indeterminate') => setTreatment(t.key, Boolean(v))}
 									/>
 									<span class="text-sm">{t.label}</span>
 								</label>
@@ -559,13 +576,7 @@
 						Continuar
 					</button>
 				{:else}
-					<Form.Button
-						type="submit"
-						name="intent"
-						value={!enrollmentId ? 'create-draft' : 'update-draft'}
-						class="w-[200px]"
-						disabled={$submittingStep1}
-					>
+					<Form.Button type="submit" class="w-[200px]" disabled={$submittingStep1}>
 						{#if $submittingStep1}
 							<span
 								class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
@@ -584,7 +595,7 @@
 	<!-- STEP 2: PACIENTE      -->
 	<!-- ===================== -->
 	<Tabs.Content value="2" class="space-y-6">
-		<form method="POST" use:enhanceStep2>
+		<form method="POST" action="?/completePatient" use:enhanceStep2>
 			<input type="hidden" name="enrollmentId" value={enrollmentId} />
 			<h2 class="mb-4 text-base font-semibold">Información del paciente</h2>
 
@@ -755,7 +766,8 @@
 								<Checkbox
 									class="h-5 w-5"
 									checked={$patientData.attendsSchool}
-									onCheckedChange={(v: string) => ($patientData.attendsSchool = Boolean(v))}
+									onCheckedChange={(v: boolean | 'indeterminate') =>
+										($patientData.attendsSchool = Boolean(v))}
 								/>
 								<span class="text-sm font-medium">Asiste a centro educativo</span>
 							</label>
@@ -953,13 +965,7 @@
 					Atrás
 				</button>
 
-				<Form.Button
-					type="submit"
-					name="intent"
-					value="complete"
-					class="w-[200px]"
-					disabled={$submittingStep2}
-				>
+				<Form.Button type="submit" class="w-[200px]" disabled={$submittingStep2}>
 					{#if $submittingStep2}
 						<span
 							class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"

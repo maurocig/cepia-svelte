@@ -2,8 +2,9 @@
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
 	import Textarea from '@/components/ui/textarea/textarea.svelte';
-	import { superForm, type Infer, type SuperValidated } from 'sveltekit-superforms';
-	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { superForm, type SuperValidated } from 'sveltekit-superforms';
+	import { zod4Client } from 'sveltekit-superforms/adapters';
+	import type { Infer } from 'zod/v4';
 	import { formSchema, type FormSchema } from './schema';
 
 	interface Props {
@@ -14,7 +15,7 @@
 	export const title = 'Contacto';
 
 	const form = superForm(data, {
-		validators: zodClient(formSchema)
+		validators: zod4Client(formSchema)
 	});
 
 	const { form: formData, enhance } = form;
@@ -25,32 +26,31 @@
 >
 	<form method="POST" use:enhance class="mb-3 h-full w-full space-y-4">
 		<Form.Field {form} name="name">
-			<Form.Control >
-				{#snippet children({ attrs })}
-								<Form.Label>Nombre</Form.Label>
-					<Input {...attrs} bind:value={$formData.name} />
-											{/snippet}
-						</Form.Control>
-			<!-- <Form.Description>This is your public display name.</Form.Description> -->
+			<Form.Control>
+				{#snippet children({ props }: { props: Record<string, any> })}
+					<Form.Label>Nombre</Form.Label>
+					<Input {...props} bind:value={$formData.name} />
+				{/snippet}
+			</Form.Control>
 			<Form.FieldErrors />
 		</Form.Field>
 		<Form.Field {form} name="email">
-			<Form.Control >
-				{#snippet children({ attrs })}
-								<Form.Label>Email</Form.Label>
-					<Input {...attrs} bind:value={$formData.email} />
-					<Form.FieldErrors />
-											{/snippet}
-						</Form.Control>
+			<Form.Control>
+				{#snippet children({ props }: { props: Record<string, any> })}
+					<Form.Label>Email</Form.Label>
+					<Input {...props} bind:value={$formData.email} />
+				{/snippet}
+			</Form.Control>
+			<Form.FieldErrors />
 		</Form.Field>
 		<Form.Field {form} name="message">
-			<Form.Control >
-				{#snippet children({ attrs })}
-								<Form.Label>Su mensaje</Form.Label>
-					<Textarea {...attrs} bind:value={$formData.message} />
-					<Form.FieldErrors />
-											{/snippet}
-						</Form.Control>
+			<Form.Control>
+				{#snippet children({ props }: { props: Record<string, any> })}
+					<Form.Label>Su mensaje</Form.Label>
+					<Textarea {...props} bind:value={$formData.message} />
+				{/snippet}
+			</Form.Control>
+			<Form.FieldErrors />
 		</Form.Field>
 		<Form.Button>Enviar</Form.Button>
 	</form>

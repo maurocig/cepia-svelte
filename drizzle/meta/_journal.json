@@ -29,6 +29,20 @@
       "when": 1771396797447,
       "tag": "0003_round_machine_man",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1772046877792,
+      "tag": "0004_flat_puff_adder",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772047050845,
+      "tag": "0005_thick_red_wolf",
+      "breakpoints": true
     }
   ]
 }

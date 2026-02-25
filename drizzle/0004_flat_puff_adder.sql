@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "patients_document_unique_idx" ON "patients" USING btree ("enrolled_id_type","enrolled_id_number");

@@ -4,9 +4,9 @@
 	import Seo from '@/components/Seo.svelte';
 	import ContactForm from './ContactForm.svelte';
 
-	let { data } = $props();
+let { data } = $props();
 
-	let width: number = $state();
+let width = $state(0);
 </script>
 
 <div

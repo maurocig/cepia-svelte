@@ -10,6 +10,8 @@ export type PatientRow = {
 	enrolledFirstName: string;
 	enrolledLastName: string;
 	enrolledIdNumber: string;
+	holderFirstName: string;
+	holderLastName: string;
 	responsibleAdultName: string;
 	attendsSchool: boolean;
 	schoolName: string | null;
@@ -27,6 +29,12 @@ export const columns: ColumnDef<PatientRow>[] = [
 		accessorKey: 'enrolledIdNumber',
 		header: 'Documento',
 		cell: ({ row }) => row.original.enrolledIdNumber
+	},
+	{
+		id: 'holderName',
+		header: 'Titular',
+		accessorFn: (row) => `${row.holderFirstName} ${row.holderLastName}`,
+		cell: ({ row }) => formatPersonName(`${row.original.holderFirstName} ${row.original.holderLastName}`)
 	},
 	{
 		header: 'Estado inscripción',

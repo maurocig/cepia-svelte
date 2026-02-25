@@ -2,11 +2,8 @@
 	import { Label as LabelPrimitive } from "bits-ui";
 	import { cn } from "$lib/utils.js";
 
-	type $$Props = LabelPrimitive.Props;
-	type $$Events = LabelPrimitive.Events;
-
 	interface Props {
-		class?: $$Props["class"];
+		class?: string;
 		children?: import('svelte').Snippet;
 		[key: string]: any
 	}
@@ -21,7 +18,6 @@
 		className
 	)}
 	{...rest}
-	on:mousedown
 >
 	{@render children?.()}
 </LabelPrimitive.Root>
