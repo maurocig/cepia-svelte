@@ -379,5 +379,21 @@ export const actions: Actions = {
 			.where(eq(enrollments.id, enrollmentId));
 
 		return { success: true, treatmentsEditForm };
+	},
+
+	delete: async ({ locals, params }) => {
+		requireUserId(locals.user?.id);
+		const enrollmentId = params.enrollmentId;
+
+		const [deleted] = await db
+			.delete(enrollments)
+			.where(and(eq(enrollments.id, enrollmentId), eq(enrollments.formStatus, 'completed')))
+			.returning({ id: enrollments.id });
+
+		if (!deleted?.id) {
+			return fail(404, { message: 'Paciente no encontrado' });
+		}
+
+		throw redirect(303, '/admin/pacientes?deleted=1');
 	}
 };

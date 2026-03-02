@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { enhance as kitEnhance } from '$app/forms';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Checkbox from '$lib/components/ui/checkbox/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
@@ -34,6 +36,7 @@
 		Heart,
 		Pencil,
 		Shield,
+		Trash2,
 		User,
 		Users
 	} from 'lucide-svelte';
@@ -51,6 +54,7 @@
 	let openSchoolDialog = $state(false);
 	let openFamilyDialog = $state(false);
 	let openTreatmentsDialog = $state(false);
+	let deletingPatient = $state(false);
 
 	const patientEditForm = superForm(data.patientEditForm, {
 		validators: zod4Client(patientEditSchema),
@@ -206,6 +210,23 @@
 	const activeTreatments = $derived(
 		treatmentLabels.filter(([key]) => Boolean(savedTreatmentValues[key])).map(([, label]) => label)
 	);
+
+	const enhanceDelete = () => {
+		deletingPatient = true;
+
+		return async ({
+			result,
+			update
+		}: {
+			result: { type: string };
+			update: () => Promise<void>;
+		}) => {
+			if (result.type === 'failure' || result.type === 'error') {
+				deletingPatient = false;
+			}
+			await update();
+		};
+	};
 </script>
 
 <div class="space-y-6">
@@ -238,14 +259,14 @@
 						<Pencil size={16} />
 					</Dialog.Trigger>
 				</h2>
-					<dl class="grid gap-4 text-sm lg:grid-cols-2">
-						<div>
-							<dt class="font-medium">Nombre</dt>
-							<dd>
-								{formatPersonName(data.patient.enrolledFirstName)}
-								{formatPersonName(data.patient.enrolledLastName)}
-							</dd>
-						</div>
+				<dl class="grid gap-4 text-sm lg:grid-cols-2">
+					<div>
+						<dt class="font-medium">Nombre</dt>
+						<dd>
+							{formatPersonName(data.patient.enrolledFirstName)}
+							{formatPersonName(data.patient.enrolledLastName)}
+						</dd>
+					</div>
 					<div>
 						<dt class="font-medium">Documento</dt>
 						<dd>{data.patient.enrolledIdType} {data.patient.enrolledIdNumber}</dd>
@@ -469,14 +490,14 @@
 				</dl>
 
 				<!-- Información del titular -->
-					<dl class="mt-4 grid gap-4 text-sm lg:grid-cols-2">
-						<div>
-							<dt class="font-medium">Nombre de titular</dt>
-							<dd>
-								{formatPersonName(data.patient.holderFirstName)}
-								{formatPersonName(data.patient.holderLastName)}
-							</dd>
-						</div>
+				<dl class="mt-4 grid gap-4 text-sm lg:grid-cols-2">
+					<div>
+						<dt class="font-medium">Nombre de titular</dt>
+						<dd>
+							{formatPersonName(data.patient.holderFirstName)}
+							{formatPersonName(data.patient.holderLastName)}
+						</dd>
+					</div>
 					<div>
 						<dt class="font-medium">Documento de titular</dt>
 						<dd>{data.patient.holderIdType ?? '-'} {data.patient.holderIdNumber}</dd>
@@ -1294,5 +1315,46 @@
 				</form>
 			</Dialog.Content>
 		</Dialog.Root>
+	</div>
+
+	<div class="flex justify-end">
+		<AlertDialog.Root>
+			<AlertDialog.Trigger
+				class={buttonVariants({ variant: 'destructive', size: 'sm' }) +
+					' cursor-pointer gap-2 text-white'}
+				disabled={deletingPatient}
+			>
+				<Trash2 size={16} />
+				Eliminar paciente
+			</AlertDialog.Trigger>
+			<AlertDialog.Content>
+				<AlertDialog.Header>
+					<AlertDialog.Title>¿Eliminar paciente?</AlertDialog.Title>
+					<AlertDialog.Description>
+						Esta acción eliminará la inscripción y todos los datos del paciente en forma permanente.
+					</AlertDialog.Description>
+				</AlertDialog.Header>
+				<AlertDialog.Footer>
+					<AlertDialog.Cancel disabled={deletingPatient}>Cancelar</AlertDialog.Cancel>
+					<form method="POST" action="?/delete" use:kitEnhance={enhanceDelete}>
+						<AlertDialog.Action
+							type="submit"
+							disabled={deletingPatient}
+							class={buttonVariants({ variant: 'destructive', size: 'sm' }) +
+								'flex min-w-28 cursor-pointer items-center justify-center gap-2 text-white'}
+						>
+							{#if deletingPatient}
+								<span
+									class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+								></span>
+								Eliminando...
+							{:else}
+								Eliminar
+							{/if}
+						</AlertDialog.Action>
+					</form>
+				</AlertDialog.Footer>
+			</AlertDialog.Content>
+		</AlertDialog.Root>
 	</div>
 </div>

@@ -10,12 +10,21 @@
 
 	let { data }: { data: PageData } = $props();
 	let savedToastShown = $state(false);
+	let deletedToastShown = $state(false);
 
 	$effect(() => {
 		if (savedToastShown) return;
 		if ($page.url.searchParams.get('saved') !== '1') return;
 		savedToastShown = true;
 		toast.success('Paciente guardado correctamente.');
+		void goto($page.url.pathname, { replaceState: true, noScroll: true, keepFocus: true });
+	});
+
+	$effect(() => {
+		if (deletedToastShown) return;
+		if ($page.url.searchParams.get('deleted') !== '1') return;
+		deletedToastShown = true;
+		toast.success('Paciente eliminado correctamente.');
 		void goto($page.url.pathname, { replaceState: true, noScroll: true, keepFocus: true });
 	});
 </script>
