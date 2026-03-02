@@ -43,6 +43,13 @@
       "when": 1772047050845,
       "tag": "0005_thick_red_wolf",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772465372074,
+      "tag": "0006_eager_hammerhead",
+      "breakpoints": true
     }
   ]
 }

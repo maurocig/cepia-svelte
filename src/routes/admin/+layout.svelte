@@ -20,7 +20,9 @@
 		]}
 	/>
 
-	<main class="h-fit min-w-0 w-full rounded-lg bg-white/70 shadow-md md:min-h-[300px] md:p-6 lg:p-8">
+	<main
+		class="h-fit w-full min-w-0 rounded-lg bg-white/70 shadow-md md:min-h-[300px] md:p-6 lg:p-8"
+	>
 		{@render children()}
 	</main>
 </div>
@@ -28,7 +30,7 @@
 <Toaster
 	position="top-center"
 	gutter={12}
-	containerStyle="top: 28px;"
+	containerStyle="top: 80px;"
 	toastOptions={{
 		duration: 3000,
 		style: 'font-size: 15px; padding: 12px 14px; min-width: 340px;'

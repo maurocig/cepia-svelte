@@ -51,6 +51,7 @@ const selection = {
 	holderIdType: enrollments.holderIdType,
 	holderIdNumber: enrollments.holderIdNumber,
 	holderPhone: enrollments.holderPhone,
+	holderEmail: enrollments.holderEmail,
 	psychology: enrollments.psychology,
 	psychomotricity: enrollments.psychomotricity,
 	speechTherapy: enrollments.speechTherapy,
@@ -125,7 +126,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			holderLastName: row.holderLastName,
 			holderIdType: row.holderIdType ?? '',
 			holderIdNumber: row.holderIdNumber,
-			holderPhone: row.holderPhone
+			holderPhone: row.holderPhone,
+			holderEmail: row.holderEmail
 		} as any,
 		enrollmentEditValidator
 	);
@@ -266,7 +268,8 @@ export const actions: Actions = {
 					enrollmentEditForm.data.holderIdNumber,
 					(enrollmentEditForm.data.holderIdType || '') as DocumentIdType
 				),
-				holderPhone: enrollmentEditForm.data.holderPhone.trim()
+				holderPhone: enrollmentEditForm.data.holderPhone.trim(),
+				holderEmail: enrollmentEditForm.data.holderEmail.trim()
 			})
 			.where(eq(enrollments.id, enrollmentId));
 

@@ -113,6 +113,7 @@ export const enrollments = pgTable('enrollments', {
 	holderIdType: text('holder_id_type'),
 	holderIdNumber: text('holder_id_number').notNull().default(''),
 	holderPhone: text('holder_phone').notNull().default(''),
+	holderEmail: text('holder_email').notNull().default(''),
 
 	// tratamientos
 	psychology: boolean('psychology').notNull().default(false),

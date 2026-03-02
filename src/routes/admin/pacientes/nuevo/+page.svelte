@@ -148,6 +148,7 @@
 			holderIdType: d.holderIdType,
 			holderIdNumber: d.holderIdNumber,
 			holderPhone: d.holderPhone,
+			holderEmail: d.holderEmail,
 
 			psychology: d.psychology,
 			psychomotricity: d.psychomotricity,
@@ -292,7 +293,7 @@
 									}
 								}}
 							>
-								<Select.Trigger {...props} class="min-h-10 w-full justify-between bg-white">
+								<Select.Trigger {...props} class="min-h-10 w-full justify-between">
 									{getOptionLabel(
 										admissionModeOptions,
 										$enrollmentData.admissionMode,
@@ -409,11 +410,11 @@
 				{/if}
 			</div>
 
-			<h2 class="mt-6 text-base font-semibold">Información del Titular</h2>
-			<p class="mb-3 text-sm text-slate-500">
+			<h2 class="mt-6 mb-1 text-base font-semibold">Información del Titular</h2>
+			<p class="mb-4 text-sm text-slate-500">
 				Ingresá los datos de la persona que inició el trámite.
 			</p>
-			<div class="mb-4 grid gap-3 md:grid-cols-2 md:gap-4">
+			<div class="mb-4 grid gap-3 md:grid-cols-2 md:gap-4 lg:grid-cols-3">
 				<Form.Field form={enrollmentForm} name="holderFirstName">
 					<Form.Control>
 						{#snippet children({ props }: { props: Record<string, any> })}
@@ -435,6 +436,22 @@
 								placeholder="Apellido"
 							/>
 							<input type="hidden" name="holderLastName" value={$enrollmentData.holderLastName} />
+						{/snippet}
+					</Form.Control>
+					<Form.FieldErrors />
+				</Form.Field>
+
+				<Form.Field form={enrollmentForm} name="holderEmail">
+					<Form.Control>
+						{#snippet children({ props }: { props: Record<string, any> })}
+							<Form.Label>Email</Form.Label>
+							<Input
+								{...props}
+								type="email"
+								bind:value={$enrollmentData.holderEmail}
+								placeholder="titular@correo.com"
+							/>
+							<input type="hidden" name="holderEmail" value={$enrollmentData.holderEmail} />
 						{/snippet}
 					</Form.Control>
 					<Form.FieldErrors />

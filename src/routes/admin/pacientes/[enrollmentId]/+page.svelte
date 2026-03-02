@@ -485,6 +485,10 @@
 						<dt class="font-medium">Teléfono de titular</dt>
 						<dd>{data.patient.holderPhone}</dd>
 					</div>
+					<div>
+						<dt class="font-medium">Email de titular</dt>
+						<dd>{data.patient.holderEmail}</dd>
+					</div>
 				</dl>
 			</section>
 			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
@@ -742,6 +746,21 @@
 									<Label for="holderPhone">Tel. titular</Label>
 									<Input id="holderPhone" {...props} bind:value={$enrollmentEditData.holderPhone} />
 									<input type="hidden" name="holderPhone" value={$enrollmentEditData.holderPhone} />
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
+						<Form.Field form={enrollmentEditForm} name="holderEmail">
+							<Form.Control>
+								{#snippet children({ props }: { props: Record<string, any> })}
+									<Label for="holderEmail">Email titular</Label>
+									<Input
+										id="holderEmail"
+										type="email"
+										{...props}
+										bind:value={$enrollmentEditData.holderEmail}
+									/>
+									<input type="hidden" name="holderEmail" value={$enrollmentEditData.holderEmail} />
 								{/snippet}
 							</Form.Control>
 							<Form.FieldErrors />

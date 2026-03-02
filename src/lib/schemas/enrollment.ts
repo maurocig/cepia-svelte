@@ -58,6 +58,7 @@ export const enrollmentSchema = z
 		holderIdType: z.enum(idTypeOptions).optional().or(z.literal('')).default('CI'),
 		holderIdNumber: nonEmpty('Ingresá el número de documento del titular'),
 		holderPhone: z.string().trim().min(1, 'Ingresá el teléfono del titular'),
+		holderEmail: z.string().trim().min(1, 'Ingresá el email del titular'),
 
 		// tratamientos (checklist)
 		psychology: checkboxBool.default(false),
@@ -173,13 +174,21 @@ export const enrollmentSchema = z
 			});
 		}
 
-		if (!data.holderPhone.trim()) return;
-		if (isValidSupportedInternationalPhone(data.holderPhone)) return;
-		ctx.addIssue({
-			code: 'custom',
-			path: ['holderPhone'],
-			message: getInvalidSupportedPhoneMessage(data.holderPhone)
-		});
+		if (data.holderPhone.trim() && !isValidSupportedInternationalPhone(data.holderPhone)) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['holderPhone'],
+				message: getInvalidSupportedPhoneMessage(data.holderPhone)
+			});
+		}
+
+		if (data.holderEmail.trim() && !z.string().email().safeParse(data.holderEmail).success) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['holderEmail'],
+				message: 'Ingresá un email válido'
+			});
+		}
 	});
 
 export type EnrollmentSchema = typeof enrollmentSchema;

@@ -76,7 +76,8 @@ export const enrollmentEditSchema = z
 		holderLastName: nonEmpty('Ingresá el apellido del titular'),
 		holderIdType: z.enum(idTypeValues).optional().or(z.literal('')).default('CI'),
 		holderIdNumber: nonEmpty('Ingresá el número de documento del titular'),
-		holderPhone: z.string().trim().min(1, 'Ingresá el teléfono del titular')
+		holderPhone: z.string().trim().min(1, 'Ingresá el teléfono del titular'),
+		holderEmail: z.string().trim().min(1, 'Ingresá el email del titular')
 	})
 	.refine((data) => Boolean(data.admissionMode), {
 		path: ['admissionMode'],
@@ -153,13 +154,21 @@ export const enrollmentEditSchema = z
 				message: 'La fecha de vencimiento no puede ser anterior a hoy'
 			});
 		}
-		if (!data.holderPhone.trim()) return;
-		if (isValidSupportedInternationalPhone(data.holderPhone)) return;
-		ctx.addIssue({
-			code: 'custom',
-			path: ['holderPhone'],
-			message: getInvalidSupportedPhoneMessage(data.holderPhone)
-		});
+		if (data.holderPhone.trim() && !isValidSupportedInternationalPhone(data.holderPhone)) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['holderPhone'],
+				message: getInvalidSupportedPhoneMessage(data.holderPhone)
+			});
+		}
+
+		if (data.holderEmail.trim() && !z.string().email().safeParse(data.holderEmail).success) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['holderEmail'],
+				message: 'Ingresá un email válido'
+			});
+		}
 	});
 
 export const responsibleEditSchema = z
