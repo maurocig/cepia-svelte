@@ -4,8 +4,8 @@
 	const { data } = $props();
 </script>
 
-<div>
-	<h1>Dashboard de <strong>{data.user?.email ?? 'usuario'}</strong></h1>
+<div class="mb-6">
+	Bienvenido, <strong>{data.user?.email ?? 'usuario'}</strong>
 </div>
 
 <Button href="/admin/pacientes/nuevo">Agregar nuevo paciente</Button>

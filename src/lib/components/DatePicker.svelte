@@ -65,17 +65,17 @@
 	}
 </script>
 
-	<div class="flex flex-col gap-3">
-		{#if props.name}
-			<input type="hidden" name={props.name} value={value ?? ''} />
-		{/if}
+<div class="flex flex-col gap-3">
+	{#if props.name}
+		<input type="hidden" name={props.name} value={value ?? ''} />
+	{/if}
 	<Popover.Root bind:open>
 		<Popover.Trigger id={props.id}>
 			{#snippet child({ props: triggerProps })}
 				<Button
 					{...triggerProps}
 					variant="outline"
-					class="h-9 w-full justify-between font-normal hover:bg-slate-50/10"
+					class="min-h-10 w-full justify-between font-normal hover:bg-slate-50/10"
 					aria-invalid={triggerProps['aria-invalid']}
 				>
 					{display()}

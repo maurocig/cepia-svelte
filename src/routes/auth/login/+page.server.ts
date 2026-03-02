@@ -14,19 +14,30 @@ export const actions = {
 		const form = await superValidate(event, zod4(loginSchema));
 		if (!form.valid) return fail(400, { form });
 
-		const res = await auth.api.signInEmail({
-			headers: event.request.headers,
-			body: {
-				email: form.data.email,
-				password: form.data.password
-			}
-		});
+		try {
+			const res = await auth.api.signInEmail({
+				headers: event.request.headers,
+				body: {
+					email: form.data.email,
+					password: form.data.password
+				}
+			});
 
-		if (!res?.user) {
+			if (!res?.user) {
+				return fail(400, {
+					form: {
+						...form,
+						message: 'Email o contraseña incorrectos'
+					}
+				});
+			}
+
+		} catch (error) {
+			console.error('[auth] signInEmail failed', error);
 			return fail(400, {
 				form: {
 					...form,
-					message: 'email o password incorrectos'
+					message: 'Email o contraseña incorrectos'
 				}
 			});
 		}

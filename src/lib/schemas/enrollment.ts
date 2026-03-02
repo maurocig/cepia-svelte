@@ -1,12 +1,12 @@
-import { z } from 'zod/v4';
-import { getInvalidSupportedPhoneMessage, isValidSupportedInternationalPhone } from '$lib/phone';
 import {
 	admissionModeValues,
 	agreementOrganizationValues,
 	enrollmentStatusValues,
 	idTypeValues
 } from '$lib/domain/select-options';
+import { getInvalidSupportedPhoneMessage, isValidSupportedInternationalPhone } from '$lib/phone';
 import { todayYyyyMmDd } from '$lib/utils';
+import { z } from 'zod/v4';
 
 const nonEmpty = (msg: string) => z.string().trim().min(1, msg);
 
@@ -147,7 +147,7 @@ export const enrollmentSchema = z
 			data.workshops,
 		{
 			path: ['treatmentsNotes'],
-			message: 'Selecciona al menos un tratamiento'
+			message: 'Seleccioná al menos un tratamiento'
 		}
 	)
 	.superRefine((data, ctx) => {

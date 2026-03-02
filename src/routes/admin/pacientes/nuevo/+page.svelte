@@ -21,8 +21,8 @@
 	import { sanitizeDocumentNumber } from '$lib/utils.js';
 	import DatePicker from '@/components/DatePicker.svelte';
 	import Checkbox from '@/components/ui/checkbox/checkbox.svelte';
-	import { toast } from 'svelte-french-toast';
 	import { tick } from 'svelte';
+	import { toast } from 'svelte-french-toast';
 	import type { Infer } from 'zod/v4';
 
 	let {
@@ -100,11 +100,7 @@
 		}
 	});
 
-	const {
-		form: patientData,
-		enhance: enhanceStep2,
-		submitting: submittingStep2
-	} = patientForm;
+	const { form: patientData, enhance: enhanceStep2, submitting: submittingStep2 } = patientForm;
 
 	type TreatmentKey =
 		| 'psychology'
@@ -233,14 +229,14 @@
 			<input type="hidden" name="enrollmentId" value={enrollmentId} />
 			<h2 class="mb-4 text-base font-semibold">Detalles de la inscripción</h2>
 
-			<div class="grid gap-3 md:grid-cols-3 md:gap-4">
+			<div class="grid gap-3 md:grid-cols-2 md:gap-4 lg:grid-cols-3">
 				<!-- Estado de inscripción -->
 				<Form.Field form={enrollmentForm} name="enrollmentStatus">
 					<Form.Control>
 						{#snippet children({ props }: { props: Record<string, any> })}
 							<Form.Label>Estado de inscripción</Form.Label>
 							<Select.Root type="single" bind:value={$enrollmentData.enrollmentStatus}>
-								<Select.Trigger {...props} class="h-10 w-full justify-between">
+								<Select.Trigger {...props} class="min-h-10 w-full justify-between">
 									{#if $enrollmentData.enrollmentStatus === 'active'}
 										Activo
 									{:else if $enrollmentData.enrollmentStatus === 'inactive'}
@@ -296,7 +292,7 @@
 									}
 								}}
 							>
-								<Select.Trigger {...props} class="h-10 w-full justify-between">
+								<Select.Trigger {...props} class="min-h-10 w-full justify-between bg-white">
 									{getOptionLabel(
 										admissionModeOptions,
 										$enrollmentData.admissionMode,
@@ -338,7 +334,7 @@
 										}
 									}}
 								>
-									<Select.Trigger {...props} class="h-10 w-full justify-between">
+									<Select.Trigger {...props} class="min-h-10 w-full justify-between">
 										{getOptionLabel(
 											agreementOrganizationOptions,
 											$enrollmentData.agreementOrganization,
@@ -390,30 +386,33 @@
 						</Form.Field>
 					{/if}
 
-						{#if $enrollmentData.agreementOrganization === 'BPS'}
-							<!-- Vencimiento del convenio -->
-							<Form.Field form={enrollmentForm} name="agreementExpirationDate">
-								<Form.Control>
-									{#snippet children({ props }: { props: Record<string, any> })}
-										<Form.Label>Vencimiento del convenio</Form.Label>
-										<DatePicker min="today" bind:value={$enrollmentData.agreementExpirationDate} />
-										<input
-											type="hidden"
-											name="agreementExpirationDate"
-											value={$enrollmentData.agreementExpirationDate}
-										/>
-									{/snippet}
-								</Form.Control>
-								<!-- <Form.Description
+					{#if $enrollmentData.agreementOrganization === 'BPS'}
+						<!-- Vencimiento del convenio -->
+						<Form.Field form={enrollmentForm} name="agreementExpirationDate">
+							<Form.Control>
+								{#snippet children({ props }: { props: Record<string, any> })}
+									<Form.Label>Vencimiento del convenio</Form.Label>
+									<DatePicker min="today" bind:value={$enrollmentData.agreementExpirationDate} />
+									<input
+										type="hidden"
+										name="agreementExpirationDate"
+										value={$enrollmentData.agreementExpirationDate}
+									/>
+								{/snippet}
+							</Form.Control>
+							<!-- <Form.Description
 										>Fecha hasta la cual el convenio se encuentra vigente.</Form.Description
 									> -->
-								<Form.FieldErrors />
-							</Form.Field>
-						{/if}
+							<Form.FieldErrors />
+						</Form.Field>
 					{/if}
-				</div>
+				{/if}
+			</div>
 
-			<h2 class="mt-6 mb-3 text-base font-semibold">Información del Titular</h2>
+			<h2 class="mt-6 text-base font-semibold">Información del Titular</h2>
+			<p class="mb-3 text-sm text-slate-500">
+				Ingresá los datos de la persona que inició el trámite.
+			</p>
 			<div class="mb-4 grid gap-3 md:grid-cols-2 md:gap-4">
 				<Form.Field form={enrollmentForm} name="holderFirstName">
 					<Form.Control>
@@ -448,7 +447,7 @@
 						{#snippet children({ props }: { props: Record<string, any> })}
 							<Form.Label>Tipo de documento</Form.Label>
 							<Select.Root type="single" bind:value={$enrollmentData.holderIdType}>
-								<Select.Trigger {...props} class="h-10 w-full justify-between">
+								<Select.Trigger {...props} class="min-h-10 w-full justify-between">
 									{getOptionLabel(idTypeOptions, $enrollmentData.holderIdType, 'Seleccionar')}
 								</Select.Trigger>
 								<Select.Content>
@@ -519,7 +518,8 @@
 									<Checkbox
 										class="h-5 w-5"
 										checked={($enrollmentData as any)[t.key] as boolean}
-										onCheckedChange={(v: boolean | 'indeterminate') => setTreatment(t.key, Boolean(v))}
+										onCheckedChange={(v: boolean | 'indeterminate') =>
+											setTreatment(t.key, Boolean(v))}
 									/>
 									<span class="text-sm">{t.label}</span>
 								</label>
@@ -642,7 +642,7 @@
 						{#snippet children({ props }: { props: Record<string, any> })}
 							<Form.Label>Tipo de documento</Form.Label>
 							<Select.Root type="single" bind:value={$patientData.enrolledIdType}>
-								<Select.Trigger {...props} class="h-10 w-full justify-between">
+								<Select.Trigger {...props} class="min-h-10 w-full justify-between">
 									{getOptionLabel(idTypeOptions, $patientData.enrolledIdType, 'Seleccionar')}
 								</Select.Trigger>
 								<Select.Content>
@@ -791,7 +791,7 @@
 										}
 									}}
 								>
-									<Select.Trigger {...props} class="h-10 w-full justify-between">
+									<Select.Trigger {...props} class="min-h-10 w-full justify-between">
 										{getOptionLabel(schoolTypeOptions, $patientData.schoolType, 'Seleccionar')}
 									</Select.Trigger>
 									<Select.Content>
@@ -817,7 +817,7 @@
 									bind:value={$patientData.schoolGrade}
 									disabled={$patientData.schoolType === 'kindergarten'}
 								>
-									<Select.Trigger {...props} class="h-10 w-full justify-between">
+									<Select.Trigger {...props} class="min-h-10 w-full justify-between">
 										{$patientData.schoolGrade ||
 											($patientData.schoolType === 'kindergarten' ? 'No aplica' : 'Seleccionar')}
 									</Select.Trigger>
@@ -847,7 +847,7 @@
 							{#snippet children({ props }: { props: Record<string, any> })}
 								<Form.Label>Turno</Form.Label>
 								<Select.Root type="single" bind:value={$patientData.schoolShift}>
-									<Select.Trigger {...props} class="h-10 w-full justify-between">
+									<Select.Trigger {...props} class="min-h-10 w-full justify-between">
 										{getOptionLabel(schoolShiftOptions, $patientData.schoolShift, 'Seleccionar')}
 									</Select.Trigger>
 									<Select.Content>

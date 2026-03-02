@@ -37,7 +37,7 @@
 </script>
 
 <aside
-	class="sticky flex h-fit w-[300px] flex-col gap-2 self-start rounded-lg bg-slate-50/70 p-4 shadow-md"
+	class="sticky flex h-fit w-[300px] flex-col gap-2 self-start rounded-lg bg-white/70 p-4 shadow-md"
 >
 	<ul class="flex flex-col gap-1">
 		{#each links as link (link.href)}
@@ -46,7 +46,7 @@
 					href={link.href}
 					class={'flex items-center gap-4 rounded-md p-2 px-4 text-slate-700 transition hover:text-gray-500' +
 						(isActive(link)
-							? 'border border-1 border-slate-900/10 bg-white font-semibold shadow-xs'
+							? 'border border-1 border-slate-900/10 bg-slate-100 font-medium transition'
 							: '')}
 				>
 					{#if iconKeyFor(link.href) === 'home'}

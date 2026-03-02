@@ -82,26 +82,20 @@ const selection = {
 	familyNotes: patients.familyNotes
 } as const;
 
-const getEditableRow = async (enrollmentId: string, userId: string) => {
+const getEditableRow = async (enrollmentId: string) => {
 	const [row] = await db
 		.select(selection)
 		.from(enrollments)
 		.innerJoin(patients, eq(patients.enrollmentId, enrollments.id))
-		.where(
-			and(
-				eq(enrollments.id, enrollmentId),
-				eq(enrollments.createdByUserId, userId),
-				eq(enrollments.formStatus, 'completed')
-			)
-		)
+		.where(and(eq(enrollments.id, enrollmentId), eq(enrollments.formStatus, 'completed')))
 		.limit(1);
 
 	return row;
 };
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	const userId = requireUserId(locals.user?.id);
-	const row = await getEditableRow(params.enrollmentId, userId);
+	requireUserId(locals.user?.id);
+	const row = await getEditableRow(params.enrollmentId);
 
 	if (!row) {
 		throw error(404, 'Paciente no encontrado');
@@ -191,9 +185,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 export const actions: Actions = {
 	patient: async ({ locals, params, request }) => {
-		const userId = requireUserId(locals.user?.id);
+		requireUserId(locals.user?.id);
 		const enrollmentId = params.enrollmentId;
-		const row = await getEditableRow(enrollmentId, userId);
+		const row = await getEditableRow(enrollmentId);
 		if (!row) return fail(404, { message: 'Paciente no encontrado' });
 
 		const patientEditForm = await superValidate(request, patientEditValidator);
@@ -235,9 +229,9 @@ export const actions: Actions = {
 	},
 
 	enrollment: async ({ locals, params, request }) => {
-		const userId = requireUserId(locals.user?.id);
+		requireUserId(locals.user?.id);
 		const enrollmentId = params.enrollmentId;
-		const row = await getEditableRow(enrollmentId, userId);
+		const row = await getEditableRow(enrollmentId);
 		if (!row) return fail(404, { message: 'Paciente no encontrado' });
 
 		const enrollmentEditForm = await superValidate(request, enrollmentEditValidator);
@@ -280,9 +274,9 @@ export const actions: Actions = {
 	},
 
 	responsible: async ({ locals, params, request }) => {
-		const userId = requireUserId(locals.user?.id);
+		requireUserId(locals.user?.id);
 		const enrollmentId = params.enrollmentId;
-		const row = await getEditableRow(enrollmentId, userId);
+		const row = await getEditableRow(enrollmentId);
 		if (!row) return fail(404, { message: 'Paciente no encontrado' });
 
 		const responsibleEditForm = await superValidate(request, responsibleEditValidator);
@@ -302,9 +296,9 @@ export const actions: Actions = {
 	},
 
 	school: async ({ locals, params, request }) => {
-		const userId = requireUserId(locals.user?.id);
+		requireUserId(locals.user?.id);
 		const enrollmentId = params.enrollmentId;
-		const row = await getEditableRow(enrollmentId, userId);
+		const row = await getEditableRow(enrollmentId);
 		if (!row) return fail(404, { message: 'Paciente no encontrado' });
 
 		const schoolEditForm = await superValidate(request, schoolEditValidator);
@@ -330,9 +324,9 @@ export const actions: Actions = {
 	},
 
 	family: async ({ locals, params, request }) => {
-		const userId = requireUserId(locals.user?.id);
+		requireUserId(locals.user?.id);
 		const enrollmentId = params.enrollmentId;
-		const row = await getEditableRow(enrollmentId, userId);
+		const row = await getEditableRow(enrollmentId);
 		if (!row) return fail(404, { message: 'Paciente no encontrado' });
 
 		const familyEditForm = await superValidate(request, familyEditValidator);
@@ -356,9 +350,9 @@ export const actions: Actions = {
 	},
 
 	treatments: async ({ locals, params, request }) => {
-		const userId = requireUserId(locals.user?.id);
+		requireUserId(locals.user?.id);
 		const enrollmentId = params.enrollmentId;
-		const row = await getEditableRow(enrollmentId, userId);
+		const row = await getEditableRow(enrollmentId);
 		if (!row) return fail(404, { message: 'Paciente no encontrado' });
 
 		const treatmentsEditForm = await superValidate(request, treatmentsEditValidator);
