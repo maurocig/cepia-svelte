@@ -38,6 +38,8 @@ const requireUserId = (userId?: string) => {
 	return userId;
 };
 
+const isAdminRole = (role?: string | null) => role === 'admin';
+
 const selection = {
 	enrollmentId: enrollments.id,
 	status: enrollments.status,
@@ -96,6 +98,7 @@ const getEditableRow = async (enrollmentId: string) => {
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	requireUserId(locals.user?.id);
+	const canManage = isAdminRole(locals.user?.role);
 	const row = await getEditableRow(params.enrollmentId);
 
 	if (!row) {
@@ -176,6 +179,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	return {
 		patient: row,
+		canManage,
 		patientEditForm,
 		enrollmentEditForm,
 		responsibleEditForm,
@@ -188,6 +192,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 export const actions: Actions = {
 	patient: async ({ locals, params, request }) => {
 		requireUserId(locals.user?.id);
+		if (!isAdminRole(locals.user?.role)) {
+			return fail(403, { message: 'No autorizado para editar pacientes' });
+		}
 		const enrollmentId = params.enrollmentId;
 		const row = await getEditableRow(enrollmentId);
 		if (!row) return fail(404, { message: 'Paciente no encontrado' });
@@ -232,6 +239,9 @@ export const actions: Actions = {
 
 	enrollment: async ({ locals, params, request }) => {
 		requireUserId(locals.user?.id);
+		if (!isAdminRole(locals.user?.role)) {
+			return fail(403, { message: 'No autorizado para editar la inscripción' });
+		}
 		const enrollmentId = params.enrollmentId;
 		const row = await getEditableRow(enrollmentId);
 		if (!row) return fail(404, { message: 'Paciente no encontrado' });
@@ -278,6 +288,9 @@ export const actions: Actions = {
 
 	responsible: async ({ locals, params, request }) => {
 		requireUserId(locals.user?.id);
+		if (!isAdminRole(locals.user?.role)) {
+			return fail(403, { message: 'No autorizado para editar pacientes' });
+		}
 		const enrollmentId = params.enrollmentId;
 		const row = await getEditableRow(enrollmentId);
 		if (!row) return fail(404, { message: 'Paciente no encontrado' });
@@ -300,6 +313,9 @@ export const actions: Actions = {
 
 	school: async ({ locals, params, request }) => {
 		requireUserId(locals.user?.id);
+		if (!isAdminRole(locals.user?.role)) {
+			return fail(403, { message: 'No autorizado para editar pacientes' });
+		}
 		const enrollmentId = params.enrollmentId;
 		const row = await getEditableRow(enrollmentId);
 		if (!row) return fail(404, { message: 'Paciente no encontrado' });
@@ -328,6 +344,9 @@ export const actions: Actions = {
 
 	family: async ({ locals, params, request }) => {
 		requireUserId(locals.user?.id);
+		if (!isAdminRole(locals.user?.role)) {
+			return fail(403, { message: 'No autorizado para editar pacientes' });
+		}
 		const enrollmentId = params.enrollmentId;
 		const row = await getEditableRow(enrollmentId);
 		if (!row) return fail(404, { message: 'Paciente no encontrado' });
@@ -354,6 +373,9 @@ export const actions: Actions = {
 
 	treatments: async ({ locals, params, request }) => {
 		requireUserId(locals.user?.id);
+		if (!isAdminRole(locals.user?.role)) {
+			return fail(403, { message: 'No autorizado para editar pacientes' });
+		}
 		const enrollmentId = params.enrollmentId;
 		const row = await getEditableRow(enrollmentId);
 		if (!row) return fail(404, { message: 'Paciente no encontrado' });
@@ -383,6 +405,9 @@ export const actions: Actions = {
 
 	delete: async ({ locals, params }) => {
 		requireUserId(locals.user?.id);
+		if (!isAdminRole(locals.user?.role)) {
+			return fail(403, { message: 'No autorizado para eliminar pacientes' });
+		}
 		const enrollmentId = params.enrollmentId;
 
 		const [deleted] = await db

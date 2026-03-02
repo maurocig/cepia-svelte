@@ -252,12 +252,14 @@
 				>
 					<User size={20} />
 					<span class="mr-auto">Paciente</span>
-					<Dialog.Trigger
-						class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
-							' h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
-					>
-						<Pencil size={16} />
-					</Dialog.Trigger>
+					{#if data.canManage}
+						<Dialog.Trigger
+							class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
+								'h-8 w-8 cursor-pointer opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
+						>
+							<Pencil size={16} />
+						</Dialog.Trigger>
+					{/if}
 				</h2>
 				<dl class="grid gap-4 text-sm lg:grid-cols-2">
 					<div>
@@ -448,11 +450,13 @@
 				>
 					<FileText size={20} />
 					<span class="mr-auto">Inscripción</span>
-					<Dialog.Trigger
-						class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
-							' h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
-						><Pencil size={16} /></Dialog.Trigger
-					>
+					{#if data.canManage}
+						<Dialog.Trigger
+							class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
+								'h-8 w-8 cursor-pointer opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
+							><Pencil size={16} /></Dialog.Trigger
+						>
+					{/if}
 				</h2>
 				<dl class="grid gap-4 text-sm lg:grid-cols-2">
 					<div>
@@ -813,11 +817,13 @@
 				>
 					<Shield size={20} />
 					<span class="mr-auto">Adulto responsable</span>
-					<Dialog.Trigger
-						class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
-							' h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
-						><Pencil size={16} /></Dialog.Trigger
-					>
+					{#if data.canManage}
+						<Dialog.Trigger
+							class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
+								' h-8 w-8 cursor-pointer opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
+							><Pencil size={16} /></Dialog.Trigger
+						>
+					{/if}
 				</h2>
 				<dl class="grid gap-4 text-sm lg:grid-cols-2">
 					<div>
@@ -901,11 +907,13 @@
 				>
 					<BookMarked size={20} />
 					<span class="mr-auto">Escolaridad</span>
-					<Dialog.Trigger
-						class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
-							' h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
-						><Pencil size={16} /></Dialog.Trigger
-					>
+					{#if data.canManage}
+						<Dialog.Trigger
+							class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
+								' h-8 w-8 cursor-pointer opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
+							><Pencil size={16} /></Dialog.Trigger
+						>
+					{/if}
 				</h2>
 				<dl class="grid gap-4 text-sm lg:grid-cols-2">
 					<div>
@@ -1078,11 +1086,13 @@
 				>
 					<Users size={20} />
 					<span class="mr-auto">Grupo familiar</span>
-					<Dialog.Trigger
-						class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
-							' h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
-						><Pencil size={16} /></Dialog.Trigger
-					>
+					{#if data.canManage}
+						<Dialog.Trigger
+							class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
+								' h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
+							><Pencil size={16} /></Dialog.Trigger
+						>
+					{/if}
 				</h2>
 				<dl class="grid gap-4 text-sm lg:grid-cols-2">
 					<div>
@@ -1230,11 +1240,13 @@
 				>
 					<Heart size={20} />
 					<span class="mr-auto">Tratamientos</span>
-					<Dialog.Trigger
-						class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
-							' h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
-						><Pencil size={16} /></Dialog.Trigger
-					>
+					{#if data.canManage}
+						<Dialog.Trigger
+							class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
+								' h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
+							><Pencil size={16} /></Dialog.Trigger
+						>
+					{/if}
 				</h2>
 				<dl class="text-sm">
 					<div>
@@ -1317,44 +1329,47 @@
 		</Dialog.Root>
 	</div>
 
-	<div class="flex justify-end">
-		<AlertDialog.Root>
-			<AlertDialog.Trigger
-				class={buttonVariants({ variant: 'destructive', size: 'sm' }) +
-					' cursor-pointer gap-2 text-white'}
-				disabled={deletingPatient}
-			>
-				<Trash2 size={16} />
-				Eliminar paciente
-			</AlertDialog.Trigger>
-			<AlertDialog.Content>
-				<AlertDialog.Header>
-					<AlertDialog.Title>¿Eliminar paciente?</AlertDialog.Title>
-					<AlertDialog.Description>
-						Esta acción eliminará la inscripción y todos los datos del paciente en forma permanente.
-					</AlertDialog.Description>
-				</AlertDialog.Header>
-				<AlertDialog.Footer>
-					<AlertDialog.Cancel disabled={deletingPatient}>Cancelar</AlertDialog.Cancel>
-					<form method="POST" action="?/delete" use:kitEnhance={enhanceDelete}>
-						<AlertDialog.Action
-							type="submit"
-							disabled={deletingPatient}
-							class={buttonVariants({ variant: 'destructive', size: 'sm' }) +
-								'flex min-w-28 cursor-pointer items-center justify-center gap-2 text-white'}
-						>
-							{#if deletingPatient}
-								<span
-									class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-								></span>
-								Eliminando...
-							{:else}
-								Eliminar
-							{/if}
-						</AlertDialog.Action>
-					</form>
-				</AlertDialog.Footer>
-			</AlertDialog.Content>
-		</AlertDialog.Root>
-	</div>
+	{#if data.canManage}
+		<div class="flex justify-end">
+			<AlertDialog.Root>
+				<AlertDialog.Trigger
+					class={buttonVariants({ variant: 'destructive', size: 'sm' }) +
+						' cursor-pointer gap-2 text-white'}
+					disabled={deletingPatient}
+				>
+					<Trash2 size={16} />
+					Eliminar paciente
+				</AlertDialog.Trigger>
+				<AlertDialog.Content>
+					<AlertDialog.Header>
+						<AlertDialog.Title>¿Eliminar paciente?</AlertDialog.Title>
+						<AlertDialog.Description>
+							Esta acción eliminará la inscripción y todos los datos del paciente en forma
+							permanente.
+						</AlertDialog.Description>
+					</AlertDialog.Header>
+					<AlertDialog.Footer>
+						<AlertDialog.Cancel disabled={deletingPatient}>Cancelar</AlertDialog.Cancel>
+						<form method="POST" action="?/delete" use:kitEnhance={enhanceDelete}>
+							<AlertDialog.Action
+								type="submit"
+								disabled={deletingPatient}
+								class={buttonVariants({ variant: 'destructive', size: 'sm' }) +
+									'flex min-w-28 cursor-pointer items-center justify-center gap-2 text-white'}
+							>
+								{#if deletingPatient}
+									<span
+										class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+									></span>
+									Eliminando...
+								{:else}
+									Eliminar
+								{/if}
+							</AlertDialog.Action>
+						</form>
+					</AlertDialog.Footer>
+				</AlertDialog.Content>
+			</AlertDialog.Root>
+		</div>
+	{/if}
 </div>
