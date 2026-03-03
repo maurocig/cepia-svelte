@@ -9,7 +9,7 @@ import {
 import { db } from '$lib/server/db';
 import { agreementReminders, enrollments, patients } from '$lib/server/db/schema';
 import { and, eq, isNotNull, sql } from 'drizzle-orm';
-import { json } from '@sveltejs/kit';
+import { json, type RequestEvent } from '@sveltejs/kit';
 import { nanoid } from 'nanoid';
 import { Resend } from 'resend';
 
@@ -71,7 +71,7 @@ const buildReminderHtml = ({
 	`;
 };
 
-export const POST = async ({ request }) => {
+const runCron = async ({ request }: RequestEvent) => {
 	const cronSecret = env.CRON_SECRET;
 	const providedToken = bearerTokenFromHeader(request.headers.get('authorization'));
 
@@ -226,3 +226,5 @@ export const POST = async ({ request }) => {
 	});
 };
 
+export const GET = runCron;
+export const POST = runCron;
