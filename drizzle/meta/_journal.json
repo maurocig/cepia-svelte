@@ -50,6 +50,13 @@
       "when": 1772465372074,
       "tag": "0006_eager_hammerhead",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1772564104493,
+      "tag": "0007_romantic_selene",
+      "breakpoints": true
     }
   ]
 }

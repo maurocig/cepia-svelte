@@ -1,0 +1,1 @@
+ALTER TABLE "enrollments" ADD COLUMN "holder_email" text DEFAULT '' NOT NULL;

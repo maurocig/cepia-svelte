@@ -36,3 +36,35 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+
+## Cron: Recordatorios de Convenio BPS
+
+Se agregó un endpoint interno para ejecutar recordatorios persistidos e idempotentes:
+
+- `POST /api/cron/agreement-reminders`
+- Auth: `Authorization: Bearer <CRON_SECRET>`
+- Timezone de evaluación: `America/Montevideo`
+- Envío: Resend
+
+### Variables de entorno requeridas
+
+```bash
+CRON_SECRET=tu_secret_de_cron
+REMINDERS_INTERNAL_EMAIL=alertas@tu-dominio.com
+REMINDERS_FROM_EMAIL=Totem Software <notificaciones@tu-dominio.com>
+REMINDERS_REPLY_TO=soporte@tu-dominio.com # opcional
+```
+
+### Prueba manual del cron
+
+```bash
+curl -X POST http://localhost:5173/api/cron/agreement-reminders \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+La respuesta devuelve un resumen:
+
+- `processed`
+- `sent`
+- `failed`
+- `skippedAlreadySent`

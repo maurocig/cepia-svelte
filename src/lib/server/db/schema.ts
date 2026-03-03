@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { boolean, date, index, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { boolean, date, index, integer, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
@@ -174,3 +174,34 @@ export const patients = pgTable('patients', {
 		.$onUpdate(() => new Date())
 		.notNull()
 });
+
+export const agreementReminders = pgTable(
+	'agreement_reminders',
+	{
+		id: text('id').primaryKey(),
+		enrollmentId: text('enrollment_id')
+			.notNull()
+			.references(() => enrollments.id, { onDelete: 'cascade' }),
+		reminderType: text('reminder_type').notNull(), // '90d' | '30d'
+		scheduledFor: date('scheduled_for', { mode: 'string' }).notNull(),
+		status: text('status').notNull().default('pending'), // 'pending' | 'sent' | 'failed'
+		attemptCount: integer('attempt_count').notNull().default(0),
+		lastAttemptAt: timestamp('last_attempt_at'),
+		sentAt: timestamp('sent_at'),
+		resendMessageId: text('resend_message_id'),
+		lastError: text('last_error'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at')
+			.defaultNow()
+			.$onUpdate(() => new Date())
+			.notNull()
+	},
+	(table) => [
+		uniqueIndex('agreement_reminders_unique_instance_idx').on(
+			table.enrollmentId,
+			table.reminderType,
+			table.scheduledFor
+		),
+		index('agreement_reminders_status_scheduled_idx').on(table.status, table.scheduledFor)
+	]
+);

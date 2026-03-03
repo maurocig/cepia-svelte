@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { CircleUserRoundIcon, HomeIcon, PlusIcon, UserIcon, UsersIcon } from 'lucide-svelte';
+	import { BellIcon, CircleUserRoundIcon, HomeIcon, PlusIcon, UserIcon, UsersIcon } from 'lucide-svelte';
 	import type { Snippet } from 'svelte';
 	import Logout from './Logout.svelte';
 	import { buttonVariants } from './ui/button';
@@ -11,6 +11,7 @@
 		label: string;
 		match?: 'exact' | 'prefix';
 		rightText?: string;
+		rightVariant?: 'default' | 'alert';
 	};
 
 	let { userEmail, links } = $props<{
@@ -27,11 +28,12 @@
 		return path === link.href || path.endsWith(link.href + '/');
 	}
 
-	function iconKeyFor(href: string): 'home' | 'profile' | 'patients' | 'add' | null {
+	function iconKeyFor(href: string): 'home' | 'profile' | 'patients' | 'add' | 'reminders' | null {
 		if (href === '/admin') return 'home';
 		if (href === '/admin/profile') return 'profile';
 		if (href.endsWith('/admin/pacientes')) return 'patients';
 		if (href.endsWith('/admin/pacientes/nuevo')) return 'add';
+		if (href.endsWith('/admin/recordatorios')) return 'reminders';
 		return null;
 	}
 </script>
@@ -57,13 +59,21 @@
 						<UserIcon size="22" />
 					{:else if iconKeyFor(link.href) === 'add'}
 						<PlusIcon size="22" />
+					{:else if iconKeyFor(link.href) === 'reminders'}
+						<BellIcon size="22" />
 					{:else}
 						<!-- fallback spacing to keep alignment -->
 						<span class="inline-block h-[22px] w-[22px]"></span>
 					{/if}
 					<span>{link.label}</span>
 					{#if link.rightText}
-						<span class="ml-auto text-sm font-medium text-slate-500">{link.rightText}</span>
+						<span
+							class={'ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ' +
+								(link.rightVariant === 'alert'
+									? 'bg-red-600 text-white'
+									: 'bg-slate-100 text-slate-500')}
+							>{link.rightText}</span
+						>
 					{/if}
 				</a>
 			</li>

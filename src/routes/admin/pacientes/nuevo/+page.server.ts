@@ -42,7 +42,7 @@ export const actions: Actions = {
 
 		const emptyToNull = <T extends string>(v: T | null): Exclude<T, ''> | null =>
 			v === '' ? null : (v as Exclude<T, ''>);
-		const normalizeText = (v: string) => normalizeWhitespace(v);
+		const normalizeName = (v: string) => formatPersonName(v);
 		const normalizeOptionalText = <T extends string>(v: T | null): Exclude<T, ''> | null => {
 			if (v === '' || v == null) return null;
 			return normalizeWhitespace(v) as Exclude<T, ''>;
@@ -65,8 +65,8 @@ export const actions: Actions = {
 				enrollmentForm.data.agreementOrganization === 'BPS'
 					? emptyToNull(enrollmentForm.data.agreementExpirationDate)
 					: null,
-			holderFirstName: normalizeText(enrollmentForm.data.holderFirstName),
-			holderLastName: normalizeText(enrollmentForm.data.holderLastName),
+			holderFirstName: normalizeName(enrollmentForm.data.holderFirstName),
+			holderLastName: normalizeName(enrollmentForm.data.holderLastName),
 			holderIdType: emptyToNull(enrollmentForm.data.holderIdType),
 			holderIdNumber: enrollmentForm.data.holderIdNumber,
 			holderPhone: enrollmentForm.data.holderPhone,
@@ -154,6 +154,7 @@ export const actions: Actions = {
 			return v;
 		};
 		const normalizeText = (v: string) => normalizeWhitespace(v);
+		const normalizeName = (v: string) => formatPersonName(v);
 		const normalizeOptionalText = (v?: string | null) => {
 			if (v == null || v === '') return null;
 			return normalizeWhitespace(v);
@@ -209,13 +210,13 @@ export const actions: Actions = {
 					.insert(patients)
 					.values({
 						enrollmentId,
-						enrolledFirstName: normalizeText(patientForm.data.enrolledFirstName),
-						enrolledLastName: normalizeText(patientForm.data.enrolledLastName),
+						enrolledFirstName: normalizeName(patientForm.data.enrolledFirstName),
+						enrolledLastName: normalizeName(patientForm.data.enrolledLastName),
 						enrolledDob: patientForm.data.enrolledDob,
 						enrolledIdType: patientForm.data.enrolledIdType,
 						enrolledIdNumber: normalizedPatientDoc,
 						enrolledAddress: normalizeText(patientForm.data.enrolledAddress),
-						responsibleAdultName: normalizeText(patientForm.data.responsibleAdultName),
+						responsibleAdultName: normalizeName(patientForm.data.responsibleAdultName),
 						responsibleAdultPhone: patientForm.data.responsibleAdultPhone,
 						consultationReason: normalizeText(patientForm.data.consultationReason),
 						attendsSchool: patientForm.data.attendsSchool,
@@ -233,13 +234,13 @@ export const actions: Actions = {
 					.onConflictDoUpdate({
 						target: patients.enrollmentId,
 						set: {
-							enrolledFirstName: normalizeText(patientForm.data.enrolledFirstName),
-							enrolledLastName: normalizeText(patientForm.data.enrolledLastName),
+							enrolledFirstName: normalizeName(patientForm.data.enrolledFirstName),
+							enrolledLastName: normalizeName(patientForm.data.enrolledLastName),
 							enrolledDob: patientForm.data.enrolledDob,
 							enrolledIdType: patientForm.data.enrolledIdType,
 							enrolledIdNumber: normalizedPatientDoc,
 							enrolledAddress: normalizeText(patientForm.data.enrolledAddress),
-							responsibleAdultName: normalizeText(patientForm.data.responsibleAdultName),
+							responsibleAdultName: normalizeName(patientForm.data.responsibleAdultName),
 							responsibleAdultPhone: patientForm.data.responsibleAdultPhone,
 							consultationReason: normalizeText(patientForm.data.consultationReason),
 							attendsSchool: patientForm.data.attendsSchool,

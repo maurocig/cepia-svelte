@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import AdminSidebar from '@/components/AdminSidebar.svelte';
 	import Logout from '@/components/Logout.svelte';
-	import { CircleUserRoundIcon, HomeIcon, LogOutIcon, UserIcon, UsersIcon } from 'lucide-svelte';
+import { CircleUserRoundIcon, HomeIcon, LogOutIcon, UserIcon, UsersIcon } from 'lucide-svelte';
 	import { Toaster } from 'svelte-french-toast';
 
 	let { children, data } = $props();
@@ -16,7 +16,13 @@
 		links={[
 			{ href: '/admin', label: 'Inicio' },
 			{ href: '/admin/pacientes', label: 'Pacientes', rightText: String(data.patientsCount ?? 0) },
-			{ href: '/admin/pacientes/nuevo', label: 'Ingresar paciente' }
+			{ href: '/admin/pacientes/nuevo', label: 'Ingresar paciente' },
+			{
+				href: '/admin/recordatorios',
+				label: 'Recordatorios',
+				rightText: data.remindersActiveCount ? String(data.remindersActiveCount) : undefined,
+				rightVariant: 'alert'
+			}
 		]}
 	/>
 
