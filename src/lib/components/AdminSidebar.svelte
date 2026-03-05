@@ -1,6 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { BellIcon, CircleUserRoundIcon, HomeIcon, PlusIcon, UserIcon, UsersIcon } from 'lucide-svelte';
+	import {
+		BellIcon,
+		CircleUserRoundIcon,
+		HomeIcon,
+		PlusIcon,
+		UserIcon,
+		UsersIcon
+	} from 'lucide-svelte';
 	import type { Snippet } from 'svelte';
 	import Logout from './Logout.svelte';
 	import { buttonVariants } from './ui/button';
@@ -68,11 +75,10 @@
 					<span>{link.label}</span>
 					{#if link.rightText}
 						<span
-							class={'ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ' +
+							class={'ml-auto rounded-full px-2 py-0.5 text-xs font-medium ' +
 								(link.rightVariant === 'alert'
-									? 'bg-red-600 text-white'
-									: 'bg-slate-100 text-slate-500')}
-							>{link.rightText}</span
+									? 'bg-amber-100 text-amber-700'
+									: 'bg-slate-100 text-slate-500')}>{link.rightText}</span
 						>
 					{/if}
 				</a>

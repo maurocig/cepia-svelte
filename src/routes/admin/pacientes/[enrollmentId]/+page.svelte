@@ -274,6 +274,10 @@
 						<dd>{data.patient.enrolledIdType} {data.patient.enrolledIdNumber}</dd>
 					</div>
 					<div>
+						<dt class="font-medium">Edad</dt>
+						<dd>{ageFromDob(data.patient.enrolledDob) ?? '-'}</dd>
+					</div>
+					<div>
 						<dt class="font-medium">Fecha de nacimiento</dt>
 						<dd>{formatDateUy(data.patient.enrolledDob)}</dd>
 					</div>
