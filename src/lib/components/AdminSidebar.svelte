@@ -1,17 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import {
-		BellIcon,
-		CircleUserRoundIcon,
-		HomeIcon,
-		PlusIcon,
-		UserIcon,
-		UsersIcon
-	} from 'lucide-svelte';
-	import type { Snippet } from 'svelte';
+	import { BellIcon, CircleUserRoundIcon, HomeIcon, PlusIcon, UsersIcon } from 'lucide-svelte';
 	import Logout from './Logout.svelte';
-	import { buttonVariants } from './ui/button';
-	import Button from './ui/button/button.svelte';
 
 	export type AdminNavLink = {
 		href: string;
@@ -21,8 +11,7 @@
 		rightVariant?: 'default' | 'alert';
 	};
 
-	let { userEmail, links } = $props<{
-		userEmail: string;
+	let { links } = $props<{
 		links: AdminNavLink[];
 	}>();
 
@@ -63,7 +52,7 @@
 					{:else if iconKeyFor(link.href) === 'patients'}
 						<UsersIcon size="22" />
 					{:else if iconKeyFor(link.href) === 'profile'}
-						<UserIcon size="22" />
+						<CircleUserRoundIcon size="22" />
 					{:else if iconKeyFor(link.href) === 'add'}
 						<PlusIcon size="22" />
 					{:else if iconKeyFor(link.href) === 'reminders'}
@@ -86,16 +75,6 @@
 		{/each}
 	</ul>
 
-	<div class="my-4"></div>
-
-	<Button
-		href="/admin/profile"
-		class={buttonVariants({ variant: 'ghost' }) +
-			'flex w-full justify-start gap-2 border border-transparent bg-transparent font-normal text-gray-500 hover:cursor-pointer hover:border-slate-300'}
-	>
-		<CircleUserRoundIcon size="22" />
-		<span class="truncate">{userEmail}</span>
-	</Button>
-
+	<div class="mb-8"></div>
 	<Logout />
 </aside>

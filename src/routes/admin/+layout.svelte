@@ -1,28 +1,26 @@
 <script>
-	import { goto } from '$app/navigation';
 	import AdminSidebar from '@/components/AdminSidebar.svelte';
-	import Logout from '@/components/Logout.svelte';
-import { CircleUserRoundIcon, HomeIcon, LogOutIcon, UserIcon, UsersIcon } from 'lucide-svelte';
 	import { Toaster } from 'svelte-french-toast';
 
 	let { children, data } = $props();
+	const username = data.user?.name || data.user?.email?.split('@')?.[0] || 'usuario';
 </script>
 
 <div
-	class="mx-auto flex min-h-[calc(100vh-80px-300px)] w-full max-w-[1280px] grid-cols-2 flex-row items-start gap-4 px-4 md:gap-6 xl:px-0"
+	class="mx-auto flex min-h-[calc(100vh-80px-300px)] w-full max-w-[1420px] grid-cols-2 flex-row items-start gap-4 px-4 md:gap-6 2xl:px-0"
 >
 	<AdminSidebar
-		userEmail={data.user?.email ?? ''}
 		links={[
 			{ href: '/admin', label: 'Inicio' },
 			{ href: '/admin/pacientes', label: 'Pacientes', rightText: String(data.patientsCount ?? 0) },
-			{ href: '/admin/pacientes/nuevo', label: 'Ingresar paciente' },
 			{
 				href: '/admin/recordatorios',
 				label: 'Recordatorios',
 				rightText: data.remindersActiveCount ? String(data.remindersActiveCount) : undefined,
 				rightVariant: 'alert'
-			}
+			},
+			{ href: '/admin/profile', label: `Perfil (${username})`, match: 'exact' },
+			{ href: '/admin/pacientes/nuevo', label: 'Ingresar paciente' }
 		]}
 	/>
 
