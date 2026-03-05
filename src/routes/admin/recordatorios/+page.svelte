@@ -36,8 +36,8 @@
 						<th class="px-3 py-3 font-medium whitespace-nowrap">Paciente</th>
 						<th class="px-3 py-3 font-medium whitespace-nowrap">Documento</th>
 						<th class="px-3 py-3 font-medium whitespace-nowrap">Vence convenio</th>
-						<th class="px-2 py-3 text-center font-medium whitespace-nowrap">Rec. 90 días</th>
-						<th class="px-2 py-3 text-center font-medium whitespace-nowrap">Rec. 30 días</th>
+						<th class="px-2 py-3 text-center font-medium whitespace-nowrap">Email 90 días</th>
+						<th class="px-2 py-3 text-center font-medium whitespace-nowrap">Email 30 días</th>
 						<th class="px-3 py-3 font-medium whitespace-nowrap">Titular</th>
 						<th class="px-3 py-3 font-medium whitespace-nowrap">Email titular</th>
 					</tr>

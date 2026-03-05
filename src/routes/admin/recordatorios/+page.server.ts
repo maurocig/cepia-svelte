@@ -2,6 +2,7 @@ import {
 	AGREEMENT_REMINDER_TIMEZONE,
 	addDaysUtc,
 	daysBetweenUtc,
+	nextCronRunDateInTimeZone,
 	scheduledDateForType,
 	todayInTimeZone,
 	yyyyMmDdInTimeZone
@@ -50,6 +51,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.orderBy(asc(enrollments.agreementExpirationDate));
 
 	const today = todayInTimeZone(AGREEMENT_REMINDER_TIMEZONE);
+	const nextCronRunDate = nextCronRunDateInTimeZone(new Date(), AGREEMENT_REMINDER_TIMEZONE, 9, 5);
 	const enrollmentIds = rows.map((row) => row.enrollmentId);
 	const persistedReminders =
 		enrollmentIds.length > 0
@@ -96,14 +98,18 @@ export const load: PageServerLoad = async ({ locals }) => {
 				date:
 					reminder90Sent && persisted90?.sentAt
 						? yyyyMmDdInTimeZone(new Date(persisted90.sentAt), AGREEMENT_REMINDER_TIMEZONE)
-						: reminder90Date,
+						: reminder90Date < nextCronRunDate
+							? nextCronRunDate
+							: reminder90Date,
 				status: reminder90Sent ? 'sent' : 'pending'
 			},
 			reminder30: {
 				date:
 					reminder30Sent && persisted30?.sentAt
 						? yyyyMmDdInTimeZone(new Date(persisted30.sentAt), AGREEMENT_REMINDER_TIMEZONE)
-						: reminder30Date,
+						: reminder30Date < nextCronRunDate
+							? nextCronRunDate
+							: reminder30Date,
 				status: reminder30Sent ? 'sent' : 'pending'
 			}
 		};
