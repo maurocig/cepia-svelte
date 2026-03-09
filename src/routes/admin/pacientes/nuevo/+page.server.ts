@@ -3,6 +3,7 @@ import { patientSchema } from '$lib/schemas/patient';
 import { db } from '$lib/server/db';
 import { isDuplicatePatientDocumentError } from '$lib/server/db/errors';
 import { enrollments, patients } from '$lib/server/db/schema';
+import { syncAgreementReminders } from '$lib/server/sync-agreement-reminders';
 import {
 	formatPersonName,
 	normalizeWhitespace,
@@ -119,6 +120,13 @@ export const actions: Actions = {
 					return fail(404, { enrollmentForm, message: 'No se encontró el borrador a actualizar' });
 				}
 
+				await syncAgreementReminders({
+					enrollmentId: updated.id,
+					admissionMode: normalized.admissionMode,
+					agreementOrganization: normalized.agreementOrganization,
+					agreementExpirationDate: normalized.agreementExpirationDate
+				});
+
 				return { enrollmentForm, enrollmentId: updated.id };
 			}
 
@@ -126,6 +134,13 @@ export const actions: Actions = {
 				.insert(enrollments)
 				.values(normalized)
 				.returning({ id: enrollments.id });
+
+			await syncAgreementReminders({
+				enrollmentId: inserted?.id ?? effectiveEnrollmentId,
+				admissionMode: normalized.admissionMode,
+				agreementOrganization: normalized.agreementOrganization,
+				agreementExpirationDate: normalized.agreementExpirationDate
+			});
 
 			return { enrollmentForm, enrollmentId: inserted?.id ?? effectiveEnrollmentId };
 		} catch (err) {

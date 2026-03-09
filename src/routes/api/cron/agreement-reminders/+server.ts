@@ -2,14 +2,15 @@ import { env } from '$env/dynamic/private';
 import {
 	AGREEMENT_REMINDER_TIMEZONE,
 	AGREEMENT_REMINDER_TYPES,
+	daysBetweenUtc,
 	scheduledDateForType,
 	todayInTimeZone,
 	type AgreementReminderType
 } from '$lib/server/agreement-reminders';
 import { db } from '$lib/server/db';
 import { agreementReminders, enrollments, patients } from '$lib/server/db/schema';
-import { and, eq, isNotNull, sql } from 'drizzle-orm';
 import { json, type RequestEvent } from '@sveltejs/kit';
+import { and, eq, isNotNull, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { Resend } from 'resend';
 
@@ -38,6 +39,7 @@ const buildReminderHtml = ({
 	holderName,
 	holderEmail,
 	expirationDate,
+	expirationRemainingLabel,
 	scheduledFor
 }: {
 	baseUrl: string;
@@ -48,6 +50,7 @@ const buildReminderHtml = ({
 	holderName: string;
 	holderEmail: string;
 	expirationDate: string;
+	expirationRemainingLabel: string;
 	scheduledFor: string;
 }) => {
 	const patientUrl = `${baseUrl.replace(/\/$/, '')}/admin/pacientes/${enrollmentId}`;
@@ -58,6 +61,7 @@ const buildReminderHtml = ({
 				<p>Tipo de recordatorio: <strong>${escapeHtml(reminderType)}</strong></p>
 				<p>Fecha programada: <strong>${escapeHtml(scheduledFor)}</strong></p>
 				<p>Vencimiento del convenio: <strong>${escapeHtml(expirationDate)}</strong></p>
+				<p>Días restantes: <strong>${escapeHtml(expirationRemainingLabel)}</strong></p>
 				<hr />
 				<p>Paciente: ${escapeHtml(patientName)}</p>
 				<p>Documento: ${escapeHtml(patientDocument)}</p>
@@ -69,6 +73,11 @@ const buildReminderHtml = ({
 			</body>
 		</html>
 	`;
+};
+
+const expirationRemainingLabel = (daysUntil: number) => {
+	if (daysUntil < 0) return 'Vencido';
+	return `En ${Math.max(daysUntil, 0)} dias`;
 };
 
 const runCron = async ({ request }: RequestEvent) => {
@@ -123,6 +132,7 @@ const runCron = async ({ request }: RequestEvent) => {
 
 	for (const row of rows) {
 		const expirationDate = row.agreementExpirationDate as string;
+		const expirationDaysUntil = daysBetweenUtc(today, expirationDate);
 
 		for (const reminderType of AGREEMENT_REMINDER_TYPES) {
 			const scheduledFor = scheduledDateForType(expirationDate, reminderType);
@@ -179,6 +189,7 @@ const runCron = async ({ request }: RequestEvent) => {
 						holderName: `${row.holderFirstName} ${row.holderLastName}`.trim(),
 						holderEmail: row.holderEmail,
 						expirationDate,
+						expirationRemainingLabel: expirationRemainingLabel(expirationDaysUntil),
 						scheduledFor
 					})
 				});

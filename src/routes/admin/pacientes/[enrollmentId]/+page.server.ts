@@ -9,6 +9,7 @@ import {
 import { db } from '$lib/server/db';
 import { isDuplicatePatientDocumentError } from '$lib/server/db/errors';
 import { enrollments, patients } from '$lib/server/db/schema';
+import { syncAgreementReminders } from '$lib/server/sync-agreement-reminders';
 import {
 	formatPersonName,
 	normalizeWhitespace,
@@ -251,26 +252,29 @@ export const actions: Actions = {
 			return fail(400, { enrollmentEditForm });
 		}
 
+		const agreementOrganization =
+			enrollmentEditForm.data.admissionMode === 'agreement'
+				? emptyToNull(enrollmentEditForm.data.agreementOrganization)
+				: null;
+		const agreementExpirationDate =
+			enrollmentEditForm.data.admissionMode === 'agreement' &&
+			enrollmentEditForm.data.agreementOrganization === 'BPS'
+				? emptyToNull(enrollmentEditForm.data.agreementExpirationDate)
+				: null;
+
 		await db
 			.update(enrollments)
 			.set({
 				status: enrollmentEditForm.data.enrollmentStatus,
 				admissionDate: enrollmentEditForm.data.admissionDate,
 				admissionMode: enrollmentEditForm.data.admissionMode ?? null,
-				agreementOrganization:
-					enrollmentEditForm.data.admissionMode === 'agreement'
-						? emptyToNull(enrollmentEditForm.data.agreementOrganization)
-						: null,
+				agreementOrganization,
 				agreementOtherName:
 					enrollmentEditForm.data.admissionMode === 'agreement' &&
 					enrollmentEditForm.data.agreementOrganization === 'other'
 						? formatPersonName(enrollmentEditForm.data.agreementOtherName)
 						: null,
-				agreementExpirationDate:
-					enrollmentEditForm.data.admissionMode === 'agreement' &&
-					enrollmentEditForm.data.agreementOrganization === 'BPS'
-						? emptyToNull(enrollmentEditForm.data.agreementExpirationDate)
-						: null,
+				agreementExpirationDate,
 				holderFirstName: formatPersonName(enrollmentEditForm.data.holderFirstName),
 				holderLastName: formatPersonName(enrollmentEditForm.data.holderLastName),
 				holderIdType: emptyToNull(enrollmentEditForm.data.holderIdType),
@@ -282,6 +286,13 @@ export const actions: Actions = {
 				holderEmail: enrollmentEditForm.data.holderEmail.trim()
 			})
 			.where(eq(enrollments.id, enrollmentId));
+
+		await syncAgreementReminders({
+			enrollmentId,
+			admissionMode: enrollmentEditForm.data.admissionMode ?? null,
+			agreementOrganization,
+			agreementExpirationDate
+		});
 
 		return { success: true, enrollmentEditForm };
 	},

@@ -7,7 +7,7 @@
 </script>
 
 <div
-	class="mx-auto flex min-h-[calc(100vh-80px-300px)] w-full max-w-[1420px] grid-cols-2 flex-row items-start gap-4 px-4 md:gap-6 2xl:px-0"
+	class="3xl:px-0 mx-auto flex min-h-[calc(100vh-80px-300px)] w-full max-w-[1420px] grid-cols-2 flex-row items-start gap-4 px-4 md:gap-6"
 >
 	<AdminSidebar
 		links={[
