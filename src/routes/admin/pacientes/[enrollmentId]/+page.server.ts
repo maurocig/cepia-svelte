@@ -8,7 +8,9 @@ import {
 } from '$lib/schemas/edit-sections';
 import { db } from '$lib/server/db';
 import { isDuplicatePatientDocumentError } from '$lib/server/db/errors';
-import { enrollments, patients } from '$lib/server/db/schema';
+import { addDaysUtc, daysBetweenUtc, todayInTimeZone } from '$lib/server/agreement-reminders';
+import { buildLegacyTreatmentAssignments, summarizeTreatmentAssignments } from '$lib/treatments';
+import { enrollmentTreatments, enrollments, patients } from '$lib/server/db/schema';
 import { syncAgreementReminders } from '$lib/server/sync-agreement-reminders';
 import {
 	formatPersonName,
@@ -16,7 +18,7 @@ import {
 	sanitizeDocumentNumber,
 	type DocumentIdType
 } from '$lib/utils';
-import { and, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -33,6 +35,38 @@ const responsibleEditValidator = zod4(responsibleEditSchema);
 const schoolEditValidator = zod4(schoolEditSchema);
 const familyEditValidator = zod4(familyEditSchema);
 const treatmentsEditValidator = zod4(treatmentsEditSchema);
+const getExpirationStatus = (expirationDate: string, today: string) => {
+	if (expirationDate < today) return 'expired';
+	if (expirationDate <= addDaysUtc(today, 90)) return 'pending-renewal';
+	return 'active';
+};
+
+const replaceEnrollmentTreatments = async (
+	tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+	enrollmentId: string,
+	assignments: {
+		treatmentType: string;
+		day: string;
+		time: string;
+		professionalName: string;
+	}[]
+) => {
+	await tx.delete(enrollmentTreatments).where(eq(enrollmentTreatments.enrollmentId, enrollmentId));
+
+	if (assignments.length === 0) return;
+
+	await tx.insert(enrollmentTreatments).values(
+		assignments.map((assignment, index) => ({
+			id: crypto.randomUUID(),
+			enrollmentId,
+			treatmentTypeCode: assignment.treatmentType,
+			day: assignment.day,
+			time: assignment.time,
+			professionalName: assignment.professionalName,
+			sortOrder: index
+		}))
+	);
+};
 
 const requireUserId = (userId?: string) => {
 	if (!userId) throw redirect(302, '/auth/login');
@@ -63,6 +97,8 @@ const selection = {
 	physiotherapy: enrollments.physiotherapy,
 	occupationalTherapy: enrollments.occupationalTherapy,
 	workshops: enrollments.workshops,
+	treatmentDaysPerWeek: enrollments.treatmentDaysPerWeek,
+	treatmentSchedule: enrollments.treatmentSchedule,
 	treatmentsNotes: enrollments.treatmentsNotes,
 	enrolledFirstName: patients.enrolledFirstName,
 	enrolledLastName: patients.enrolledLastName,
@@ -79,9 +115,13 @@ const selection = {
 	schoolGrade: patients.schoolGrade,
 	schoolShift: patients.schoolShift,
 	motherDob: patients.motherDob,
+	motherName: patients.motherName,
 	motherOccupation: patients.motherOccupation,
+	motherPhone: patients.motherPhone,
 	fatherDob: patients.fatherDob,
+	fatherName: patients.fatherName,
 	fatherOccupation: patients.fatherOccupation,
+	fatherPhone: patients.fatherPhone,
 	siblingsCount: patients.siblingsCount,
 	familyNotes: patients.familyNotes
 } as const;
@@ -94,17 +134,56 @@ const getEditableRow = async (enrollmentId: string) => {
 		.where(and(eq(enrollments.id, enrollmentId), eq(enrollments.formStatus, 'completed')))
 		.limit(1);
 
-	return row;
+	if (!row) return null;
+
+	const assignmentRows = await db
+		.select({
+			treatmentType: enrollmentTreatments.treatmentTypeCode,
+			day: enrollmentTreatments.day,
+			time: enrollmentTreatments.time,
+			professionalName: enrollmentTreatments.professionalName
+		})
+		.from(enrollmentTreatments)
+		.where(eq(enrollmentTreatments.enrollmentId, enrollmentId))
+		.orderBy(asc(enrollmentTreatments.sortOrder));
+
+	return {
+		...row,
+		treatmentAssignments:
+			assignmentRows.length > 0
+				? assignmentRows
+				: buildLegacyTreatmentAssignments(
+						{
+							psychology: row.psychology,
+							psychomotricity: row.psychomotricity,
+							speechTherapy: row.speechTherapy,
+							psychopedagogy: row.psychopedagogy,
+							pedagogicalSupport: row.pedagogicalSupport,
+							physiotherapy: row.physiotherapy,
+							occupationalTherapy: row.occupationalTherapy,
+							workshops: row.workshops
+						},
+						row.treatmentSchedule
+					)
+	};
 };
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	requireUserId(locals.user?.id);
 	const canManage = isAdminRole(locals.user?.role);
 	const row = await getEditableRow(params.enrollmentId);
+	const today = todayInTimeZone('America/Montevideo');
 
 	if (!row) {
 		throw error(404, 'Paciente no encontrado');
 	}
+
+	const agreementExpirationStatus = row.agreementExpirationDate
+		? getExpirationStatus(row.agreementExpirationDate, today)
+		: null;
+	const agreementExpirationDaysUntil = row.agreementExpirationDate
+		? daysBetweenUtc(today, row.agreementExpirationDate)
+		: null;
 
 	const patientEditForm = await superValidate(
 		{
@@ -154,10 +233,14 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	);
 	const familyEditForm = await superValidate(
 		{
+			motherName: row.motherName ?? '',
 			motherDob: row.motherDob ?? '',
 			motherOccupation: row.motherOccupation ?? '',
+			motherPhone: row.motherPhone ?? '',
+			fatherName: row.fatherName ?? '',
 			fatherDob: row.fatherDob ?? '',
 			fatherOccupation: row.fatherOccupation ?? '',
+			fatherPhone: row.fatherPhone ?? '',
 			siblingsCount: row.siblingsCount ?? undefined,
 			familyNotes: row.familyNotes ?? ''
 		},
@@ -165,21 +248,16 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	);
 	const treatmentsEditForm = await superValidate(
 		{
-			psychology: row.psychology,
-			psychomotricity: row.psychomotricity,
-			speechTherapy: row.speechTherapy,
-			psychopedagogy: row.psychopedagogy,
-			pedagogicalSupport: row.pedagogicalSupport,
-			physiotherapy: row.physiotherapy,
-			occupationalTherapy: row.occupationalTherapy,
-			workshops: row.workshops,
-			treatmentsNotes: row.treatmentsNotes ?? ''
+			treatmentAssignments: row.treatmentAssignments,
+			treatmentsNotes: row.treatmentsNotes ?? '',
 		},
 		treatmentsEditValidator
 	);
 
 	return {
 		patient: row,
+		agreementExpirationStatus,
+		agreementExpirationDaysUntil,
 		canManage,
 		patientEditForm,
 		enrollmentEditForm,
@@ -370,10 +448,22 @@ export const actions: Actions = {
 		await db
 			.update(patients)
 			.set({
+				motherName: emptyToNull(
+					familyEditForm.data.motherName
+						? formatPersonName(familyEditForm.data.motherName)
+						: ''
+				),
 				motherDob: emptyToNull(familyEditForm.data.motherDob),
 				motherOccupation: emptyToNull(familyEditForm.data.motherOccupation),
+				motherPhone: emptyToNull(familyEditForm.data.motherPhone),
+				fatherName: emptyToNull(
+					familyEditForm.data.fatherName
+						? formatPersonName(familyEditForm.data.fatherName)
+						: ''
+				),
 				fatherDob: emptyToNull(familyEditForm.data.fatherDob),
 				fatherOccupation: emptyToNull(familyEditForm.data.fatherOccupation),
+				fatherPhone: emptyToNull(familyEditForm.data.fatherPhone),
 				siblingsCount: familyEditForm.data.siblingsCount ?? null,
 				familyNotes: emptyToNull(familyEditForm.data.familyNotes)
 			})
@@ -396,20 +486,34 @@ export const actions: Actions = {
 			return fail(400, { treatmentsEditForm });
 		}
 
-		await db
-			.update(enrollments)
-			.set({
-				psychology: treatmentsEditForm.data.psychology,
-				psychomotricity: treatmentsEditForm.data.psychomotricity,
-				speechTherapy: treatmentsEditForm.data.speechTherapy,
-				psychopedagogy: treatmentsEditForm.data.psychopedagogy,
-				pedagogicalSupport: treatmentsEditForm.data.pedagogicalSupport,
-				physiotherapy: treatmentsEditForm.data.physiotherapy,
-				occupationalTherapy: treatmentsEditForm.data.occupationalTherapy,
-				workshops: treatmentsEditForm.data.workshops,
-				treatmentsNotes: normalizeWhitespace(treatmentsEditForm.data.treatmentsNotes)
-			})
-			.where(eq(enrollments.id, enrollmentId));
+		const normalizedAssignments = treatmentsEditForm.data.treatmentAssignments.map((assignment) => ({
+			treatmentType: assignment.treatmentType,
+			day: assignment.day,
+			time: assignment.time,
+			professionalName: formatPersonName(assignment.professionalName)
+		}));
+		const treatmentSummary = summarizeTreatmentAssignments(normalizedAssignments);
+
+		await db.transaction(async (tx) => {
+			await tx
+				.update(enrollments)
+				.set({
+					psychology: treatmentSummary.treatmentFlags.psychology,
+					psychomotricity: treatmentSummary.treatmentFlags.psychomotricity,
+					speechTherapy: treatmentSummary.treatmentFlags.speechTherapy,
+					psychopedagogy: treatmentSummary.treatmentFlags.psychopedagogy,
+					pedagogicalSupport: treatmentSummary.treatmentFlags.pedagogicalSupport,
+					physiotherapy: treatmentSummary.treatmentFlags.physiotherapy,
+					occupationalTherapy: treatmentSummary.treatmentFlags.occupationalTherapy,
+					workshops: treatmentSummary.treatmentFlags.workshops,
+					treatmentsNotes: normalizeWhitespace(treatmentsEditForm.data.treatmentsNotes),
+					treatmentDaysPerWeek: treatmentSummary.treatmentDaysPerWeek,
+					treatmentSchedule: JSON.stringify(treatmentSummary.treatmentSchedule)
+				})
+				.where(eq(enrollments.id, enrollmentId));
+
+			await replaceEnrollmentTreatments(tx, enrollmentId, normalizedAssignments);
+		});
 
 		return { success: true, treatmentsEditForm };
 	},

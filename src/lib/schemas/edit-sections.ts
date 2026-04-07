@@ -5,9 +5,12 @@ import {
 	enrollmentStatusValues,
 	idTypeValues,
 	schoolShiftValues,
-	schoolTypeValues
+	schoolTypeValues,
+	treatmentDayValues,
+	treatmentTimeValues
 } from '$lib/domain/select-options';
 import { getInvalidSupportedPhoneMessage, isValidSupportedInternationalPhone } from '$lib/phone';
+import { treatmentTypeCodes } from '$lib/treatments';
 import { todayYyyyMmDd } from '$lib/utils';
 
 const nonEmpty = (msg: string) => z.string().trim().min(1, msg);
@@ -22,6 +25,28 @@ const checkboxBool = z.preprocess((v) => {
 
 const emptyToUndefined = <T extends z.ZodTypeAny>(schema: T) =>
 	z.preprocess((v) => (v === '' ? undefined : v), schema);
+
+const treatmentAssignmentSchema = z.object({
+	treatmentType: z.union([z.literal(''), z.enum(treatmentTypeCodes)]).default(''),
+	day: z.union([z.literal(''), z.enum(treatmentDayValues)]).default(''),
+	time: z.union([z.literal(''), z.enum(treatmentTimeValues)]).default(''),
+	professionalName: z.string().default('')
+});
+const treatmentAssignmentsSchema = z.preprocess(
+	(value) => {
+		if (value == null || value === '') return [];
+		if (Array.isArray(value)) return value;
+		if (typeof value === 'string') {
+			try {
+				return JSON.parse(value);
+			} catch {
+				return value;
+			}
+		}
+		return value;
+	},
+	z.array(treatmentAssignmentSchema).max(20, 'La cantidad máxima es 20 asignaciones')
+);
 
 export const patientEditSchema = z
 	.object({
@@ -233,10 +258,14 @@ export const schoolEditSchema = z
 
 export const familyEditSchema = z
 	.object({
+		motherName: z.string().optional().or(z.literal('')),
 		motherDob: dateYYYYMMDD.optional().or(z.literal('')),
 		motherOccupation: z.string().optional().or(z.literal('')),
+		motherPhone: z.string().optional().or(z.literal('')),
+		fatherName: z.string().optional().or(z.literal('')),
 		fatherDob: dateYYYYMMDD.optional().or(z.literal('')),
 		fatherOccupation: z.string().optional().or(z.literal('')),
+		fatherPhone: z.string().optional().or(z.literal('')),
 		siblingsCount: z
 			.preprocess(
 				(v) => {
@@ -265,32 +294,51 @@ export const familyEditSchema = z
 				message: 'La fecha de nacimiento no puede ser futura'
 			});
 		}
+		const motherPhone = d.motherPhone ?? '';
+		const fatherPhone = d.fatherPhone ?? '';
+
+		if (motherPhone.trim() && !isValidSupportedInternationalPhone(motherPhone)) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['motherPhone'],
+				message: getInvalidSupportedPhoneMessage(motherPhone)
+			});
+		}
+		if (fatherPhone.trim() && !isValidSupportedInternationalPhone(fatherPhone)) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['fatherPhone'],
+				message: getInvalidSupportedPhoneMessage(fatherPhone)
+			});
+		}
 	});
 
 export const treatmentsEditSchema = z
 	.object({
-		psychology: checkboxBool.default(false),
-		psychomotricity: checkboxBool.default(false),
-		speechTherapy: checkboxBool.default(false),
-		psychopedagogy: checkboxBool.default(false),
-		pedagogicalSupport: checkboxBool.default(false),
-		physiotherapy: checkboxBool.default(false),
-		occupationalTherapy: checkboxBool.default(false),
-		workshops: checkboxBool.default(false),
-		treatmentsNotes: z.string().optional().or(z.literal('')).default('')
+		treatmentAssignments: treatmentAssignmentsSchema.default([]),
+		treatmentsNotes: z.string().optional().or(z.literal('')).default(''),
 	})
-	.refine(
-		(data) =>
-			data.psychology ||
-			data.psychomotricity ||
-			data.speechTherapy ||
-			data.psychopedagogy ||
-			data.pedagogicalSupport ||
-			data.physiotherapy ||
-			data.occupationalTherapy ||
-			data.workshops,
-		{
-			path: ['treatmentsNotes'],
-			message: 'Selecciona al menos un tratamiento'
+	.superRefine((data, ctx) => {
+		if (data.treatmentAssignments.length === 0) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['treatmentAssignments'],
+				message: 'Selecciona al menos un tratamiento'
+			});
 		}
-	);
+
+		const hasIncompleteAssignment = data.treatmentAssignments.some(
+			(assignment) =>
+				!assignment.treatmentType ||
+				!assignment.day ||
+				!assignment.time ||
+				assignment.professionalName.trim().length === 0
+		);
+		if (hasIncompleteAssignment) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['treatmentAssignments'],
+				message: 'Completá tratamiento, día, horario y profesional en cada fila'
+			});
+		}
+	});

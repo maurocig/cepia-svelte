@@ -1,8 +1,9 @@
 import { enrollmentSchema } from '$lib/schemas/enrollment';
 import { patientSchema } from '$lib/schemas/patient';
+import { summarizeTreatmentAssignments } from '$lib/treatments';
 import { db } from '$lib/server/db';
 import { isDuplicatePatientDocumentError } from '$lib/server/db/errors';
-import { enrollments, patients } from '$lib/server/db/schema';
+import { enrollmentTreatments, enrollments, patients } from '$lib/server/db/schema';
 import { syncAgreementReminders } from '$lib/server/sync-agreement-reminders';
 import {
 	formatPersonName,
@@ -19,6 +20,33 @@ import type { Actions, PageServerLoad } from './$types';
 
 const enrollmentValidator = zod4(enrollmentSchema);
 const patientValidator = zod4(patientSchema);
+
+const replaceEnrollmentTreatments = async (
+	tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+	enrollmentId: string,
+	assignments: {
+		treatmentType: string;
+		day: string;
+		time: string;
+		professionalName: string;
+	}[]
+) => {
+	await tx.delete(enrollmentTreatments).where(eq(enrollmentTreatments.enrollmentId, enrollmentId));
+
+	if (assignments.length === 0) return;
+
+	await tx.insert(enrollmentTreatments).values(
+		assignments.map((assignment, index) => ({
+			id: nanoid(),
+			enrollmentId,
+			treatmentTypeCode: assignment.treatmentType,
+			day: assignment.day,
+			time: assignment.time,
+			professionalName: assignment.professionalName,
+			sortOrder: index
+		}))
+	);
+};
 
 export const load: PageServerLoad = async () => {
 	const enrollmentForm = await superValidate(enrollmentValidator);
@@ -54,6 +82,13 @@ export const actions: Actions = {
 		};
 
 		const effectiveEnrollmentId = enrollmentId ?? nanoid();
+		const normalizedTreatmentAssignments = enrollmentForm.data.treatmentAssignments.map((assignment) => ({
+			treatmentType: assignment.treatmentType,
+			day: assignment.day,
+			time: assignment.time,
+			professionalName: formatPersonName(assignment.professionalName)
+		}));
+		const treatmentSummary = summarizeTreatmentAssignments(normalizedTreatmentAssignments);
 		const normalized = {
 			id: effectiveEnrollmentId,
 			status: enrollmentForm.data.enrollmentStatus,
@@ -66,20 +101,22 @@ export const actions: Actions = {
 				enrollmentForm.data.agreementOrganization === 'BPS'
 					? emptyToNull(enrollmentForm.data.agreementExpirationDate)
 					: null,
+			treatmentDaysPerWeek: treatmentSummary.treatmentDaysPerWeek,
+			treatmentSchedule: JSON.stringify(treatmentSummary.treatmentSchedule),
 			holderFirstName: normalizeName(enrollmentForm.data.holderFirstName),
 			holderLastName: normalizeName(enrollmentForm.data.holderLastName),
 			holderIdType: emptyToNull(enrollmentForm.data.holderIdType),
 			holderIdNumber: enrollmentForm.data.holderIdNumber,
 			holderPhone: enrollmentForm.data.holderPhone,
 			holderEmail: enrollmentForm.data.holderEmail.trim(),
-			psychology: enrollmentForm.data.psychology,
-			psychomotricity: enrollmentForm.data.psychomotricity,
-			speechTherapy: enrollmentForm.data.speechTherapy,
-			psychopedagogy: enrollmentForm.data.psychopedagogy,
-			pedagogicalSupport: enrollmentForm.data.pedagogicalSupport,
-			physiotherapy: enrollmentForm.data.physiotherapy,
-			occupationalTherapy: enrollmentForm.data.occupationalTherapy,
-			workshops: enrollmentForm.data.workshops,
+			psychology: treatmentSummary.treatmentFlags.psychology,
+			psychomotricity: treatmentSummary.treatmentFlags.psychomotricity,
+			speechTherapy: treatmentSummary.treatmentFlags.speechTherapy,
+			psychopedagogy: treatmentSummary.treatmentFlags.psychopedagogy,
+			pedagogicalSupport: treatmentSummary.treatmentFlags.pedagogicalSupport,
+			physiotherapy: treatmentSummary.treatmentFlags.physiotherapy,
+			occupationalTherapy: treatmentSummary.treatmentFlags.occupationalTherapy,
+			workshops: treatmentSummary.treatmentFlags.workshops,
 			treatmentsNotes: enrollmentForm.data.treatmentsNotes,
 			formStatus: 'draft' as const,
 			createdByUserId: userId
@@ -87,15 +124,18 @@ export const actions: Actions = {
 
 		try {
 			if (enrollmentId) {
-				const [updated] = await db
-					.update(enrollments)
-					.set({
-						status: normalized.status,
-						admissionDate: normalized.admissionDate,
-						admissionMode: normalized.admissionMode,
-						agreementOrganization: normalized.agreementOrganization,
-						agreementOtherName: normalized.agreementOtherName,
-						agreementExpirationDate: normalized.agreementExpirationDate,
+				const updatedId = await db.transaction(async (tx) => {
+					const [updated] = await tx
+						.update(enrollments)
+						.set({
+							status: normalized.status,
+							admissionDate: normalized.admissionDate,
+							admissionMode: normalized.admissionMode,
+							agreementOrganization: normalized.agreementOrganization,
+							agreementOtherName: normalized.agreementOtherName,
+							agreementExpirationDate: normalized.agreementExpirationDate,
+							treatmentDaysPerWeek: normalized.treatmentDaysPerWeek,
+							treatmentSchedule: normalized.treatmentSchedule,
 						holderFirstName: normalized.holderFirstName,
 						holderLastName: normalized.holderLastName,
 						holderIdType: normalized.holderIdType,
@@ -112,38 +152,56 @@ export const actions: Actions = {
 						workshops: normalized.workshops,
 						treatmentsNotes: normalized.treatmentsNotes,
 						formStatus: normalized.formStatus
-					})
-					.where(and(eq(enrollments.id, enrollmentId), eq(enrollments.createdByUserId, userId)))
-					.returning({ id: enrollments.id });
+						})
+						.where(and(eq(enrollments.id, enrollmentId), eq(enrollments.createdByUserId, userId)))
+						.returning({ id: enrollments.id });
 
-				if (!updated?.id) {
+					if (!updated?.id) {
+						throw new Error('ENROLLMENT_NOT_FOUND');
+					}
+
+					await replaceEnrollmentTreatments(tx, updated.id, normalizedTreatmentAssignments);
+
+					return updated.id;
+				});
+
+				if (!updatedId) {
 					return fail(404, { enrollmentForm, message: 'No se encontró el borrador a actualizar' });
 				}
 
 				await syncAgreementReminders({
-					enrollmentId: updated.id,
+					enrollmentId: updatedId,
 					admissionMode: normalized.admissionMode,
 					agreementOrganization: normalized.agreementOrganization,
 					agreementExpirationDate: normalized.agreementExpirationDate
 				});
 
-				return { enrollmentForm, enrollmentId: updated.id };
+				return { enrollmentForm, enrollmentId: updatedId };
 			}
 
-			const [inserted] = await db
-				.insert(enrollments)
-				.values(normalized)
-				.returning({ id: enrollments.id });
+			const insertedId = await db.transaction(async (tx) => {
+				const [inserted] = await tx
+					.insert(enrollments)
+					.values(normalized)
+					.returning({ id: enrollments.id });
+
+				const finalId = inserted?.id ?? effectiveEnrollmentId;
+				await replaceEnrollmentTreatments(tx, finalId, normalizedTreatmentAssignments);
+				return finalId;
+			});
 
 			await syncAgreementReminders({
-				enrollmentId: inserted?.id ?? effectiveEnrollmentId,
+				enrollmentId: insertedId,
 				admissionMode: normalized.admissionMode,
 				agreementOrganization: normalized.agreementOrganization,
 				agreementExpirationDate: normalized.agreementExpirationDate
 			});
 
-			return { enrollmentForm, enrollmentId: inserted?.id ?? effectiveEnrollmentId };
+			return { enrollmentForm, enrollmentId: insertedId };
 		} catch (err) {
+			if (err instanceof Error && err.message === 'ENROLLMENT_NOT_FOUND') {
+				return fail(404, { enrollmentForm, message: 'No se encontró el borrador a actualizar' });
+			}
 			console.error('[nuevo paciente] persist enrollment error', err);
 			return fail(500, { enrollmentForm, message: 'Error al guardar la inscripción' });
 		}
@@ -239,10 +297,14 @@ export const actions: Actions = {
 						schoolName: normalizeOptionalName(patientForm.data.schoolName),
 						schoolGrade: emptyToNull(patientForm.data.schoolGrade ?? null),
 						schoolShift: normalizeOptionalText(patientForm.data.schoolShift ?? null),
+						motherName: normalizeOptionalName(patientForm.data.motherName),
 						motherDob: emptyToNull(patientForm.data.motherDob),
 						motherOccupation: normalizeOptionalText(patientForm.data.motherOccupation),
+						motherPhone: normalizeOptionalText(patientForm.data.motherPhone),
+						fatherName: normalizeOptionalName(patientForm.data.fatherName),
 						fatherDob: emptyToNull(patientForm.data.fatherDob),
 						fatherOccupation: normalizeOptionalText(patientForm.data.fatherOccupation),
+						fatherPhone: normalizeOptionalText(patientForm.data.fatherPhone),
 						siblingsCount: patientForm.data.siblingsCount ?? null,
 						familyNotes: normalizeOptionalText(patientForm.data.familyNotes)
 					})
@@ -263,10 +325,14 @@ export const actions: Actions = {
 							schoolName: normalizeOptionalName(patientForm.data.schoolName),
 							schoolGrade: emptyToNull(patientForm.data.schoolGrade ?? null),
 							schoolShift: normalizeOptionalText(patientForm.data.schoolShift ?? null),
+							motherName: normalizeOptionalName(patientForm.data.motherName),
 							motherDob: emptyToNull(patientForm.data.motherDob),
 							motherOccupation: normalizeOptionalText(patientForm.data.motherOccupation),
+							motherPhone: normalizeOptionalText(patientForm.data.motherPhone),
+							fatherName: normalizeOptionalName(patientForm.data.fatherName),
 							fatherDob: emptyToNull(patientForm.data.fatherDob),
 							fatherOccupation: normalizeOptionalText(patientForm.data.fatherOccupation),
+							fatherPhone: normalizeOptionalText(patientForm.data.fatherPhone),
 							siblingsCount: patientForm.data.siblingsCount ?? null,
 							familyNotes: normalizeOptionalText(patientForm.data.familyNotes),
 							updatedAt: new Date()

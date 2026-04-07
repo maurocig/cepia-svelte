@@ -18,7 +18,7 @@
 		validators: zod4Client(formSchema)
 	});
 
-	const { form: formData, enhance } = form;
+	const { form: formData, enhance, errors, message } = form;
 </script>
 
 <div
@@ -30,6 +30,7 @@
 				{#snippet children({ props }: { props: Record<string, any> })}
 					<Form.Label>Nombre</Form.Label>
 					<Input {...props} bind:value={$formData.name} />
+					<input type="hidden" name="name" value={$formData.name} />
 				{/snippet}
 			</Form.Control>
 			<Form.FieldErrors />
@@ -38,7 +39,8 @@
 			<Form.Control>
 				{#snippet children({ props }: { props: Record<string, any> })}
 					<Form.Label>Email</Form.Label>
-					<Input {...props} bind:value={$formData.email} />
+					<Input {...props} type="email" bind:value={$formData.email} />
+					<input type="hidden" name="email" value={$formData.email} />
 				{/snippet}
 			</Form.Control>
 			<Form.FieldErrors />
@@ -48,10 +50,17 @@
 				{#snippet children({ props }: { props: Record<string, any> })}
 					<Form.Label>Su mensaje</Form.Label>
 					<Textarea {...props} bind:value={$formData.message} />
+					<textarea hidden name="message">{$formData.message}</textarea>
 				{/snippet}
 			</Form.Control>
 			<Form.FieldErrors />
 		</Form.Field>
+		{#if $errors._errors?.length}
+			<p class="text-sm text-red-600">{$errors._errors[0]}</p>
+		{/if}
+		{#if $message}
+			<p class="text-sm text-red-600">{$message}</p>
+		{/if}
 		<Form.Button>Enviar</Form.Button>
 	</form>
 </div>

@@ -1,7 +1,7 @@
 import { env } from '$env/dynamic/private';
-import { redirect } from '@sveltejs/kit';
-import { Resend } from 'resend';
-import { fail, superValidate } from 'sveltekit-superforms';
+import { escapeHtml, sendEmail } from '$lib/server/email';
+import { fail, redirect } from '@sveltejs/kit';
+import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { formSchema } from './schema';
 
@@ -17,35 +17,42 @@ export const actions = {
 		if (!form.valid) {
 			return fail(400, { form });
 		}
-		console.log({ form });
 
-		const resend = new Resend(env.RESEND_API_KEY);
+		try {
+			await sendEmail({
+				from: env.CONTACT_FROM_EMAIL ?? 'Cepia <cepia@avx.uy>',
+				to: env.CONTACT_TO_EMAIL ?? 'mcigliuti01@gmail.com',
+				replyTo: form.data.email,
+				subject: 'Nuevo mensaje en tu sitio (cepia.uy)',
+				html: `
+				<html lang="es">	
+					<body>
+						<h1>Mensaje de cepia.uy</h1>
+						<p>
+							${escapeHtml(form.data.name)} (${escapeHtml(form.data.email)}) te ha enviado un mensaje:
+						</p>
+						<p>
+							${escapeHtml(form.data.message)}
+						</p>
+					</body>
 
-		const data = await resend.emails.send({
-			from: 'Totem Software <contacto@reci.uy>',
-			to: 'mcigliuti01@gmail.com',
-			subject: 'Nuevo mensaje en tu sitio (cepia.uy)',
-			html: `
-			<html lang="es">	
-				<body>
-					<h1>Mensaje de cepia.uy</h1>
-					<p>
-						${form.data.name} (${form.data.email}) te ha enviado un mensaje:
-					</p>
-					<p>
-						${form.data.message}
-					</p>
-				</body>
+					<style>
+						h1 {
+							font-size: 2rem;
+						}
+					</style>
+				</html>`
+			});
+		} catch (error) {
+			console.error('[contact] sendEmail failed', error);
+			return fail(500, {
+				form: {
+					...form,
+					message: 'No pudimos enviar tu mensaje. Probá de nuevo en unos minutos.'
+				}
+			});
+		}
 
-				<style>
-					h1 {
-						font-size: 2rem;
-					}
-				</style>
-			</html>`
-		});
-
-		await redirect(300, '/contacto/gracias');
-		return { form };
+		throw redirect(303, '/contacto/gracias');
 	}
 };

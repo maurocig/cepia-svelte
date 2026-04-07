@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance as kitEnhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Checkbox from '$lib/components/ui/checkbox/index.js';
@@ -7,6 +9,7 @@
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import { PhoneInput } from '$lib/components/ui/phone-input/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import {
@@ -16,7 +19,9 @@
 		getOptionLabel,
 		idTypeOptions,
 		schoolShiftOptions,
-		schoolTypeOptions
+		schoolTypeOptions,
+		treatmentDayOptions,
+		treatmentTimeOptions
 	} from '$lib/domain/select-options';
 	import {
 		enrollmentEditSchema,
@@ -26,7 +31,14 @@
 		schoolEditSchema,
 		treatmentsEditSchema
 	} from '$lib/schemas/edit-sections';
-	import { ageFromDob, formatDateUy, formatPersonName, treatmentLabels } from '$lib/utils';
+	import {
+		emptyTreatmentAssignment,
+		getTreatmentLabel,
+		parseTreatmentAssignments,
+		treatmentOptions,
+		type TreatmentAssignment
+	} from '$lib/treatments';
+	import { ageFromDob, formatDateUy, formatPersonName } from '$lib/utils';
 	import DatePicker from '@/components/DatePicker.svelte';
 	import Button from '@/components/ui/button/button.svelte';
 	import {
@@ -47,6 +59,15 @@
 
 	let { data }: { data: PageData } = $props();
 	const yesNo = (v: boolean) => (v ? 'Sí' : 'No');
+	const expirationBadgeClass = (status: string | null) => {
+		if (status === 'active') return 'bg-emerald-100 text-emerald-700';
+		if (status === 'expired') return 'bg-rose-100 text-rose-700';
+		return 'bg-amber-100 text-amber-700';
+	};
+	const expirationLabel = (status: string | null, daysUntil: number | null) => {
+		if (status === 'expired') return 'Vencido';
+		return `En ${Math.max(daysUntil ?? 0, 0)} dias`;
+	};
 
 	let openPatientDialog = $state(false);
 	let openEnrollmentDialog = $state(false);
@@ -55,6 +76,25 @@
 	let openFamilyDialog = $state(false);
 	let openTreatmentsDialog = $state(false);
 	let deletingPatient = $state(false);
+
+	const sectionHasInfo = (...values: Array<string | number | null | undefined>) =>
+		values.some((value) => value != null && String(value).trim() !== '');
+	const motherStartsOpen = sectionHasInfo(
+		data.patient.motherName,
+		data.patient.motherDob,
+		data.patient.motherOccupation,
+		data.patient.motherPhone
+	);
+	const fatherStartsOpen = sectionHasInfo(
+		data.patient.fatherName,
+		data.patient.fatherDob,
+		data.patient.fatherOccupation,
+		data.patient.fatherPhone
+	);
+	let openFamilyPanels = $state<string[]>([
+		...(motherStartsOpen ? ['mother'] : []),
+		...(fatherStartsOpen ? ['father'] : [])
+	]);
 
 	const patientEditForm = superForm(data.patientEditForm, {
 		validators: zod4Client(patientEditSchema),
@@ -158,13 +198,13 @@
 
 	const treatmentsEditForm = superForm(data.treatmentsEditForm, {
 		validators: zod4Client(treatmentsEditSchema),
+		dataType: 'json',
 		resetForm: false,
-		onResult: ({ result }) => {
+		onResult: async ({ result }) => {
 			if (result.type === 'success') {
-				savedTreatmentValues = { ...draftTreatmentValues };
-				savedTreatmentNotes = draftTreatmentNotes;
 				openTreatmentsDialog = false;
 				toast.success('Los tratamientos se actualizaron correctamente.');
+				await invalidateAll();
 				return;
 			}
 			if (result.type === 'failure') {
@@ -178,37 +218,85 @@
 		submitting: submittingTreatmentsEdit
 	} = treatmentsEditForm;
 
-	let savedTreatmentValues = $state(
-		Object.fromEntries(treatmentLabels.map(([key]) => [key, Boolean(data.patient[key])])) as Record<
-			string,
-			boolean
-		>
-	);
-	let savedTreatmentNotes = $state(data.patient.treatmentsNotes ?? '');
-	let draftTreatmentValues = $state({ ...savedTreatmentValues });
-	let draftTreatmentNotes = $state(savedTreatmentNotes);
+	const assignmentsEqual = (a: TreatmentAssignment[], b: TreatmentAssignment[]) => {
+		if (a.length !== b.length) return false;
+		return a.every(
+			(item, index) =>
+				item.treatmentType === b[index]?.treatmentType &&
+				item.day === b[index]?.day &&
+				item.time === b[index]?.time &&
+				item.professionalName === b[index]?.professionalName
+		);
+	};
 
-	$effect(() => {
-		if (!openTreatmentsDialog) return;
-		const nextDraftValues = { ...savedTreatmentValues };
-		const nextDraftNotes = savedTreatmentNotes;
-		draftTreatmentValues = nextDraftValues;
-		draftTreatmentNotes = nextDraftNotes;
-		$treatmentsEditData = {
-			psychology: nextDraftValues.psychology ?? false,
-			psychomotricity: nextDraftValues.psychomotricity ?? false,
-			speechTherapy: nextDraftValues.speechTherapy ?? false,
-			psychopedagogy: nextDraftValues.psychopedagogy ?? false,
-			pedagogicalSupport: nextDraftValues.pedagogicalSupport ?? false,
-			physiotherapy: nextDraftValues.physiotherapy ?? false,
-			occupationalTherapy: nextDraftValues.occupationalTherapy ?? false,
-			workshops: nextDraftValues.workshops ?? false,
-			treatmentsNotes: nextDraftNotes
-		};
-	});
+	const persistedTreatmentAssignments = $derived(
+		parseTreatmentAssignments(data.patient.treatmentAssignments)
+	);
+	const persistedPatientNotes = $derived(data.patient.treatmentsNotes ?? '');
+
+	let modalTreatmentAssignments = $state<TreatmentAssignment[]>(
+		persistedTreatmentAssignments.map((assignment) => ({ ...assignment }))
+	);
+	let modalTreatmentNotes = $state(data.patient.treatmentsNotes ?? '');
+	const modalTreatmentAssignmentsSerialized = $derived(JSON.stringify(modalTreatmentAssignments));
+
+	const writeModalToForm = () => {
+		$treatmentsEditData.treatmentsNotes = modalTreatmentNotes;
+		$treatmentsEditData.treatmentAssignments = modalTreatmentAssignments.map((assignment) => ({
+			...assignment
+		}));
+	};
+
+	const resetModalFromPatient = () => {
+		modalTreatmentAssignments = persistedTreatmentAssignments.map((assignment) => ({
+			...assignment
+		}));
+		modalTreatmentNotes = data.patient.treatmentsNotes ?? '';
+	};
+
+	const openTreatmentsModal = () => {
+		resetModalFromPatient();
+		writeModalToForm();
+		openTreatmentsDialog = true;
+	};
+
+	const cancelTreatmentsModal = () => {
+		openTreatmentsDialog = false;
+	};
+
+	const addModalTreatmentAssignment = () => {
+		modalTreatmentAssignments = [...modalTreatmentAssignments, emptyTreatmentAssignment()];
+		writeModalToForm();
+	};
+
+	const updateModalTreatmentAssignment = (
+		index: number,
+		key: keyof TreatmentAssignment,
+		value: string
+	) => {
+		const next = modalTreatmentAssignments.map((assignment, currentIndex) =>
+			currentIndex === index ? { ...assignment, [key]: value } : { ...assignment }
+		);
+		modalTreatmentAssignments = next;
+		writeModalToForm();
+	};
+
+	const removeModalTreatmentAssignment = (index: number) => {
+		modalTreatmentAssignments = modalTreatmentAssignments.filter(
+			(_, currentIndex) => currentIndex !== index
+		);
+		writeModalToForm();
+	};
 
 	const activeTreatments = $derived(
-		treatmentLabels.filter(([key]) => Boolean(savedTreatmentValues[key])).map(([, label]) => label)
+		Array.from(
+			new Set(
+				persistedTreatmentAssignments
+					.map((assignment) => assignment.treatmentType)
+					.filter(Boolean)
+					.map((code) => getTreatmentLabel(code))
+			)
+		)
 	);
 
 	const enhanceDelete = () => {
@@ -291,13 +379,13 @@
 					</div>
 				</dl>
 			</section>
-			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
+			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[720px]">
 				<form method="POST" action="?/patient" use:enhancePatientEdit>
 					<Dialog.Header>
 						<Dialog.Title>Editar paciente</Dialog.Title>
 						<Dialog.Description>Actualizá los datos del paciente.</Dialog.Description>
 					</Dialog.Header>
-					<div class="grid gap-4 py-4">
+					<div class="grid gap-4 py-4 md:grid-cols-2">
 						<Form.Field form={patientEditForm} name="enrolledFirstName">
 							<Form.Control>
 								{#snippet children({ props }: { props: Record<string, any> })}
@@ -391,7 +479,7 @@
 							</Form.Control>
 							<Form.FieldErrors />
 						</Form.Field>
-						<Form.Field form={patientEditForm} name="enrolledAddress">
+						<Form.Field form={patientEditForm} name="enrolledAddress" class="md:col-span-2">
 							<Form.Control>
 								{#snippet children({ props }: { props: Record<string, any> })}
 									<Label for="enrolledAddress">Dirección</Label>
@@ -409,10 +497,10 @@
 							</Form.Control>
 							<Form.FieldErrors />
 						</Form.Field>
-						<Form.Field form={patientEditForm} name="consultationReason">
+						<Form.Field form={patientEditForm} name="consultationReason" class="md:col-span-2">
 							<Form.Control>
 								{#snippet children({ props }: { props: Record<string, any> })}
-									<Label for="consultationReason">Motivo</Label>
+									<Label for="consultationReason">Motivo de consulta</Label>
 									<Textarea
 										id="consultationReason"
 										{...props}
@@ -485,7 +573,20 @@
 						{#if data.patient.agreementOrganization === 'BPS'}
 							<div>
 								<dt class="font-medium">Vencimiento</dt>
-								<dd>{formatDateUy(data.patient.agreementExpirationDate)}</dd>
+								<dd>
+									<div class="flex flex-wrap items-center gap-2">
+										<span>{formatDateUy(data.patient.agreementExpirationDate)}</span>
+									<span
+										class={'rounded-full px-2 py-1 text-xs font-medium ' +
+											expirationBadgeClass(data.agreementExpirationStatus)}
+									>
+										{expirationLabel(
+											data.agreementExpirationStatus,
+											data.agreementExpirationDaysUntil
+										)}
+									</span>
+									</div>
+								</dd>
 							</div>
 						{/if}
 						{#if data.patient.agreementOrganization === 'other'}
@@ -520,13 +621,13 @@
 					</div>
 				</dl>
 			</section>
-			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
+			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[720px]">
 				<form method="POST" action="?/enrollment" use:enhanceEnrollmentEdit>
 					<Dialog.Header>
 						<Dialog.Title>Editar inscripción</Dialog.Title>
 						<Dialog.Description>Actualizá estado y condiciones de inscripción.</Dialog.Description>
 					</Dialog.Header>
-					<div class="grid gap-4 py-4">
+					<div class="grid gap-4 py-4 md:grid-cols-2">
 						<Form.Field form={enrollmentEditForm} name="enrollmentStatus">
 							<Form.Control>
 								{#snippet children({ props }: { props: Record<string, any> })}
@@ -840,14 +941,14 @@
 					</div>
 				</dl>
 			</section>
-			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
+			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[640px]">
 				<form method="POST" action="?/responsible" use:enhanceResponsibleEdit>
 					<Dialog.Header
 						><Dialog.Title>Editar responsable</Dialog.Title><Dialog.Description
 							>Actualizá datos del adulto responsable.</Dialog.Description
 						></Dialog.Header
 					>
-					<div class="grid gap-4 py-4">
+					<div class="grid gap-4 py-4 md:grid-cols-2">
 						<Form.Field form={responsibleEditForm} name="responsibleAdultName">
 							<Form.Control>
 								{#snippet children({ props }: { props: Record<string, any> })}
@@ -943,14 +1044,14 @@
 					</div>
 				</dl>
 			</section>
-			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
+			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[720px]">
 				<form method="POST" action="?/school" use:enhanceSchoolEdit>
 					<Dialog.Header
 						><Dialog.Title>Editar escolaridad</Dialog.Title><Dialog.Description
 							>Actualizá la información educativa.</Dialog.Description
 						></Dialog.Header
 					>
-					<div class="grid gap-4 py-4">
+					<div class="space-y-4 py-4">
 						<label for="attendsSchool" class="flex items-center gap-2 text-sm font-medium">
 							<Checkbox.Root
 								id="attendsSchool"
@@ -964,7 +1065,10 @@
 							/>
 							Asiste a colegio
 						</label>
-						<div class:opacity-60={!$schoolEditData.attendsSchool} class="grid gap-4">
+						<div
+							class:opacity-60={!$schoolEditData.attendsSchool}
+							class="grid gap-4 md:grid-cols-2"
+						>
 							<Form.Field form={schoolEditForm} name="schoolName">
 								<Form.Control>
 									{#snippet children({ props }: { props: Record<string, any> })}
@@ -1098,22 +1202,70 @@
 						>
 					{/if}
 				</h2>
-				<dl class="grid gap-4 text-sm lg:grid-cols-2">
+				<dl class="grid gap-4 text-sm">
 					<div>
-						<dt class="font-medium">Edad de la madre</dt>
-						<dd>{ageFromDob(data.patient.motherDob) ?? '-'}</dd>
-					</div>
-					<div>
-						<dt class="font-medium">Ocupación de la madre</dt>
-						<dd>{data.patient.motherOccupation ?? '-'}</dd>
-					</div>
-					<div>
-						<dt class="font-medium">Edad del padre</dt>
-						<dd>{ageFromDob(data.patient.fatherDob) ?? '-'}</dd>
-					</div>
-					<div>
-						<dt class="font-medium">Ocupación del padre</dt>
-						<dd>{data.patient.fatherOccupation ?? '-'}</dd>
+						<dd>
+							<Accordion.Root type="multiple" class="space-y-4" bind:value={openFamilyPanels}>
+								<Accordion.Item value="mother" class="!border-b-0">
+									<Accordion.Trigger class="px-0 py-0 text-sm font-medium hover:no-underline">
+										Información de la madre
+									</Accordion.Trigger>
+									<Accordion.Content class="mt-2 ml-4 rounded-md border px-4 py-3">
+										<div class="grid gap-2">
+											<div>
+												<span class="font-medium">Nombre:</span>
+												{data.patient.motherName || '-'}
+											</div>
+											<div>
+												<span class="font-medium">Edad:</span>
+												{ageFromDob(data.patient.motherDob) ?? '-'}
+											</div>
+											<div>
+												<span class="font-medium">Fecha de nacimiento:</span>
+												{formatDateUy(data.patient.motherDob)}
+											</div>
+											<div>
+												<span class="font-medium">Ocupación:</span>
+												{data.patient.motherOccupation ?? '-'}
+											</div>
+											<div>
+												<span class="font-medium">Teléfono:</span>
+												{data.patient.motherPhone ?? '-'}
+											</div>
+										</div>
+									</Accordion.Content>
+								</Accordion.Item>
+								<Accordion.Item value="father" class="!border-b-0">
+									<Accordion.Trigger class="px-0 py-0 text-sm font-medium hover:no-underline">
+										Información del padre
+									</Accordion.Trigger>
+									<Accordion.Content class="mt-2 ml-4 rounded-md border px-4 py-3">
+										<div class="grid gap-2">
+											<div>
+												<span class="font-medium">Nombre:</span>
+												{data.patient.fatherName || '-'}
+											</div>
+											<div>
+												<span class="font-medium">Edad:</span>
+												{ageFromDob(data.patient.fatherDob) ?? '-'}
+											</div>
+											<div>
+												<span class="font-medium">Fecha de nacimiento:</span>
+												{formatDateUy(data.patient.fatherDob)}
+											</div>
+											<div>
+												<span class="font-medium">Ocupación:</span>
+												{data.patient.fatherOccupation ?? '-'}
+											</div>
+											<div>
+												<span class="font-medium">Teléfono:</span>
+												{data.patient.fatherPhone ?? '-'}
+											</div>
+										</div>
+									</Accordion.Content>
+								</Accordion.Item>
+							</Accordion.Root>
+						</dd>
 					</div>
 					<div>
 						<dt class="font-medium">Cantidad de hermanos</dt>
@@ -1134,89 +1286,151 @@
 							>Actualizá los campos de núcleo familiar.</Dialog.Description
 						></Dialog.Header
 					>
-					<div class="grid gap-4 py-4">
-						<Form.Field form={familyEditForm} name="motherDob">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Label>Fecha de nacimiento de la madre</Label>
-									<DatePicker max="today" bind:value={$familyEditData.motherDob} />
-									<input type="hidden" name="motherDob" value={$familyEditData.motherDob} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
-						<Form.Field form={familyEditForm} name="motherOccupation">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Label for="motherOccupation">Ocupación madre</Label>
-									<Input
-										id="motherOccupation"
-										{...props}
-										bind:value={$familyEditData.motherOccupation}
-									/>
-									<input
-										type="hidden"
-										name="motherOccupation"
-										value={$familyEditData.motherOccupation}
-									/>
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
-						<Form.Field form={familyEditForm} name="fatherDob">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Label>Fecha de nacimiento del padre</Label>
-									<DatePicker max="today" bind:value={$familyEditData.fatherDob} />
-									<input type="hidden" name="fatherDob" value={$familyEditData.fatherDob} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
-						<Form.Field form={familyEditForm} name="fatherOccupation">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Label for="fatherOccupation">Ocupación padre</Label>
-									<Input
-										id="fatherOccupation"
-										{...props}
-										bind:value={$familyEditData.fatherOccupation}
-									/>
-									<input
-										type="hidden"
-										name="fatherOccupation"
-										value={$familyEditData.fatherOccupation}
-									/>
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
-						<Form.Field form={familyEditForm} name="siblingsCount">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Label for="siblingsCount">Cantidad de hermanos</Label>
-									<Input
-										id="siblingsCount"
-										{...props}
-										type="number"
-										min="0"
-										bind:value={$familyEditData.siblingsCount}
-									/>
-									<input type="hidden" name="siblingsCount" value={$familyEditData.siblingsCount} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
-						<Form.Field form={familyEditForm} name="familyNotes">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Label for="familyNotes">Notas</Label>
-									<Textarea id="familyNotes" {...props} bind:value={$familyEditData.familyNotes} />
-									<input type="hidden" name="familyNotes" value={$familyEditData.familyNotes} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
+					<div class="space-y-4 py-4">
+						<div class="grid gap-4 rounded-md border p-4 md:grid-cols-2">
+							<Form.Field form={familyEditForm} name="motherName" class="md:col-span-2">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label for="motherName">Nombre completo de la madre</Label>
+										<Input id="motherName" {...props} bind:value={$familyEditData.motherName} />
+										<input type="hidden" name="motherName" value={$familyEditData.motherName} />
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+							<Form.Field form={familyEditForm} name="motherDob">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label>Fecha de nacimiento</Label>
+										<DatePicker max="today" bind:value={$familyEditData.motherDob} />
+										<input type="hidden" name="motherDob" value={$familyEditData.motherDob} />
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+							<Form.Field form={familyEditForm} name="motherOccupation">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label for="motherOccupation">Ocupación</Label>
+										<Input
+											id="motherOccupation"
+											{...props}
+											bind:value={$familyEditData.motherOccupation}
+										/>
+										<input
+											type="hidden"
+											name="motherOccupation"
+											value={$familyEditData.motherOccupation}
+										/>
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+							<Form.Field form={familyEditForm} name="motherPhone">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label for="motherPhone">Teléfono</Label>
+										<PhoneInput
+											defaultCountry="UY"
+											bind:value={$familyEditData.motherPhone}
+											placeholder="+598 99 123 456"
+										/>
+										<input type="hidden" name="motherPhone" value={$familyEditData.motherPhone} />
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+						</div>
+						<div class="grid gap-4 rounded-md border p-4 md:grid-cols-2">
+							<Form.Field form={familyEditForm} name="fatherName" class="md:col-span-2">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label for="fatherName">Nombre completo del padre</Label>
+										<Input id="fatherName" {...props} bind:value={$familyEditData.fatherName} />
+										<input type="hidden" name="fatherName" value={$familyEditData.fatherName} />
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+							<Form.Field form={familyEditForm} name="fatherDob">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label>Fecha de nacimiento</Label>
+										<DatePicker max="today" bind:value={$familyEditData.fatherDob} />
+										<input type="hidden" name="fatherDob" value={$familyEditData.fatherDob} />
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+							<Form.Field form={familyEditForm} name="fatherOccupation">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label for="fatherOccupation">Ocupación</Label>
+										<Input
+											id="fatherOccupation"
+											{...props}
+											bind:value={$familyEditData.fatherOccupation}
+										/>
+										<input
+											type="hidden"
+											name="fatherOccupation"
+											value={$familyEditData.fatherOccupation}
+										/>
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+							<Form.Field form={familyEditForm} name="fatherPhone">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label for="fatherPhone">Teléfono</Label>
+										<PhoneInput
+											defaultCountry="UY"
+											bind:value={$familyEditData.fatherPhone}
+											placeholder="+598 99 123 456"
+										/>
+										<input type="hidden" name="fatherPhone" value={$familyEditData.fatherPhone} />
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+						</div>
+						<div class="grid gap-4 md:grid-cols-2">
+							<Form.Field form={familyEditForm} name="siblingsCount">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label for="siblingsCount">Cantidad de hermanos</Label>
+										<Input
+											id="siblingsCount"
+											{...props}
+											type="number"
+											min="0"
+											bind:value={$familyEditData.siblingsCount}
+										/>
+										<input
+											type="hidden"
+											name="siblingsCount"
+											value={$familyEditData.siblingsCount}
+										/>
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+							<Form.Field form={familyEditForm} name="familyNotes">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label for="familyNotes">Notas</Label>
+										<Textarea
+											id="familyNotes"
+											{...props}
+											bind:value={$familyEditData.familyNotes}
+										/>
+										<input type="hidden" name="familyNotes" value={$familyEditData.familyNotes} />
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+						</div>
 					</div>
 					<Dialog.Footer>
 						<Dialog.Close type="button" class={buttonVariants({ variant: 'outline' })}
@@ -1248,7 +1462,7 @@
 						<Dialog.Trigger
 							class={buttonVariants({ variant: 'ghost', size: 'icon' }) +
 								' h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'}
-							><Pencil size={16} /></Dialog.Trigger
+							onclick={openTreatmentsModal}><Pencil size={16} /></Dialog.Trigger
 						>
 					{/if}
 				</h2>
@@ -1262,39 +1476,188 @@
 				</dl>
 				<dl class="mt-4 text-sm">
 					<div>
+						<dt class="font-medium">Asignaciones</dt>
+						{#if persistedTreatmentAssignments.length}
+							<dd>
+								<ul class="mt-1 space-y-1">
+									{#each persistedTreatmentAssignments as assignment}
+										<li class="text-slate-700">
+											<strong>{getTreatmentLabel(assignment.treatmentType)}</strong>
+											{#if assignment.professionalName}
+												, {assignment.professionalName}
+											{/if}
+											, {getOptionLabel(treatmentDayOptions, assignment.day, assignment.day)}
+											, {getOptionLabel(treatmentTimeOptions, assignment.time, assignment.time)}
+										</li>
+									{/each}
+								</ul>
+							</dd>
+						{:else}
+							<dd>-</dd>
+						{/if}
+					</div>
+				</dl>
+				<dl class="mt-4 text-sm">
+					<div>
 						<dt class="font-medium">Notas</dt>
-						<dd>{savedTreatmentNotes || '-'}</dd>
+						<dd>{persistedPatientNotes || '-'}</dd>
 					</div>
 				</dl>
 			</section>
 			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
-				<form method="POST" action="?/treatments" use:enhanceTreatmentsEdit>
+				<form
+					method="POST"
+					action="?/treatments"
+					use:enhanceTreatmentsEdit
+					onsubmit={writeModalToForm}
+				>
 					<Dialog.Header
 						><Dialog.Title>Editar tratamientos</Dialog.Title><Dialog.Description
 							>Marcá tratamientos y nota general.</Dialog.Description
 						></Dialog.Header
 					>
 					<div class="grid gap-4 py-4">
-						<div class="grid gap-2">
-							{#each treatmentLabels as [key, label] (key)}
-								<label class="flex items-center gap-2 text-sm">
-									<Checkbox.Root
-										name={key}
-										checked={Boolean(draftTreatmentValues[key])}
-										onCheckedChange={(checked: boolean | 'indeterminate') => {
-											draftTreatmentValues[key] = Boolean(checked);
-											$treatmentsEditData[key] = Boolean(checked);
-										}}
-									/>
+						<Form.Field form={treatmentsEditForm} name="treatmentAssignments">
+							<Form.Control>
+								{#snippet children({ props }: { props: Record<string, any> })}
+									<div class="flex items-center justify-between">
+										<Label>Asignaciones</Label>
+										<button
+											type="button"
+											class="rounded-md border px-3 py-2 text-sm hover:cursor-pointer"
+											onclick={addModalTreatmentAssignment}
+										>
+											Agregar tratamiento
+										</button>
+									</div>
+
+									{#if modalTreatmentAssignments.length > 0}
+										<div class="space-y-3">
+											{#each modalTreatmentAssignments as assignment, index (index)}
+												<div class="rounded-md border p-4">
+													<div class="grid gap-3 md:grid-cols-2">
+														<div>
+															<Label>Tratamiento</Label>
+															<Select.Root
+																type="single"
+																value={assignment.treatmentType}
+																onValueChange={(value) =>
+																	updateModalTreatmentAssignment(
+																		index,
+																		'treatmentType',
+																		value as string
+																	)}
+															>
+																<Select.Trigger class="w-full justify-between">
+																	{getOptionLabel(
+																		treatmentOptions,
+																		assignment.treatmentType,
+																		'Seleccionar'
+																	)}
+																</Select.Trigger>
+																<Select.Content>
+																	{#each treatmentOptions as option (option.value)}
+																		<Select.Item value={option.value} label={option.label}>
+																			{option.label}
+																		</Select.Item>
+																	{/each}
+																</Select.Content>
+															</Select.Root>
+														</div>
+
+														<div>
+															<Label>Nombre de profesional</Label>
+															<Input
+																value={assignment.professionalName}
+																oninput={(event: Event) =>
+																	updateModalTreatmentAssignment(
+																		index,
+																		'professionalName',
+																		(event.currentTarget as HTMLInputElement).value
+																	)}
+															/>
+														</div>
+
+														<div>
+															<Label>Día</Label>
+															<Select.Root
+																type="single"
+																value={assignment.day}
+																onValueChange={(value) =>
+																	updateModalTreatmentAssignment(index, 'day', value as string)}
+															>
+																<Select.Trigger class="w-full justify-between">
+																	{getOptionLabel(
+																		treatmentDayOptions,
+																		assignment.day,
+																		'Seleccionar'
+																	)}
+																</Select.Trigger>
+																<Select.Content>
+																	{#each treatmentDayOptions as option (option.value)}
+																		<Select.Item value={option.value} label={option.label}>
+																			{option.label}
+																		</Select.Item>
+																	{/each}
+																</Select.Content>
+															</Select.Root>
+														</div>
+
+														<div>
+															<Label>Horario</Label>
+															<Select.Root
+																type="single"
+																value={assignment.time}
+																onValueChange={(value) =>
+																	updateModalTreatmentAssignment(index, 'time', value as string)}
+															>
+																<Select.Trigger class="w-full justify-between">
+																	{getOptionLabel(
+																		treatmentTimeOptions,
+																		assignment.time,
+																		'Seleccionar'
+																	)}
+																</Select.Trigger>
+																<Select.Content>
+																	{#each treatmentTimeOptions as option (option.value)}
+																		<Select.Item value={option.value} label={option.label}>
+																			{option.label}
+																		</Select.Item>
+																	{/each}
+																</Select.Content>
+															</Select.Root>
+														</div>
+													</div>
+
+													<div class="mt-3 flex justify-end">
+														<button
+															type="button"
+															class={buttonVariants({ variant: 'destructiveOutline', size: 'sm' }) +
+																' gap-2'}
+															onclick={() => removeModalTreatmentAssignment(index)}
+														>
+															<Trash2 size={16} />
+															Eliminar fila
+														</button>
+													</div>
+												</div>
+											{/each}
+										</div>
+									{:else}
+										<p class="text-sm text-slate-600">Todavía no hay tratamientos cargados.</p>
+									{/if}
+
 									<input
+										{...props}
 										type="hidden"
-										name={key}
-										value={$treatmentsEditData[key] ? 'true' : 'false'}
+										name="treatmentAssignments"
+										value={modalTreatmentAssignmentsSerialized}
 									/>
-									{label}
-								</label>
-							{/each}
-						</div>
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
+
 						<Form.Field form={treatmentsEditForm} name="treatmentsNotes">
 							<Form.Control>
 								{#snippet children({ props }: { props: Record<string, any> })}
@@ -1303,10 +1666,10 @@
 										<Textarea
 											id="treatmentsNotes"
 											{...props}
-											bind:value={draftTreatmentNotes}
-											oninput={() => ($treatmentsEditData.treatmentsNotes = draftTreatmentNotes)}
+											bind:value={modalTreatmentNotes}
+											oninput={writeModalToForm}
 										/>
-										<input type="hidden" name="treatmentsNotes" value={draftTreatmentNotes} />
+										<input type="hidden" name="treatmentsNotes" value={modalTreatmentNotes} />
 									</div>
 								{/snippet}
 							</Form.Control>
@@ -1314,8 +1677,10 @@
 						</Form.Field>
 					</div>
 					<Dialog.Footer>
-						<Dialog.Close type="button" class={buttonVariants({ variant: 'outline' })}
-							>Cancelar</Dialog.Close
+						<Dialog.Close
+							type="button"
+							class={buttonVariants({ variant: 'outline' })}
+							onclick={cancelTreatmentsModal}>Cancelar</Dialog.Close
 						>
 						<Button type="submit" disabled={$submittingTreatmentsEdit}>
 							{#if $submittingTreatmentsEdit}
@@ -1337,8 +1702,7 @@
 		<div class="flex justify-end">
 			<AlertDialog.Root>
 				<AlertDialog.Trigger
-					class={buttonVariants({ variant: 'destructive', size: 'sm' }) +
-						' cursor-pointer gap-2 text-white'}
+					class={buttonVariants({ variant: 'destructive', size: 'sm' }) + ' cursor-pointer gap-2'}
 					disabled={deletingPatient}
 				>
 					<Trash2 size={16} />
@@ -1359,7 +1723,7 @@
 								type="submit"
 								disabled={deletingPatient}
 								class={buttonVariants({ variant: 'destructive', size: 'sm' }) +
-									'flex min-w-28 cursor-pointer items-center justify-center gap-2 text-white'}
+									' flex min-w-28 cursor-pointer items-center justify-center gap-2'}
 							>
 								{#if deletingPatient}
 									<span

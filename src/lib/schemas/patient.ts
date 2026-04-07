@@ -44,11 +44,15 @@ export const patientSchema = z
 		schoolShift: emptyToUndefined(z.enum(schoolShiftValues).optional()),
 
 		// núcleo familiar
+		motherName: z.string().optional().or(z.literal('')),
 		motherDob: dateYYYYMMDD.optional().or(z.literal('')),
 		motherOccupation: z.string().optional().or(z.literal('')),
+		motherPhone: z.string().optional().or(z.literal('')),
 
+		fatherName: z.string().optional().or(z.literal('')),
 		fatherDob: dateYYYYMMDD.optional().or(z.literal('')),
 		fatherOccupation: z.string().optional().or(z.literal('')),
+		fatherPhone: z.string().optional().or(z.literal('')),
 
 		siblingsCount: z
 			.preprocess(
@@ -110,6 +114,23 @@ export const patientSchema = z
 				code: 'custom',
 				path: ['fatherDob'],
 				message: 'La fecha de nacimiento no puede ser futura'
+			});
+		}
+		const motherPhone = d.motherPhone ?? '';
+		const fatherPhone = d.fatherPhone ?? '';
+
+		if (motherPhone.trim() && !isValidSupportedInternationalPhone(motherPhone)) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['motherPhone'],
+				message: getInvalidSupportedPhoneMessage(motherPhone)
+			});
+		}
+		if (fatherPhone.trim() && !isValidSupportedInternationalPhone(fatherPhone)) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['fatherPhone'],
+				message: getInvalidSupportedPhoneMessage(fatherPhone)
 			});
 		}
 

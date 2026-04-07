@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { enrollmentSchema, type EnrollmentSchema } from '$lib/schemas/enrollment';
 	import { patientSchema, type PatientStep2 } from '$lib/schemas/patient';
@@ -16,11 +17,20 @@
 		getOptionLabel,
 		idTypeOptions,
 		schoolShiftOptions,
-		schoolTypeOptions
+		schoolTypeOptions,
+		treatmentDayOptions,
+		treatmentTimeOptions
 	} from '$lib/domain/select-options';
+	import {
+		emptyTreatmentAssignment,
+		parseTreatmentAssignments,
+		treatmentOptions,
+		type TreatmentAssignment
+	} from '$lib/treatments';
 	import { sanitizeDocumentNumber } from '$lib/utils.js';
 	import DatePicker from '@/components/DatePicker.svelte';
 	import Checkbox from '@/components/ui/checkbox/checkbox.svelte';
+	import { Plus, Trash2 } from 'lucide-svelte';
 	import { tick } from 'svelte';
 	import { toast } from 'svelte-french-toast';
 	import type { Infer } from 'zod/v4';
@@ -45,6 +55,7 @@
 
 	const enrollmentForm = superForm(data.enrollmentForm, {
 		validators: zod4Client(enrollmentSchema),
+		dataType: 'json',
 		validationMethod: 'auto',
 		resetForm: false,
 		onResult: async ({ result }) => {
@@ -102,35 +113,16 @@
 
 	const { form: patientData, enhance: enhanceStep2, submitting: submittingStep2 } = patientForm;
 
-	type TreatmentKey =
-		| 'psychology'
-		| 'psychomotricity'
-		| 'speechTherapy'
-		| 'psychopedagogy'
-		| 'pedagogicalSupport'
-		| 'physiotherapy'
-		| 'occupationalTherapy'
-		| 'workshops';
-
-	const treatmentOptions: { key: TreatmentKey; label: string }[] = [
-		{ key: 'psychology', label: 'Psicología' },
-		{ key: 'psychomotricity', label: 'Psicomotricidad' },
-		{ key: 'speechTherapy', label: 'Fonoaudiología' },
-		{ key: 'psychopedagogy', label: 'Psicopedagogía' },
-		{ key: 'pedagogicalSupport', label: 'Apoyo pedagógico' },
-		{ key: 'physiotherapy', label: 'Fisioterapia' },
-		{ key: 'occupationalTherapy', label: 'Terapia ocupacional' },
-		{ key: 'workshops', label: 'Talleres' }
-	];
-
-	// helper para setear booleans con key dinámico
-	function setTreatment(key: TreatmentKey, v: boolean) {
-		($enrollmentData as any)[key] = v;
-	}
+	if ($patientData.motherName === undefined) $patientData.motherName = '';
+	if ($patientData.fatherName === undefined) $patientData.fatherName = '';
+	if ($patientData.enrolledDob === undefined) $patientData.enrolledDob = '';
+	if ($patientData.motherDob === undefined) $patientData.motherDob = '';
+	if ($patientData.fatherDob === undefined) $patientData.fatherDob = '';
+	if ($patientData.motherPhone === undefined) $patientData.motherPhone = '';
+	if ($patientData.fatherPhone === undefined) $patientData.fatherPhone = '';
 
 	let enrollmentValid = $state(false);
 	let enrollmentId = $state('');
-	let didNormalizePatientDates = $state(false);
 
 	let savedStep1Key = $state('');
 
@@ -142,6 +134,7 @@
 			agreementOrganization: d.agreementOrganization,
 			agreementOtherName: d.agreementOtherName,
 			agreementExpirationDate: d.agreementExpirationDate,
+			treatmentAssignments: d.treatmentAssignments,
 
 			holderFirstName: d.holderFirstName,
 			holderLastName: d.holderLastName,
@@ -149,15 +142,6 @@
 			holderIdNumber: d.holderIdNumber,
 			holderPhone: d.holderPhone,
 			holderEmail: d.holderEmail,
-
-			psychology: d.psychology,
-			psychomotricity: d.psychomotricity,
-			speechTherapy: d.speechTherapy,
-			psychopedagogy: d.psychopedagogy,
-			pedagogicalSupport: d.pedagogicalSupport,
-			physiotherapy: d.physiotherapy,
-			occupationalTherapy: d.occupationalTherapy,
-			workshops: d.workshops,
 			treatmentsNotes: d.treatmentsNotes
 		});
 
@@ -184,14 +168,51 @@
 		}
 	});
 
+	function assignmentsEqual(a: TreatmentAssignment[], b: TreatmentAssignment[]) {
+		if (a.length !== b.length) return false;
+		return a.every(
+			(item, index) =>
+				item.treatmentType === b[index]?.treatmentType &&
+				item.day === b[index]?.day &&
+				item.time === b[index]?.time &&
+				item.professionalName === b[index]?.professionalName
+		);
+	}
+
+	let treatmentAssignments = $state<TreatmentAssignment[]>([]);
+	let treatmentAssignmentsSerialized = $state('[]');
+
+	function writeTreatmentAssignmentsToForm() {
+		treatmentAssignmentsSerialized = JSON.stringify(treatmentAssignments);
+		($enrollmentData as { treatmentAssignments: unknown }).treatmentAssignments =
+			treatmentAssignmentsSerialized;
+	}
+
+	function addTreatmentAssignment() {
+		treatmentAssignments = [...treatmentAssignments, emptyTreatmentAssignment()];
+		writeTreatmentAssignmentsToForm();
+	}
+
+	function updateTreatmentAssignment(index: number, key: keyof TreatmentAssignment, value: string) {
+		const next = treatmentAssignments.map((assignment, currentIndex) =>
+			currentIndex === index ? { ...assignment, [key]: value } : { ...assignment }
+		);
+		treatmentAssignments = next;
+		writeTreatmentAssignmentsToForm();
+	}
+
+	function removeTreatmentAssignment(index: number) {
+		treatmentAssignments = treatmentAssignments.filter((_, currentIndex) => currentIndex !== index);
+		writeTreatmentAssignmentsToForm();
+	}
+
 	$effect(() => {
-		// DatePicker expects string values; normalize only once to avoid
-		// triggering extra client-side validations that can clear server errors.
-		if (didNormalizePatientDates) return;
-		if ($patientData.enrolledDob === undefined) $patientData.enrolledDob = '';
-		if ($patientData.motherDob === undefined) $patientData.motherDob = '';
-		if ($patientData.fatherDob === undefined) $patientData.fatherDob = '';
-		didNormalizePatientDates = true;
+		const parsed = parseTreatmentAssignments($enrollmentData.treatmentAssignments);
+		if (!assignmentsEqual(parsed, treatmentAssignments)) treatmentAssignments = parsed;
+		const nextSerialized = JSON.stringify(parsed);
+		if (treatmentAssignmentsSerialized !== nextSerialized) {
+			treatmentAssignmentsSerialized = nextSerialized;
+		}
 	});
 
 	function back() {
@@ -526,44 +547,168 @@
 
 			<h2 class="mt-6 mb-4 text-base font-semibold">Tratamientos</h2>
 
-			<div class="grid gap-3 md:grid-cols-3 md:gap-4">
-				{#each treatmentOptions as t (t.key)}
-					<Form.Field form={enrollmentForm} name={t.key}>
-						<Form.Control>
-							{#snippet children({ props }: { props: Record<string, any> })}
-								<label class="flex items-center gap-2">
-									<Checkbox
-										class="h-5 w-5"
-										checked={($enrollmentData as any)[t.key] as boolean}
-										onCheckedChange={(v: boolean | 'indeterminate') =>
-											setTreatment(t.key, Boolean(v))}
-									/>
-									<span class="text-sm">{t.label}</span>
-								</label>
+			<div class="mt-4 space-y-4">
+				<Form.Field form={enrollmentForm} name="treatmentAssignments">
+					<Form.Control>
+						{#snippet children({ props }: { props: Record<string, any> })}
+							<div class="flex items-center justify-between">
+								<Form.Label>Asignaciones de tratamiento</Form.Label>
+								<button
+									type="button"
+									class="flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:cursor-pointer"
+									onclick={addTreatmentAssignment}
+								>
+									<Plus /> Agregar tratamiento
+								</button>
+							</div>
 
-								<input
-									type="hidden"
-									name={t.key}
-									value={(($enrollmentData as any)[t.key] as boolean) ?? false}
-								/>
-							{/snippet}
-						</Form.Control>
-						<Form.FieldErrors />
-					</Form.Field>
-				{/each}
-			</div>
+							{#if treatmentAssignments.length > 0}
+								<div class="space-y-3">
+									{#each treatmentAssignments as assignment, index (index)}
+										<div class="rounded-md border p-4">
+											<div class="grid gap-3 md:grid-cols-2">
+												<div>
+													<label class="text-sm font-medium" for={`treatmentType-${index}`}>
+														Tratamiento
+													</label>
+													<Select.Root
+														type="single"
+														value={assignment.treatmentType}
+														onValueChange={(value) =>
+															updateTreatmentAssignment(index, 'treatmentType', value as string)}
+													>
+														<Select.Trigger
+															id={`treatmentType-${index}`}
+															class="min-h-10 w-full justify-between"
+														>
+															{getOptionLabel(
+																treatmentOptions,
+																assignment.treatmentType,
+																'Seleccionar'
+															)}
+														</Select.Trigger>
+														<Select.Content>
+															{#each treatmentOptions as option (option.value)}
+																<Select.Item value={option.value} label={option.label}>
+																	{option.label}
+																</Select.Item>
+															{/each}
+														</Select.Content>
+													</Select.Root>
+												</div>
 
-			<div class="mt-4">
+												<div>
+													<label class="text-sm font-medium" for={`professionalName-${index}`}>
+														Nombre de profesional
+													</label>
+													<Input
+														id={`professionalName-${index}`}
+														value={assignment.professionalName}
+														oninput={(event: Event) =>
+															updateTreatmentAssignment(
+																index,
+																'professionalName',
+																(event.currentTarget as HTMLInputElement).value
+															)}
+													/>
+												</div>
+
+												<div>
+													<label class="text-sm font-medium" for={`treatmentDay-${index}`}
+														>Día</label
+													>
+													<Select.Root
+														type="single"
+														value={assignment.day}
+														onValueChange={(value) =>
+															updateTreatmentAssignment(index, 'day', value as string)}
+													>
+														<Select.Trigger
+															id={`treatmentDay-${index}`}
+															class="min-h-10 w-full justify-between"
+														>
+															{getOptionLabel(treatmentDayOptions, assignment.day, 'Seleccionar')}
+														</Select.Trigger>
+														<Select.Content>
+															{#each treatmentDayOptions as option (option.value)}
+																<Select.Item value={option.value} label={option.label}>
+																	{option.label}
+																</Select.Item>
+															{/each}
+														</Select.Content>
+													</Select.Root>
+												</div>
+
+												<div>
+													<label class="text-sm font-medium" for={`treatmentTime-${index}`}>
+														Horario
+													</label>
+													<Select.Root
+														type="single"
+														value={assignment.time}
+														onValueChange={(value) =>
+															updateTreatmentAssignment(index, 'time', value as string)}
+													>
+														<Select.Trigger
+															id={`treatmentTime-${index}`}
+															class="min-h-10 w-full justify-between"
+														>
+															{getOptionLabel(treatmentTimeOptions, assignment.time, 'Seleccionar')}
+														</Select.Trigger>
+														<Select.Content>
+															{#each treatmentTimeOptions as option (option.value)}
+																<Select.Item value={option.value} label={option.label}>
+																	{option.label}
+																</Select.Item>
+															{/each}
+														</Select.Content>
+													</Select.Root>
+												</div>
+											</div>
+
+												<div class="mt-3 flex justify-end">
+													<button
+														type="button"
+														class={buttonVariants({ variant: 'destructiveOutline', size: 'sm' }) +
+															' gap-2'}
+														onclick={() => removeTreatmentAssignment(index)}
+													>
+														<Trash2 size={16} />
+														Eliminar fila
+													</button>
+												</div>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<p class="text-sm text-slate-600">Todavía no hay tratamientos cargados.</p>
+							{/if}
+
+							<input
+								{...props}
+								type="hidden"
+								name="treatmentAssignments"
+								value={treatmentAssignmentsSerialized}
+							/>
+						{/snippet}
+					</Form.Control>
+					<Form.FieldErrors />
+				</Form.Field>
+
 				<Form.Field form={enrollmentForm} name="treatmentsNotes">
 					<Form.Control>
 						{#snippet children({ props }: { props: Record<string, any> })}
 							<div class="space-y-2 md:col-span-3">
-								<label class="text-sm font-medium">Notas de tratamientos</label>
+								<label class="text-sm font-medium" for="treatmentsNotes"
+									>Notas de tratamientos</label
+								>
 								<textarea
+									id="treatmentsNotes"
 									class="bg-background min-h-[90px] w-full rounded-md border px-3 py-2 text-sm"
 									bind:value={$enrollmentData.treatmentsNotes}
 								></textarea>
 								<input
+									{...props}
 									type="hidden"
 									name="treatmentsNotes"
 									value={$enrollmentData.treatmentsNotes}
@@ -900,57 +1045,112 @@
 
 			<h2 class="mt-12 mb-4 text-base font-semibold">Núcleo familiar</h2>
 
-			<div class="grid gap-3 md:grid-cols-3 md:gap-4">
-				<Form.Field form={patientForm} name="motherDob">
-					<Form.Control>
-						{#snippet children({ props }: { props: Record<string, any> })}
-							<Form.Label>Fecha de nacimiento madre</Form.Label>
-							<DatePicker max="today" bind:value={$patientData.motherDob} />
-							<input type="hidden" name="motherDob" value={$patientData.motherDob} />
-						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
+				<div class="space-y-4">
+					<div class="grid gap-3 rounded-md border p-4 md:grid-cols-5 md:gap-4">
+						<Form.Field form={patientForm} name="motherName" class="md:col-span-2">
+							<Form.Control>
+								{#snippet children({ props }: { props: Record<string, any> })}
+									<Form.Label>Nombre completo de la madre</Form.Label>
+									<Input {...props} bind:value={$patientData.motherName} />
+									<input type="hidden" name="motherName" value={$patientData.motherName} />
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
 
-				<Form.Field form={patientForm} name="motherOccupation">
-					<Form.Control>
-						{#snippet children({ props }: { props: Record<string, any> })}
-							<Form.Label>Ocupación madre</Form.Label>
-							<Input {...props} bind:value={$patientData.motherOccupation} />
-							<input type="hidden" name="motherOccupation" value={$patientData.motherOccupation} />
-						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
+						<Form.Field form={patientForm} name="motherDob">
+							<Form.Control>
+								{#snippet children({ props }: { props: Record<string, any> })}
+									<Form.Label>Fecha de nacimiento</Form.Label>
+									<DatePicker max="today" bind:value={$patientData.motherDob} />
+									<input type="hidden" name="motherDob" value={$patientData.motherDob} />
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
 
-				<div class="hidden md:block"></div>
+						<Form.Field form={patientForm} name="motherOccupation">
+							<Form.Control>
+								{#snippet children({ props }: { props: Record<string, any> })}
+									<Form.Label>Ocupación</Form.Label>
+									<Input {...props} bind:value={$patientData.motherOccupation} />
+									<input type="hidden" name="motherOccupation" value={$patientData.motherOccupation} />
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
 
-				<Form.Field form={patientForm} name="fatherDob">
-					<Form.Control>
-						{#snippet children({ props }: { props: Record<string, any> })}
-							<Form.Label>Fecha de nacimiento padre</Form.Label>
-							<DatePicker max="today" bind:value={$patientData.fatherDob} />
-							<input type="hidden" name="fatherDob" value={$patientData.fatherDob} />
-						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
+						<Form.Field form={patientForm} name="motherPhone">
+							<Form.Control>
+								{#snippet children({ props }: { props: Record<string, any> })}
+									<Form.Label>Teléfono</Form.Label>
+									<PhoneInput
+										defaultCountry="UY"
+										bind:value={$patientData.motherPhone}
+										placeholder="+598 99 123 456"
+									/>
+									<input type="hidden" name="motherPhone" value={$patientData.motherPhone} />
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
+					</div>
 
-				<Form.Field form={patientForm} name="fatherOccupation">
-					<Form.Control>
-						{#snippet children({ props }: { props: Record<string, any> })}
-							<Form.Label>Ocupación padre</Form.Label>
-							<Input {...props} bind:value={$patientData.fatherOccupation} />
-							<input type="hidden" name="fatherOccupation" value={$patientData.fatherOccupation} />
-						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
+					<div class="grid gap-3 rounded-md border p-4 md:grid-cols-5 md:gap-4">
+						<Form.Field form={patientForm} name="fatherName" class="md:col-span-2">
+							<Form.Control>
+								{#snippet children({ props }: { props: Record<string, any> })}
+									<Form.Label>Nombre completo del padre</Form.Label>
+									<Input {...props} bind:value={$patientData.fatherName} />
+									<input type="hidden" name="fatherName" value={$patientData.fatherName} />
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
 
-				<Form.Field form={patientForm} name="siblingsCount">
-					<Form.Control>
-						{#snippet children({ props }: { props: Record<string, any> })}
-							<Form.Label>Cantidad de hermanos</Form.Label>
+						<Form.Field form={patientForm} name="fatherDob">
+							<Form.Control>
+								{#snippet children({ props }: { props: Record<string, any> })}
+									<Form.Label>Fecha de nacimiento</Form.Label>
+									<DatePicker max="today" bind:value={$patientData.fatherDob} />
+									<input type="hidden" name="fatherDob" value={$patientData.fatherDob} />
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
+
+						<Form.Field form={patientForm} name="fatherOccupation">
+							<Form.Control>
+								{#snippet children({ props }: { props: Record<string, any> })}
+									<Form.Label>Ocupación</Form.Label>
+									<Input {...props} bind:value={$patientData.fatherOccupation} />
+									<input type="hidden" name="fatherOccupation" value={$patientData.fatherOccupation} />
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
+
+						<Form.Field form={patientForm} name="fatherPhone">
+							<Form.Control>
+								{#snippet children({ props }: { props: Record<string, any> })}
+									<Form.Label>Teléfono</Form.Label>
+									<PhoneInput
+										defaultCountry="UY"
+										bind:value={$patientData.fatherPhone}
+										placeholder="+598 99 123 456"
+									/>
+									<input type="hidden" name="fatherPhone" value={$patientData.fatherPhone} />
+								{/snippet}
+							</Form.Control>
+							<Form.FieldErrors />
+						</Form.Field>
+					</div>
+
+					<div class="grid gap-3 md:grid-cols-3 md:gap-4">
+					<Form.Field form={patientForm} name="siblingsCount">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<Form.Label>Cantidad de hermanos</Form.Label>
 							<Input type="number" min="0" step="1" bind:value={$patientData.siblingsCount} />
 							<input type="hidden" name="siblingsCount" value={$patientData.siblingsCount} />
 						{/snippet}
@@ -958,9 +1158,9 @@
 					<Form.FieldErrors />
 				</Form.Field>
 
-				<Form.Field form={patientForm} name="familyNotes" class="md:col-span-3">
-					<Form.Control>
-						{#snippet children({ props }: { props: Record<string, any> })}
+					<Form.Field form={patientForm} name="familyNotes" class="md:col-span-3">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
 							<Form.Label>Notas familiares</Form.Label>
 							<textarea
 								{...props}
@@ -969,10 +1169,11 @@
 							></textarea>
 							<input type="hidden" name="familyNotes" value={$patientData.familyNotes} />
 						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
-			</div>
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
+					</div>
+				</div>
 			<div class="mt-6 flex items-center justify-between">
 				<button
 					type="button"

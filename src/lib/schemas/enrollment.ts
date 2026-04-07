@@ -2,9 +2,12 @@ import {
 	admissionModeValues,
 	agreementOrganizationValues,
 	enrollmentStatusValues,
-	idTypeValues
+	idTypeValues,
+	treatmentDayValues,
+	treatmentTimeValues
 } from '$lib/domain/select-options';
 import { getInvalidSupportedPhoneMessage, isValidSupportedInternationalPhone } from '$lib/phone';
+import { treatmentTypeCodes } from '$lib/treatments';
 import { todayYyyyMmDd } from '$lib/utils';
 import { z } from 'zod/v4';
 
@@ -22,6 +25,29 @@ export const idTypeOptions = idTypeValues;
 export const enrollmentStatusOptions = enrollmentStatusValues;
 export const admissionModeOptions = admissionModeValues;
 export const agreementOrganizationOptions = agreementOrganizationValues;
+
+const treatmentAssignmentSchema = z.object({
+	treatmentType: z.union([z.literal(''), z.enum(treatmentTypeCodes)]).default(''),
+	day: z.union([z.literal(''), z.enum(treatmentDayValues)]).default(''),
+	time: z.union([z.literal(''), z.enum(treatmentTimeValues)]).default(''),
+	professionalName: z.string().default('')
+});
+
+const treatmentAssignmentsSchema = z.preprocess(
+	(value) => {
+		if (value == null || value === '') return [];
+		if (Array.isArray(value)) return value;
+		if (typeof value === 'string') {
+			try {
+				return JSON.parse(value);
+			} catch {
+				return value;
+			}
+		}
+		return value;
+	},
+	z.array(treatmentAssignmentSchema).max(20, 'La cantidad máxima es 20 asignaciones')
+);
 
 export const enrollmentSchema = z
 	.object({
@@ -60,15 +86,7 @@ export const enrollmentSchema = z
 		holderPhone: z.string().trim().min(1, 'Ingresá el teléfono del titular'),
 		holderEmail: z.string().trim().min(1, 'Ingresá el email del titular'),
 
-		// tratamientos (checklist)
-		psychology: checkboxBool.default(false),
-		psychomotricity: checkboxBool.default(false),
-		speechTherapy: checkboxBool.default(false),
-		psychopedagogy: checkboxBool.default(false),
-		pedagogicalSupport: checkboxBool.default(false),
-		physiotherapy: checkboxBool.default(false),
-		occupationalTherapy: checkboxBool.default(false),
-		workshops: checkboxBool.default(false),
+		treatmentAssignments: treatmentAssignmentsSchema.default([]),
 		treatmentsNotes: z.string().optional().or(z.literal('')).default('')
 	})
 	.refine((data) => Boolean(data.admissionMode), {
@@ -136,22 +154,31 @@ export const enrollmentSchema = z
 			message: 'Para CI ingresa 8 digitos (incluye digito verificador, sin guion)'
 		}
 	)
-	.refine(
-		(data) =>
-			data.psychology ||
-			data.psychomotricity ||
-			data.speechTherapy ||
-			data.psychopedagogy ||
-			data.pedagogicalSupport ||
-			data.physiotherapy ||
-			data.occupationalTherapy ||
-			data.workshops,
-		{
-			path: ['treatmentsNotes'],
-			message: 'Seleccioná al menos un tratamiento'
-		}
-	)
 	.superRefine((data, ctx) => {
+		if (data.treatmentAssignments.length === 0) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['treatmentAssignments'],
+				message: 'Agregá al menos un tratamiento'
+			});
+		}
+
+		const hasIncompleteAssignment = data.treatmentAssignments.some(
+			(assignment) =>
+				!assignment.treatmentType ||
+				!assignment.day ||
+				!assignment.time ||
+				assignment.professionalName.trim().length === 0
+		);
+
+		if (hasIncompleteAssignment) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['treatmentAssignments'],
+				message: 'Completá tratamiento, día, horario y profesional en cada fila'
+			});
+		}
+
 		const today = todayYyyyMmDd();
 		if (data.admissionDate && data.admissionDate > today) {
 			ctx.addIssue({

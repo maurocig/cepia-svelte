@@ -78,6 +78,17 @@ export const verification = pgTable(
 	(table) => [index('verification_identifier_idx').on(table.identifier)]
 );
 
+export const treatmentTypes = pgTable('treatment_types', {
+	code: text('code').primaryKey(),
+	name: text('name').notNull(),
+	active: boolean('active').notNull().default(true),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at')
+		.defaultNow()
+		.$onUpdate(() => new Date())
+		.notNull()
+});
+
 export const userRelations = relations(user, ({ many }) => ({
 	sessions: many(session),
 	accounts: many(account)
@@ -124,6 +135,8 @@ export const enrollments = pgTable('enrollments', {
 	physiotherapy: boolean('physiotherapy').notNull().default(false),
 	occupationalTherapy: boolean('occupational_therapy').notNull().default(false),
 	workshops: boolean('workshops').notNull().default(false),
+	treatmentDaysPerWeek: integer('treatment_days_per_week').notNull().default(0),
+	treatmentSchedule: text('treatment_schedule').notNull().default('[]'),
 	treatmentsNotes: text('treatments_notes').notNull().default(''),
 
 	createdByUserId: text('created_by_user_id')
@@ -161,10 +174,14 @@ export const patients = pgTable('patients', {
 	schoolGrade: text('school_grade'),
 	schoolShift: text('school_shift'),
 
+	motherName: text('mother_name'),
 	motherDob: date('mother_dob', { mode: 'string' }),
 	motherOccupation: text('mother_occupation'),
+	motherPhone: text('mother_phone'),
+	fatherName: text('father_name'),
 	fatherDob: date('father_dob', { mode: 'string' }),
 	fatherOccupation: text('father_occupation'),
+	fatherPhone: text('father_phone'),
 	siblingsCount: integer('siblings_count'),
 	familyNotes: text('family_notes'),
 
@@ -174,6 +191,32 @@ export const patients = pgTable('patients', {
 		.$onUpdate(() => new Date())
 		.notNull()
 });
+
+export const enrollmentTreatments = pgTable(
+	'enrollment_treatments',
+	{
+		id: text('id').primaryKey(),
+		enrollmentId: text('enrollment_id')
+			.notNull()
+			.references(() => enrollments.id, { onDelete: 'cascade' }),
+		treatmentTypeCode: text('treatment_type_code')
+			.notNull()
+			.references(() => treatmentTypes.code),
+		day: text('day').notNull().default(''),
+		time: text('time').notNull().default(''),
+		professionalName: text('professional_name').notNull().default(''),
+		sortOrder: integer('sort_order').notNull().default(0),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at')
+			.defaultNow()
+			.$onUpdate(() => new Date())
+			.notNull()
+	},
+	(table) => [
+		index('enrollment_treatments_enrollment_idx').on(table.enrollmentId, table.sortOrder),
+		index('enrollment_treatments_type_idx').on(table.treatmentTypeCode)
+	]
+);
 
 export const agreementReminders = pgTable(
 	'agreement_reminders',
