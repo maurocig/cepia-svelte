@@ -21,7 +21,8 @@
 		schoolShiftOptions,
 		schoolTypeOptions,
 		treatmentDayOptions,
-		treatmentTimeOptions
+		treatmentHourOptions,
+		treatmentMinuteOptions
 	} from '$lib/domain/select-options';
 	import {
 		enrollmentEditSchema,
@@ -38,7 +39,14 @@
 		treatmentOptions,
 		type TreatmentAssignment
 	} from '$lib/treatments';
-	import { ageFromDob, formatDateUy, formatPersonName } from '$lib/utils';
+	import {
+		ageFromDob,
+		type DocumentIdType,
+		formatDateUy,
+		formatDocumentNumber,
+		formatPersonName,
+		sanitizeDocumentNumber
+	} from '$lib/utils';
 	import DatePicker from '@/components/DatePicker.svelte';
 	import Button from '@/components/ui/button/button.svelte';
 	import {
@@ -58,6 +66,8 @@
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+	type OptionalFormDocumentIdType = Exclude<DocumentIdType, null | undefined>;
+	type RequiredFormDocumentIdType = Exclude<DocumentIdType, null | undefined | ''>;
 	const yesNo = (v: boolean) => (v ? 'Sí' : 'No');
 	const expirationBadgeClass = (status: string | null) => {
 		if (status === 'active') return 'bg-emerald-100 text-emerald-700';
@@ -67,6 +77,17 @@
 	const expirationLabel = (status: string | null, daysUntil: number | null) => {
 		if (status === 'expired') return 'Vencido';
 		return `En ${Math.max(daysUntil ?? 0, 0)} dias`;
+	};
+	const formatTreatmentAssignment = (assignment: TreatmentAssignment) => {
+		const details = [
+			assignment.professionalName.trim(),
+			getOptionLabel(treatmentDayOptions, assignment.day, '').trim(),
+			assignment.time.trim()
+		].filter(Boolean);
+
+		return details.length
+			? `${getTreatmentLabel(assignment.treatmentType)}${details.length ? `, ${details.join(', ')}` : ''}`
+			: getTreatmentLabel(assignment.treatmentType);
 	};
 
 	let openPatientDialog = $state(false);
@@ -281,11 +302,53 @@
 		writeModalToForm();
 	};
 
+	const getTimeParts = (value: string) => {
+		if (!value || !/^\d{2}:\d{2}$/.test(value)) {
+			return { hour: '', minute: '' };
+		}
+
+		return {
+			hour: value.slice(0, 2),
+			minute: value.slice(3, 5)
+		};
+	};
+
+	const updateModalTreatmentAssignmentTimePart = (
+		index: number,
+		part: 'hour' | 'minute',
+		value: string
+	) => {
+		const current = getTimeParts(modalTreatmentAssignments[index]?.time ?? '');
+		const nextHour = part === 'hour' ? value : current.hour || '00';
+		const nextMinute = part === 'minute' ? value : current.minute || '00';
+		const nextTime = nextHour && nextMinute ? `${nextHour}:${nextMinute}` : '';
+
+		updateModalTreatmentAssignment(index, 'time', nextTime);
+	};
+
 	const removeModalTreatmentAssignment = (index: number) => {
 		modalTreatmentAssignments = modalTreatmentAssignments.filter(
 			(_, currentIndex) => currentIndex !== index
 		);
 		writeModalToForm();
+	};
+
+	const updatePatientIdType = (value: RequiredFormDocumentIdType) => {
+		$patientEditData.enrolledIdType = value;
+		$patientEditData.enrolledIdNumber = sanitizeDocumentNumber($patientEditData.enrolledIdNumber, value);
+	};
+
+	const updatePatientIdNumber = (value: string) => {
+		$patientEditData.enrolledIdNumber = sanitizeDocumentNumber(value, $patientEditData.enrolledIdType);
+	};
+
+	const updateHolderIdType = (value: OptionalFormDocumentIdType) => {
+		$enrollmentEditData.holderIdType = value;
+		$enrollmentEditData.holderIdNumber = sanitizeDocumentNumber($enrollmentEditData.holderIdNumber, value);
+	};
+
+	const updateHolderIdNumber = (value: string) => {
+		$enrollmentEditData.holderIdNumber = sanitizeDocumentNumber(value, $enrollmentEditData.holderIdType);
 	};
 
 	const activeTreatments = $derived(
@@ -359,7 +422,17 @@
 					</div>
 					<div>
 						<dt class="font-medium">Documento</dt>
-						<dd>{data.patient.enrolledIdType} {data.patient.enrolledIdNumber}</dd>
+						<dd>
+							{data.patient.enrolledIdType}
+							{#if data.patient.enrolledIdNumber}
+								{formatDocumentNumber(
+									data.patient.enrolledIdNumber,
+									data.patient.enrolledIdType as DocumentIdType
+								)}
+							{:else}
+								-
+							{/if}
+						</dd>
 					</div>
 					<div>
 						<dt class="font-medium">Edad</dt>
@@ -422,53 +495,67 @@
 							</Form.Control>
 							<Form.FieldErrors />
 						</Form.Field>
-						<Form.Field form={patientEditForm} name="enrolledIdType">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Label>Tipo doc.</Label>
-									<Select.Root type="single" bind:value={$patientEditData.enrolledIdType}>
-										<Select.Trigger {...props} class="h-10 w-full justify-between">
-											{getOptionLabel(
-												idTypeOptions,
-												$patientEditData.enrolledIdType,
-												'Seleccionar'
+						<div class="md:col-span-2 grid gap-3 md:grid-cols-[9rem_minmax(0,1fr)] md:items-start">
+							<Form.Field form={patientEditForm} name="enrolledIdType">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label>Tipo doc.</Label>
+										<Select.Root
+											type="single"
+											value={$patientEditData.enrolledIdType}
+											onValueChange={(value) => updatePatientIdType(value as RequiredFormDocumentIdType)}
+										>
+											<Select.Trigger {...props} class="h-10 w-full justify-between">
+												{getOptionLabel(
+													idTypeOptions,
+													$patientEditData.enrolledIdType,
+													'Seleccionar'
+												)}
+											</Select.Trigger>
+											<Select.Content>
+												{#each idTypeOptions as option (option.value)}
+													<Select.Item value={option.value} label={option.label}
+														>{option.label}</Select.Item
+													>
+												{/each}
+											</Select.Content>
+										</Select.Root>
+										<input
+											type="hidden"
+											name="enrolledIdType"
+											value={$patientEditData.enrolledIdType}
+										/>
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+							<Form.Field form={patientEditForm} name="enrolledIdNumber">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label for="enrolledIdNumber">Número doc.</Label>
+										<Input
+											id="enrolledIdNumber"
+											{...props}
+											value={formatDocumentNumber(
+												$patientEditData.enrolledIdNumber,
+												$patientEditData.enrolledIdType
 											)}
-										</Select.Trigger>
-										<Select.Content>
-											{#each idTypeOptions as option (option.value)}
-												<Select.Item value={option.value} label={option.label}
-													>{option.label}</Select.Item
-												>
-											{/each}
-										</Select.Content>
-									</Select.Root>
-									<input
-										type="hidden"
-										name="enrolledIdType"
-										value={$patientEditData.enrolledIdType}
-									/>
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
-						<Form.Field form={patientEditForm} name="enrolledIdNumber">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Label for="enrolledIdNumber">Número doc.</Label>
-									<Input
-										id="enrolledIdNumber"
-										{...props}
-										bind:value={$patientEditData.enrolledIdNumber}
-									/>
-									<input
-										type="hidden"
-										name="enrolledIdNumber"
-										value={$patientEditData.enrolledIdNumber}
-									/>
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
+											type="text"
+											inputmode={$patientEditData.enrolledIdType === 'PAS' ? 'text' : 'numeric'}
+											pattern={$patientEditData.enrolledIdType === 'PAS' ? '[A-Za-z0-9]*' : '[0-9.-]*'}
+											oninput={(event: Event) =>
+												updatePatientIdNumber((event.currentTarget as HTMLInputElement).value)}
+										/>
+										<input
+											type="hidden"
+											name="enrolledIdNumber"
+											value={$patientEditData.enrolledIdNumber}
+										/>
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+						</div>
 						<Form.Field form={patientEditForm} name="enrolledDob">
 							<Form.Control>
 								{#snippet children({ props }: { props: Record<string, any> })}
@@ -576,15 +663,15 @@
 								<dd>
 									<div class="flex flex-wrap items-center gap-2">
 										<span>{formatDateUy(data.patient.agreementExpirationDate)}</span>
-									<span
-										class={'rounded-full px-2 py-1 text-xs font-medium ' +
-											expirationBadgeClass(data.agreementExpirationStatus)}
-									>
-										{expirationLabel(
-											data.agreementExpirationStatus,
-											data.agreementExpirationDaysUntil
-										)}
-									</span>
+										<span
+											class={'rounded-full px-2 py-1 text-xs font-medium ' +
+												expirationBadgeClass(data.agreementExpirationStatus)}
+										>
+											{expirationLabel(
+												data.agreementExpirationStatus,
+												data.agreementExpirationDaysUntil
+											)}
+										</span>
 									</div>
 								</dd>
 							</div>
@@ -609,7 +696,17 @@
 					</div>
 					<div>
 						<dt class="font-medium">Documento de titular</dt>
-						<dd>{data.patient.holderIdType ?? '-'} {data.patient.holderIdNumber}</dd>
+						<dd>
+							{data.patient.holderIdType ?? '-'}
+							{#if data.patient.holderIdNumber}
+								{formatDocumentNumber(
+									data.patient.holderIdNumber,
+									data.patient.holderIdType as DocumentIdType
+								)}
+							{:else}
+								-
+							{/if}
+						</dd>
 					</div>
 					<div>
 						<dt class="font-medium">Teléfono de titular</dt>
@@ -823,53 +920,67 @@
 							</Form.Control>
 							<Form.FieldErrors />
 						</Form.Field>
-						<Form.Field form={enrollmentEditForm} name="holderIdType">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Label>Tipo de documento de titular</Label>
-									<Select.Root type="single" bind:value={$enrollmentEditData.holderIdType}>
-										<Select.Trigger {...props} class="h-10 w-full justify-between">
-											{getOptionLabel(
-												idTypeOptions,
-												$enrollmentEditData.holderIdType,
-												'Seleccionar'
+						<div class="md:col-span-2 grid gap-3 md:grid-cols-[11rem_minmax(0,1fr)] md:items-start">
+							<Form.Field form={enrollmentEditForm} name="holderIdType">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label>Tipo de documento de titular</Label>
+										<Select.Root
+											type="single"
+											value={$enrollmentEditData.holderIdType}
+											onValueChange={(value) => updateHolderIdType(value as OptionalFormDocumentIdType)}
+										>
+											<Select.Trigger {...props} class="h-10 w-full justify-between">
+												{getOptionLabel(
+													idTypeOptions,
+													$enrollmentEditData.holderIdType,
+													'Seleccionar'
+												)}
+											</Select.Trigger>
+											<Select.Content>
+												{#each idTypeOptions as option (option.value)}
+													<Select.Item value={option.value} label={option.label}
+														>{option.label}</Select.Item
+													>
+												{/each}
+											</Select.Content>
+										</Select.Root>
+										<input
+											type="hidden"
+											name="holderIdType"
+											value={$enrollmentEditData.holderIdType}
+										/>
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+							<Form.Field form={enrollmentEditForm} name="holderIdNumber">
+								<Form.Control>
+									{#snippet children({ props }: { props: Record<string, any> })}
+										<Label for="holderIdNumber">Número doc. titular</Label>
+										<Input
+											id="holderIdNumber"
+											{...props}
+											value={formatDocumentNumber(
+												$enrollmentEditData.holderIdNumber,
+												$enrollmentEditData.holderIdType
 											)}
-										</Select.Trigger>
-										<Select.Content>
-											{#each idTypeOptions as option (option.value)}
-												<Select.Item value={option.value} label={option.label}
-													>{option.label}</Select.Item
-												>
-											{/each}
-										</Select.Content>
-									</Select.Root>
-									<input
-										type="hidden"
-										name="holderIdType"
-										value={$enrollmentEditData.holderIdType}
-									/>
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
-						<Form.Field form={enrollmentEditForm} name="holderIdNumber">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Label for="holderIdNumber">Número doc. titular</Label>
-									<Input
-										id="holderIdNumber"
-										{...props}
-										bind:value={$enrollmentEditData.holderIdNumber}
-									/>
-									<input
-										type="hidden"
-										name="holderIdNumber"
-										value={$enrollmentEditData.holderIdNumber}
-									/>
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
+											type="text"
+											inputmode={$enrollmentEditData.holderIdType === 'PAS' ? 'text' : 'numeric'}
+											pattern={$enrollmentEditData.holderIdType === 'PAS' ? '[A-Za-z0-9]*' : '[0-9.-]*'}
+											oninput={(event: Event) =>
+												updateHolderIdNumber((event.currentTarget as HTMLInputElement).value)}
+										/>
+										<input
+											type="hidden"
+											name="holderIdNumber"
+											value={$enrollmentEditData.holderIdNumber}
+										/>
+									{/snippet}
+								</Form.Control>
+								<Form.FieldErrors />
+							</Form.Field>
+						</div>
 						<Form.Field form={enrollmentEditForm} name="holderPhone">
 							<Form.Control>
 								{#snippet children({ props }: { props: Record<string, any> })}
@@ -1279,7 +1390,7 @@
 					</div>
 				</dl>
 			</section>
-			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
+			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[820px]">
 				<form method="POST" action="?/family" use:enhanceFamilyEdit>
 					<Dialog.Header
 						><Dialog.Title>Editar grupo familiar</Dialog.Title><Dialog.Description
@@ -1482,12 +1593,7 @@
 								<ul class="mt-1 space-y-1">
 									{#each persistedTreatmentAssignments as assignment}
 										<li class="text-slate-700">
-											<strong>{getTreatmentLabel(assignment.treatmentType)}</strong>
-											{#if assignment.professionalName}
-												, {assignment.professionalName}
-											{/if}
-											, {getOptionLabel(treatmentDayOptions, assignment.day, assignment.day)}
-											, {getOptionLabel(treatmentTimeOptions, assignment.time, assignment.time)}
+											{formatTreatmentAssignment(assignment)}
 										</li>
 									{/each}
 								</ul>
@@ -1535,7 +1641,9 @@
 										<div class="space-y-3">
 											{#each modalTreatmentAssignments as assignment, index (index)}
 												<div class="rounded-md border p-4">
-													<div class="grid gap-3 md:grid-cols-2">
+													<div
+														class="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,0.8fr)_minmax(11.5rem,0.9fr)] xl:items-end"
+													>
 														<div>
 															<Label>Tratamiento</Label>
 															<Select.Root
@@ -1604,28 +1712,66 @@
 														</div>
 
 														<div>
-															<Label>Horario</Label>
-															<Select.Root
-																type="single"
-																value={assignment.time}
-																onValueChange={(value) =>
-																	updateModalTreatmentAssignment(index, 'time', value as string)}
-															>
-																<Select.Trigger class="w-full justify-between">
-																	{getOptionLabel(
-																		treatmentTimeOptions,
-																		assignment.time,
-																		'Seleccionar'
-																	)}
-																</Select.Trigger>
-																<Select.Content>
-																	{#each treatmentTimeOptions as option (option.value)}
-																		<Select.Item value={option.value} label={option.label}>
-																			{option.label}
-																		</Select.Item>
-																	{/each}
-																</Select.Content>
-															</Select.Root>
+															<Label for={`modal-treatment-hour-${index}`}>Horario</Label>
+															<div class="grid grid-cols-2 gap-2">
+																<Select.Root
+																	type="single"
+																	value={getTimeParts(assignment.time).hour}
+																	onValueChange={(value) =>
+																		updateModalTreatmentAssignmentTimePart(
+																			index,
+																			'hour',
+																			value as string
+																		)}
+																>
+																	<Select.Trigger
+																		id={`modal-treatment-hour-${index}`}
+																		class="w-full justify-between"
+																	>
+																		{getOptionLabel(
+																			treatmentHourOptions,
+																			getTimeParts(assignment.time).hour,
+																			'Hora'
+																		)}
+																	</Select.Trigger>
+																	<Select.Content>
+																		{#each treatmentHourOptions as option (option.value)}
+																			<Select.Item value={option.value} label={option.label}>
+																				{option.label}
+																			</Select.Item>
+																		{/each}
+																	</Select.Content>
+																</Select.Root>
+
+																<Select.Root
+																	type="single"
+																	value={getTimeParts(assignment.time).minute}
+																	onValueChange={(value) =>
+																		updateModalTreatmentAssignmentTimePart(
+																			index,
+																			'minute',
+																			value as string
+																		)}
+																>
+																	<Select.Trigger
+																		id={`modal-treatment-minute-${index}`}
+																		class="w-full justify-between"
+																	>
+																		{getOptionLabel(
+																			treatmentMinuteOptions,
+																			getTimeParts(assignment.time).minute,
+																			'Min'
+																		)}
+																	</Select.Trigger>
+																	<Select.Content>
+																		{#each treatmentMinuteOptions as option (option.value)}
+																			<Select.Item value={option.value} label={option.label}>
+																				{option.label}
+																			</Select.Item>
+																		{/each}
+																	</Select.Content>
+																</Select.Root>
+															</div>
 														</div>
 													</div>
 

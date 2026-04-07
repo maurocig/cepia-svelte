@@ -31,6 +31,22 @@ export function sanitizeDocumentNumber(value: string, idType: DocumentIdType): s
 	return value.replace(/\D/g, '');
 }
 
+export function formatDocumentNumber(value: string, idType: DocumentIdType): string {
+	const normalized = sanitizeDocumentNumber(value, idType);
+	if (!normalized) return '';
+
+	if (idType === 'PAS') return normalized;
+
+	if (idType === 'CI' && normalized.length >= 8) {
+		const body = normalized.slice(0, -1);
+		const verifier = normalized.slice(-1);
+		const groupedBody = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+		return `${groupedBody}-${verifier}`;
+	}
+
+	return normalized.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
 export function normalizeWhitespace(value: string): string {
 	return value.trim().replace(/\s+/g, ' ');
 }

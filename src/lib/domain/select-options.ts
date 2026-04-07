@@ -8,18 +8,6 @@ export const agreementOrganizationValues = [
 	'other'
 ] as const;
 export const treatmentDayValues = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const;
-export const treatmentTimeValues = [
-	'09:00',
-	'10:00',
-	'11:00',
-	'12:00',
-	'13:00',
-	'14:00',
-	'15:00',
-	'16:00',
-	'17:00',
-	'18:00'
-] as const;
 export const schoolTypeValues = ['kindergarten', 'primary', 'secondary'] as const;
 export const schoolShiftValues = ['morning', 'afternoon', 'night'] as const;
 
@@ -54,18 +42,15 @@ export const treatmentDayOptions = [
 	{ value: 'friday', label: 'Viernes' }
 ] as const;
 
-export const treatmentTimeOptions = [
-	{ value: '09:00', label: '09:00' },
-	{ value: '10:00', label: '10:00' },
-	{ value: '11:00', label: '11:00' },
-	{ value: '12:00', label: '12:00' },
-	{ value: '13:00', label: '13:00' },
-	{ value: '14:00', label: '14:00' },
-	{ value: '15:00', label: '15:00' },
-	{ value: '16:00', label: '16:00' },
-	{ value: '17:00', label: '17:00' },
-	{ value: '18:00', label: '18:00' }
-] as const;
+export const treatmentHourOptions = Array.from({ length: 11 }, (_, index) => {
+	const value = String(index + 8).padStart(2, '0');
+	return { value, label: value };
+});
+
+export const treatmentMinuteOptions = Array.from({ length: 12 }, (_, index) => {
+	const value = String(index * 5).padStart(2, '0');
+	return { value, label: value };
+});
 
 export const schoolTypeOptions = [
 	{ value: 'kindergarten', label: 'Preescolar' },

@@ -19,7 +19,8 @@
 		schoolShiftOptions,
 		schoolTypeOptions,
 		treatmentDayOptions,
-		treatmentTimeOptions
+		treatmentHourOptions,
+		treatmentMinuteOptions
 	} from '$lib/domain/select-options';
 	import {
 		emptyTreatmentAssignment,
@@ -27,7 +28,11 @@
 		treatmentOptions,
 		type TreatmentAssignment
 	} from '$lib/treatments';
-	import { sanitizeDocumentNumber } from '$lib/utils.js';
+	import {
+		formatDocumentNumber,
+		sanitizeDocumentNumber,
+		type DocumentIdType
+	} from '$lib/utils.js';
 	import DatePicker from '@/components/DatePicker.svelte';
 	import Checkbox from '@/components/ui/checkbox/checkbox.svelte';
 	import { Plus, Trash2 } from 'lucide-svelte';
@@ -43,6 +48,8 @@
 			patientForm: SuperValidated<PatientStep2>;
 		};
 	} = $props();
+	type OptionalFormDocumentIdType = Exclude<DocumentIdType, null | undefined>;
+	type RequiredFormDocumentIdType = Exclude<DocumentIdType, null | undefined | ''>;
 
 	// wizard
 	let step = $state<'1' | '2'>('1');
@@ -201,6 +208,30 @@
 		writeTreatmentAssignmentsToForm();
 	}
 
+	function getTimeParts(value: string) {
+		if (!value || !/^\d{2}:\d{2}$/.test(value)) {
+			return { hour: '', minute: '' };
+		}
+
+		return {
+			hour: value.slice(0, 2),
+			minute: value.slice(3, 5)
+		};
+	}
+
+	function updateTreatmentAssignmentTimePart(
+		index: number,
+		part: 'hour' | 'minute',
+		value: string
+	) {
+		const current = getTimeParts(treatmentAssignments[index]?.time ?? '');
+		const nextHour = part === 'hour' ? value : current.hour || '00';
+		const nextMinute = part === 'minute' ? value : current.minute || '00';
+		const nextTime = nextHour && nextMinute ? `${nextHour}:${nextMinute}` : '';
+
+		updateTreatmentAssignment(index, 'time', nextTime);
+	}
+
 	function removeTreatmentAssignment(index: number) {
 		treatmentAssignments = treatmentAssignments.filter((_, currentIndex) => currentIndex !== index);
 		writeTreatmentAssignmentsToForm();
@@ -221,6 +252,82 @@
 			scrollUp();
 		}
 	}
+
+	function updateHolderIdType(value: OptionalFormDocumentIdType) {
+		$enrollmentData.holderIdType = value;
+		$enrollmentData.holderIdNumber = sanitizeDocumentNumber(
+			$enrollmentData.holderIdNumber,
+			value
+		);
+	}
+
+	function updateHolderIdNumber(value: string) {
+		$enrollmentData.holderIdNumber = sanitizeDocumentNumber(value, $enrollmentData.holderIdType);
+	}
+
+	function updateEnrolledIdType(value: RequiredFormDocumentIdType) {
+		$patientData.enrolledIdType = value;
+		$patientData.enrolledIdNumber = sanitizeDocumentNumber($patientData.enrolledIdNumber, value);
+	}
+
+	function updateEnrolledIdNumber(value: string) {
+		$patientData.enrolledIdNumber = sanitizeDocumentNumber(value, $patientData.enrolledIdType);
+	}
+
+	let responsibleIsHolder = $state(false);
+	let motherIsHolder = $state(false);
+	let fatherIsHolder = $state(false);
+
+	function holderFullName() {
+		return [$enrollmentData.holderFirstName, $enrollmentData.holderLastName]
+			.map((value) => value?.trim() ?? '')
+			.filter(Boolean)
+			.join(' ');
+	}
+
+	function setResponsibleIsHolder(checked: boolean) {
+		responsibleIsHolder = checked;
+		if (!checked) {
+			$patientData.responsibleAdultName = '';
+			$patientData.responsibleAdultPhone = '';
+		}
+	}
+
+	function setMotherIsHolder(checked: boolean) {
+		motherIsHolder = checked;
+		if (!checked) {
+			$patientData.motherName = '';
+			$patientData.motherPhone = '';
+		}
+	}
+
+	function setFatherIsHolder(checked: boolean) {
+		fatherIsHolder = checked;
+		if (!checked) {
+			$patientData.fatherName = '';
+			$patientData.fatherPhone = '';
+		}
+	}
+
+	$effect(() => {
+		const fullName = holderFullName();
+		const phone = $enrollmentData.holderPhone ?? '';
+
+		if (responsibleIsHolder) {
+			$patientData.responsibleAdultName = fullName;
+			$patientData.responsibleAdultPhone = phone;
+		}
+
+		if (motherIsHolder) {
+			$patientData.motherName = fullName;
+			$patientData.motherPhone = phone;
+		}
+
+		if (fatherIsHolder) {
+			$patientData.fatherName = fullName;
+			$patientData.fatherPhone = phone;
+		}
+	});
 </script>
 
 <h1 class="mb-4 text-xl font-semibold">Ingresar nuevo paciente</h1>
@@ -480,54 +587,58 @@
 			</div>
 
 			<div class="grid gap-3 md:gap-4 lg:grid-cols-3">
-				<Form.Field form={enrollmentForm} name="holderIdType">
-					<Form.Control>
-						{#snippet children({ props }: { props: Record<string, any> })}
-							<Form.Label>Tipo de documento</Form.Label>
-							<Select.Root type="single" bind:value={$enrollmentData.holderIdType}>
-								<Select.Trigger {...props} class="min-h-10 w-full justify-between">
-									{getOptionLabel(idTypeOptions, $enrollmentData.holderIdType, 'Seleccionar')}
-								</Select.Trigger>
-								<Select.Content>
-									{#each idTypeOptions as option (option.value)}
-										<Select.Item value={option.value} label={option.label}
-											>{option.label}</Select.Item
-										>
-									{/each}
-								</Select.Content>
-							</Select.Root>
-							<input type="hidden" name="holderIdType" value={$enrollmentData.holderIdType} />
-						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
+				<div class="grid gap-3 md:grid-cols-[10rem_minmax(0,1fr)] md:items-start lg:col-span-2">
+					<Form.Field form={enrollmentForm} name="holderIdType">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<Form.Label>Tipo de documento</Form.Label>
+								<Select.Root
+									type="single"
+									value={$enrollmentData.holderIdType}
+									onValueChange={(value) => updateHolderIdType(value as OptionalFormDocumentIdType)}
+								>
+									<Select.Trigger {...props} class="min-h-10 w-full justify-between">
+										{getOptionLabel(idTypeOptions, $enrollmentData.holderIdType, 'Seleccionar')}
+									</Select.Trigger>
+									<Select.Content>
+										{#each idTypeOptions as option (option.value)}
+											<Select.Item value={option.value} label={option.label}
+												>{option.label}</Select.Item
+											>
+										{/each}
+									</Select.Content>
+								</Select.Root>
+								<input type="hidden" name="holderIdType" value={$enrollmentData.holderIdType} />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 
-				<Form.Field form={enrollmentForm} name="holderIdNumber">
-					<Form.Control>
-						{#snippet children({ props }: { props: Record<string, any> })}
-							<Form.Label>Número de documento</Form.Label>
-							<Input
-								{...props}
-								bind:value={$enrollmentData.holderIdNumber}
-								type="text"
-								inputmode={$enrollmentData.holderIdType === 'PAS' ? 'text' : 'numeric'}
-								pattern={$enrollmentData.holderIdType === 'PAS' ? '[A-Za-z0-9]*' : '[0-9]*'}
-								oninput={(e: Event) => {
-									const target = e.currentTarget as HTMLInputElement;
-									const normalized = sanitizeDocumentNumber(
-										target.value,
+					<Form.Field form={enrollmentForm} name="holderIdNumber">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<Form.Label>Número de documento</Form.Label>
+								<Input
+									{...props}
+									value={formatDocumentNumber(
+										$enrollmentData.holderIdNumber,
 										$enrollmentData.holderIdType
-									);
-									target.value = normalized;
-									$enrollmentData.holderIdNumber = normalized;
-								}}
-								placeholder="Ej: 12345678"
-							/>
-							<input type="hidden" name="holderIdNumber" value={$enrollmentData.holderIdNumber} />
-						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
+									)}
+									type="text"
+									inputmode={$enrollmentData.holderIdType === 'PAS' ? 'text' : 'numeric'}
+									pattern={$enrollmentData.holderIdType === 'PAS' ? '[A-Za-z0-9]*' : '[0-9.-]*'}
+									oninput={(e: Event) =>
+										updateHolderIdNumber((e.currentTarget as HTMLInputElement).value)}
+									placeholder={
+										$enrollmentData.holderIdType === 'PAS' ? 'Ej: AB123456' : 'Ej: 4.789.929-1'
+									}
+								/>
+								<input type="hidden" name="holderIdNumber" value={$enrollmentData.holderIdNumber} />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
+				</div>
 
 				<Form.Field form={enrollmentForm} name="holderPhone">
 					<Form.Control>
@@ -566,7 +677,9 @@
 								<div class="space-y-3">
 									{#each treatmentAssignments as assignment, index (index)}
 										<div class="rounded-md border p-4">
-											<div class="grid gap-3 md:grid-cols-2">
+											<div
+												class="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,0.8fr)_minmax(11.5rem,0.9fr)] xl:items-end"
+											>
 												<div>
 													<label class="text-sm font-medium" for={`treatmentType-${index}`}>
 														Tratamiento
@@ -640,48 +753,81 @@
 												</div>
 
 												<div>
-													<label class="text-sm font-medium" for={`treatmentTime-${index}`}>
+													<label class="text-sm font-medium" for={`treatmentHour-${index}`}>
 														Horario
 													</label>
-													<Select.Root
-														type="single"
-														value={assignment.time}
-														onValueChange={(value) =>
-															updateTreatmentAssignment(index, 'time', value as string)}
-													>
-														<Select.Trigger
-															id={`treatmentTime-${index}`}
-															class="min-h-10 w-full justify-between"
+													<div class="grid grid-cols-2 gap-2">
+														<Select.Root
+															type="single"
+															value={getTimeParts(assignment.time).hour}
+															onValueChange={(value) =>
+																updateTreatmentAssignmentTimePart(index, 'hour', value as string)}
 														>
-															{getOptionLabel(treatmentTimeOptions, assignment.time, 'Seleccionar')}
-														</Select.Trigger>
-														<Select.Content>
-															{#each treatmentTimeOptions as option (option.value)}
-																<Select.Item value={option.value} label={option.label}>
-																	{option.label}
-																</Select.Item>
-															{/each}
-														</Select.Content>
-													</Select.Root>
+															<Select.Trigger
+																id={`treatmentHour-${index}`}
+																class="min-h-10 w-full justify-between"
+															>
+																{getOptionLabel(
+																	treatmentHourOptions,
+																	getTimeParts(assignment.time).hour,
+																	'Hora'
+																)}
+															</Select.Trigger>
+															<Select.Content>
+																{#each treatmentHourOptions as option (option.value)}
+																	<Select.Item value={option.value} label={option.label}>
+																		{option.label}
+																	</Select.Item>
+																{/each}
+															</Select.Content>
+														</Select.Root>
+
+														<Select.Root
+															type="single"
+															value={getTimeParts(assignment.time).minute}
+															onValueChange={(value) =>
+																updateTreatmentAssignmentTimePart(index, 'minute', value as string)}
+														>
+															<Select.Trigger
+																id={`treatmentMinute-${index}`}
+																class="min-h-10 w-full justify-between"
+															>
+																{getOptionLabel(
+																	treatmentMinuteOptions,
+																	getTimeParts(assignment.time).minute,
+																	'Min'
+																)}
+															</Select.Trigger>
+															<Select.Content>
+																{#each treatmentMinuteOptions as option (option.value)}
+																	<Select.Item value={option.value} label={option.label}>
+																		{option.label}
+																	</Select.Item>
+																{/each}
+															</Select.Content>
+														</Select.Root>
+													</div>
 												</div>
 											</div>
 
-												<div class="mt-3 flex justify-end">
-													<button
-														type="button"
-														class={buttonVariants({ variant: 'destructiveOutline', size: 'sm' }) +
-															' gap-2'}
-														onclick={() => removeTreatmentAssignment(index)}
-													>
-														<Trash2 size={16} />
-														Eliminar fila
-													</button>
-												</div>
+											<div class="mt-3 flex justify-end">
+												<button
+													type="button"
+													class={buttonVariants({ variant: 'destructiveOutline', size: 'sm' }) +
+														' gap-2'}
+													onclick={() => removeTreatmentAssignment(index)}
+												>
+													<Trash2 size={16} />
+													Eliminar fila
+												</button>
+											</div>
 										</div>
 									{/each}
 								</div>
 							{:else}
-								<p class="text-sm text-slate-600">Todavía no hay tratamientos cargados.</p>
+								<p class="text-sm font-light text-slate-500">
+									Todavía no hay tratamientos cargados.
+								</p>
 							{/if}
 
 							<input
@@ -761,7 +907,7 @@
 			<input type="hidden" name="enrollmentId" value={enrollmentId} />
 			<h2 class="mb-4 text-base font-semibold">Información del paciente</h2>
 
-			<div class="grid gap-3 md:grid-cols-3 md:gap-4">
+			<div class="grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
 				<Form.Field form={patientForm} name="enrolledFirstName">
 					<Form.Control>
 						{#snippet children({ props }: { props: Record<string, any> })}
@@ -799,54 +945,58 @@
 					<Form.FieldErrors />
 				</Form.Field>
 
-				<Form.Field form={patientForm} name="enrolledIdType">
-					<Form.Control>
-						{#snippet children({ props }: { props: Record<string, any> })}
-							<Form.Label>Tipo de documento</Form.Label>
-							<Select.Root type="single" bind:value={$patientData.enrolledIdType}>
-								<Select.Trigger {...props} class="min-h-10 w-full justify-between">
-									{getOptionLabel(idTypeOptions, $patientData.enrolledIdType, 'Seleccionar')}
-								</Select.Trigger>
-								<Select.Content>
-									{#each idTypeOptions as option (option.value)}
-										<Select.Item value={option.value} label={option.label}
-											>{option.label}</Select.Item
-										>
-									{/each}
-								</Select.Content>
-							</Select.Root>
-							<input type="hidden" name="enrolledIdType" value={$patientData.enrolledIdType} />
-						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
+				<div class="grid gap-3 md:col-span-2 md:grid-cols-[10rem_minmax(0,1fr)] md:items-start">
+					<Form.Field form={patientForm} name="enrolledIdType">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<Form.Label>Tipo de documento</Form.Label>
+								<Select.Root
+									type="single"
+									value={$patientData.enrolledIdType}
+									onValueChange={(value) => updateEnrolledIdType(value as RequiredFormDocumentIdType)}
+								>
+									<Select.Trigger {...props} class="min-h-10 w-full justify-between">
+										{getOptionLabel(idTypeOptions, $patientData.enrolledIdType, 'Seleccionar')}
+									</Select.Trigger>
+									<Select.Content>
+										{#each idTypeOptions as option (option.value)}
+											<Select.Item value={option.value} label={option.label}
+												>{option.label}</Select.Item
+											>
+										{/each}
+									</Select.Content>
+								</Select.Root>
+								<input type="hidden" name="enrolledIdType" value={$patientData.enrolledIdType} />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 
-				<Form.Field form={patientForm} name="enrolledIdNumber">
-					<Form.Control>
-						{#snippet children({ props }: { props: Record<string, any> })}
-							<Form.Label>Número de documento</Form.Label>
-							<Input
-								{...props}
-								bind:value={$patientData.enrolledIdNumber}
-								type="text"
-								inputmode={$patientData.enrolledIdType === 'PAS' ? 'text' : 'numeric'}
-								pattern={$patientData.enrolledIdType === 'PAS' ? '[A-Za-z0-9]*' : '[0-9]*'}
-								oninput={(e: Event) => {
-									const target = e.currentTarget as HTMLInputElement;
-									const normalized = sanitizeDocumentNumber(
-										target.value,
+					<Form.Field form={patientForm} name="enrolledIdNumber">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<Form.Label>Número de documento</Form.Label>
+								<Input
+									{...props}
+									value={formatDocumentNumber(
+										$patientData.enrolledIdNumber,
 										$patientData.enrolledIdType
-									);
-									target.value = normalized;
-									$patientData.enrolledIdNumber = normalized;
-								}}
-								placeholder="Ej: 12345678"
-							/>
-							<input type="hidden" name="enrolledIdNumber" value={$patientData.enrolledIdNumber} />
-						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
+									)}
+									type="text"
+									inputmode={$patientData.enrolledIdType === 'PAS' ? 'text' : 'numeric'}
+									pattern={$patientData.enrolledIdType === 'PAS' ? '[A-Za-z0-9]*' : '[0-9.-]*'}
+									oninput={(e: Event) =>
+										updateEnrolledIdNumber((e.currentTarget as HTMLInputElement).value)}
+									placeholder={
+										$patientData.enrolledIdType === 'PAS' ? 'Ej: AB123456' : 'Ej: 4.789.929-1'
+									}
+								/>
+								<input type="hidden" name="enrolledIdNumber" value={$patientData.enrolledIdNumber} />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
+				</div>
 
 				<Form.Field form={patientForm} name="enrolledAddress">
 					<Form.Control>
@@ -866,7 +1016,18 @@
 				<Form.Field form={patientForm} name="responsibleAdultName">
 					<Form.Control>
 						{#snippet children({ props }: { props: Record<string, any> })}
-							<Form.Label>Adulto responsable</Form.Label>
+							<div class="flex items-center justify-between gap-3">
+								<Form.Label>Adulto responsable</Form.Label>
+								<label class="flex items-center gap-2 text-sm">
+									<Checkbox
+										class="h-4 w-4"
+										checked={responsibleIsHolder}
+										onCheckedChange={(value: boolean | 'indeterminate') =>
+											setResponsibleIsHolder(Boolean(value))}
+									/>
+									<span>Es titular</span>
+								</label>
+							</div>
 							<Input
 								{...props}
 								bind:value={$patientData.responsibleAdultName}
@@ -1045,135 +1206,165 @@
 
 			<h2 class="mt-12 mb-4 text-base font-semibold">Núcleo familiar</h2>
 
-				<div class="space-y-4">
-					<div class="grid gap-3 rounded-md border p-4 md:grid-cols-5 md:gap-4">
-						<Form.Field form={patientForm} name="motherName" class="md:col-span-2">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
+			<div class="space-y-4">
+				<div class="grid gap-3 rounded-md border p-4 md:grid-cols-2 md:gap-4 xl:grid-cols-5">
+					<Form.Field form={patientForm} name="motherName" class="md:col-span-2 xl:col-span-2">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<div class="flex items-center justify-between gap-3">
 									<Form.Label>Nombre completo de la madre</Form.Label>
-									<Input {...props} bind:value={$patientData.motherName} />
-									<input type="hidden" name="motherName" value={$patientData.motherName} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
+									<label class="flex items-center gap-2 text-sm">
+										<Checkbox
+											class="h-4 w-4"
+											checked={motherIsHolder}
+											onCheckedChange={(value: boolean | 'indeterminate') =>
+												setMotherIsHolder(Boolean(value))}
+										/>
+										<span>Es titular</span>
+									</label>
+								</div>
+								<Input {...props} bind:value={$patientData.motherName} />
+								<input type="hidden" name="motherName" value={$patientData.motherName} />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 
-						<Form.Field form={patientForm} name="motherDob">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Form.Label>Fecha de nacimiento</Form.Label>
-									<DatePicker max="today" bind:value={$patientData.motherDob} />
-									<input type="hidden" name="motherDob" value={$patientData.motherDob} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
+					<Form.Field form={patientForm} name="motherDob">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<Form.Label>Fecha de nacimiento</Form.Label>
+								<DatePicker max="today" bind:value={$patientData.motherDob} />
+								<input type="hidden" name="motherDob" value={$patientData.motherDob} />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 
-						<Form.Field form={patientForm} name="motherOccupation">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Form.Label>Ocupación</Form.Label>
-									<Input {...props} bind:value={$patientData.motherOccupation} />
-									<input type="hidden" name="motherOccupation" value={$patientData.motherOccupation} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
+					<Form.Field form={patientForm} name="motherOccupation">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<Form.Label>Ocupación</Form.Label>
+								<Input {...props} bind:value={$patientData.motherOccupation} />
+								<input
+									type="hidden"
+									name="motherOccupation"
+									value={$patientData.motherOccupation}
+								/>
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 
-						<Form.Field form={patientForm} name="motherPhone">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Form.Label>Teléfono</Form.Label>
-									<PhoneInput
-										defaultCountry="UY"
-										bind:value={$patientData.motherPhone}
-										placeholder="+598 99 123 456"
-									/>
-									<input type="hidden" name="motherPhone" value={$patientData.motherPhone} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
-					</div>
+					<Form.Field form={patientForm} name="motherPhone">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<Form.Label>Teléfono</Form.Label>
+								<PhoneInput
+									defaultCountry="UY"
+									bind:value={$patientData.motherPhone}
+									placeholder="+598 99 123 456"
+								/>
+								<input type="hidden" name="motherPhone" value={$patientData.motherPhone} />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
+				</div>
 
-					<div class="grid gap-3 rounded-md border p-4 md:grid-cols-5 md:gap-4">
-						<Form.Field form={patientForm} name="fatherName" class="md:col-span-2">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
+				<div class="grid gap-3 rounded-md border p-4 md:grid-cols-2 md:gap-4 xl:grid-cols-5">
+					<Form.Field form={patientForm} name="fatherName" class="md:col-span-2 xl:col-span-2">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<div class="flex items-center justify-between gap-3">
 									<Form.Label>Nombre completo del padre</Form.Label>
-									<Input {...props} bind:value={$patientData.fatherName} />
-									<input type="hidden" name="fatherName" value={$patientData.fatherName} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
+									<label class="flex items-center gap-2 text-sm">
+										<Checkbox
+											class="h-4 w-4"
+											checked={fatherIsHolder}
+											onCheckedChange={(value: boolean | 'indeterminate') =>
+												setFatherIsHolder(Boolean(value))}
+										/>
+										<span>Es titular</span>
+									</label>
+								</div>
+								<Input {...props} bind:value={$patientData.fatherName} />
+								<input type="hidden" name="fatherName" value={$patientData.fatherName} />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 
-						<Form.Field form={patientForm} name="fatherDob">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Form.Label>Fecha de nacimiento</Form.Label>
-									<DatePicker max="today" bind:value={$patientData.fatherDob} />
-									<input type="hidden" name="fatherDob" value={$patientData.fatherDob} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
+					<Form.Field form={patientForm} name="fatherDob">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<Form.Label>Fecha de nacimiento</Form.Label>
+								<DatePicker max="today" bind:value={$patientData.fatherDob} />
+								<input type="hidden" name="fatherDob" value={$patientData.fatherDob} />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 
-						<Form.Field form={patientForm} name="fatherOccupation">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Form.Label>Ocupación</Form.Label>
-									<Input {...props} bind:value={$patientData.fatherOccupation} />
-									<input type="hidden" name="fatherOccupation" value={$patientData.fatherOccupation} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
+					<Form.Field form={patientForm} name="fatherOccupation">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<Form.Label>Ocupación</Form.Label>
+								<Input {...props} bind:value={$patientData.fatherOccupation} />
+								<input
+									type="hidden"
+									name="fatherOccupation"
+									value={$patientData.fatherOccupation}
+								/>
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 
-						<Form.Field form={patientForm} name="fatherPhone">
-							<Form.Control>
-								{#snippet children({ props }: { props: Record<string, any> })}
-									<Form.Label>Teléfono</Form.Label>
-									<PhoneInput
-										defaultCountry="UY"
-										bind:value={$patientData.fatherPhone}
-										placeholder="+598 99 123 456"
-									/>
-									<input type="hidden" name="fatherPhone" value={$patientData.fatherPhone} />
-								{/snippet}
-							</Form.Control>
-							<Form.FieldErrors />
-						</Form.Field>
-					</div>
+					<Form.Field form={patientForm} name="fatherPhone">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<Form.Label>Teléfono</Form.Label>
+								<PhoneInput
+									defaultCountry="UY"
+									bind:value={$patientData.fatherPhone}
+									placeholder="+598 99 123 456"
+								/>
+								<input type="hidden" name="fatherPhone" value={$patientData.fatherPhone} />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
+				</div>
 
-					<div class="grid gap-3 md:grid-cols-3 md:gap-4">
+				<div class="grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
 					<Form.Field form={patientForm} name="siblingsCount">
 						<Form.Control>
 							{#snippet children({ props }: { props: Record<string, any> })}
 								<Form.Label>Cantidad de hermanos</Form.Label>
-							<Input type="number" min="0" step="1" bind:value={$patientData.siblingsCount} />
-							<input type="hidden" name="siblingsCount" value={$patientData.siblingsCount} />
-						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
-
-					<Form.Field form={patientForm} name="familyNotes" class="md:col-span-3">
-						<Form.Control>
-							{#snippet children({ props }: { props: Record<string, any> })}
-							<Form.Label>Notas familiares</Form.Label>
-							<textarea
-								{...props}
-								class="bg-background min-h-[90px] w-full rounded-md border px-3 py-2 text-sm"
-								bind:value={$patientData.familyNotes}
-							></textarea>
-							<input type="hidden" name="familyNotes" value={$patientData.familyNotes} />
-						{/snippet}
+								<Input type="number" min="0" step="1" bind:value={$patientData.siblingsCount} />
+								<input type="hidden" name="siblingsCount" value={$patientData.siblingsCount} />
+							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />
 					</Form.Field>
-					</div>
+
+					<Form.Field form={patientForm} name="familyNotes" class="md:col-span-2 xl:col-span-3">
+						<Form.Control>
+							{#snippet children({ props }: { props: Record<string, any> })}
+								<Form.Label>Notas familiares</Form.Label>
+								<textarea
+									{...props}
+									class="bg-background min-h-[90px] w-full rounded-md border px-3 py-2 text-sm"
+									bind:value={$patientData.familyNotes}
+								></textarea>
+								<input type="hidden" name="familyNotes" value={$patientData.familyNotes} />
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 				</div>
+			</div>
 			<div class="mt-6 flex items-center justify-between">
 				<button
 					type="button"

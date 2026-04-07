@@ -6,11 +6,10 @@ import {
 	idTypeValues,
 	schoolShiftValues,
 	schoolTypeValues,
-	treatmentDayValues,
-	treatmentTimeValues
+	treatmentDayValues
 } from '$lib/domain/select-options';
 import { getInvalidSupportedPhoneMessage, isValidSupportedInternationalPhone } from '$lib/phone';
-import { treatmentTypeCodes } from '$lib/treatments';
+import { isTreatmentTime, treatmentTypeCodes } from '$lib/treatments';
 import { todayYyyyMmDd } from '$lib/utils';
 
 const nonEmpty = (msg: string) => z.string().trim().min(1, msg);
@@ -25,11 +24,17 @@ const checkboxBool = z.preprocess((v) => {
 
 const emptyToUndefined = <T extends z.ZodTypeAny>(schema: T) =>
 	z.preprocess((v) => (v === '' ? undefined : v), schema);
+const treatmentTimeSchema = z
+	.string()
+	.default('')
+	.refine((value) => value === '' || isTreatmentTime(value), {
+		message: 'Ingresá un horario válido en intervalos de 5 minutos'
+	});
 
 const treatmentAssignmentSchema = z.object({
 	treatmentType: z.union([z.literal(''), z.enum(treatmentTypeCodes)]).default(''),
 	day: z.union([z.literal(''), z.enum(treatmentDayValues)]).default(''),
-	time: z.union([z.literal(''), z.enum(treatmentTimeValues)]).default(''),
+	time: treatmentTimeSchema,
 	professionalName: z.string().default('')
 });
 const treatmentAssignmentsSchema = z.preprocess(
@@ -327,18 +332,12 @@ export const treatmentsEditSchema = z
 			});
 		}
 
-		const hasIncompleteAssignment = data.treatmentAssignments.some(
-			(assignment) =>
-				!assignment.treatmentType ||
-				!assignment.day ||
-				!assignment.time ||
-				assignment.professionalName.trim().length === 0
-		);
-		if (hasIncompleteAssignment) {
+		const hasMissingTreatment = data.treatmentAssignments.some((assignment) => !assignment.treatmentType);
+		if (hasMissingTreatment) {
 			ctx.addIssue({
 				code: 'custom',
 				path: ['treatmentAssignments'],
-				message: 'Completá tratamiento, día, horario y profesional en cada fila'
+				message: 'Seleccioná un tratamiento en cada fila'
 			});
 		}
 	});

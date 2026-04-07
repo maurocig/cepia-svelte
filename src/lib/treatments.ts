@@ -1,11 +1,11 @@
-import { treatmentDayValues, treatmentTimeValues } from '$lib/domain/select-options';
+import { treatmentDayValues } from '$lib/domain/select-options';
 import { treatmentLabels } from '$lib/utils';
 
 export const treatmentTypeCodes = treatmentLabels.map(([code]) => code);
 
 export type TreatmentTypeCode = (typeof treatmentLabels)[number][0];
 export type TreatmentDay = '' | (typeof treatmentDayValues)[number];
-export type TreatmentTime = '' | (typeof treatmentTimeValues)[number];
+export type TreatmentTime = '' | string;
 
 export type TreatmentAssignment = {
 	treatmentType: TreatmentTypeCode | '';
@@ -29,8 +29,12 @@ export const isTreatmentTypeCode = (value: string): value is TreatmentTypeCode =
 const isTreatmentDay = (value: string): value is (typeof treatmentDayValues)[number] =>
 	(treatmentDayValues as readonly string[]).includes(value);
 
-const isTreatmentTime = (value: string): value is (typeof treatmentTimeValues)[number] =>
-	(treatmentTimeValues as readonly string[]).includes(value);
+export const isTreatmentTime = (value: string): value is string => {
+	const trimmed = value.trim();
+	if (!/^([01]\d|2[0-3]):([0-5]\d)$/.test(trimmed)) return false;
+	const minutes = Number(trimmed.slice(3, 5));
+	return minutes % 5 === 0;
+};
 
 export const parseTreatmentAssignments = (value: unknown): TreatmentAssignment[] => {
 	if (!value) return [];

@@ -3,11 +3,10 @@ import {
 	agreementOrganizationValues,
 	enrollmentStatusValues,
 	idTypeValues,
-	treatmentDayValues,
-	treatmentTimeValues
+	treatmentDayValues
 } from '$lib/domain/select-options';
 import { getInvalidSupportedPhoneMessage, isValidSupportedInternationalPhone } from '$lib/phone';
-import { treatmentTypeCodes } from '$lib/treatments';
+import { isTreatmentTime, treatmentTypeCodes } from '$lib/treatments';
 import { todayYyyyMmDd } from '$lib/utils';
 import { z } from 'zod/v4';
 
@@ -20,6 +19,12 @@ const checkboxBool = z.preprocess((v) => {
 	const s = v.toLowerCase();
 	return s === 'true' || s === 'on' || s === '1';
 }, z.boolean());
+const treatmentTimeSchema = z
+	.string()
+	.default('')
+	.refine((value) => value === '' || isTreatmentTime(value), {
+		message: 'Ingresá un horario válido en intervalos de 5 minutos'
+	});
 
 export const idTypeOptions = idTypeValues;
 export const enrollmentStatusOptions = enrollmentStatusValues;
@@ -29,7 +34,7 @@ export const agreementOrganizationOptions = agreementOrganizationValues;
 const treatmentAssignmentSchema = z.object({
 	treatmentType: z.union([z.literal(''), z.enum(treatmentTypeCodes)]).default(''),
 	day: z.union([z.literal(''), z.enum(treatmentDayValues)]).default(''),
-	time: z.union([z.literal(''), z.enum(treatmentTimeValues)]).default(''),
+	time: treatmentTimeSchema,
 	professionalName: z.string().default('')
 });
 
@@ -163,19 +168,13 @@ export const enrollmentSchema = z
 			});
 		}
 
-		const hasIncompleteAssignment = data.treatmentAssignments.some(
-			(assignment) =>
-				!assignment.treatmentType ||
-				!assignment.day ||
-				!assignment.time ||
-				assignment.professionalName.trim().length === 0
-		);
+		const hasMissingTreatment = data.treatmentAssignments.some((assignment) => !assignment.treatmentType);
 
-		if (hasIncompleteAssignment) {
+		if (hasMissingTreatment) {
 			ctx.addIssue({
 				code: 'custom',
 				path: ['treatmentAssignments'],
-				message: 'Completá tratamiento, día, horario y profesional en cada fila'
+				message: 'Seleccioná un tratamiento en cada fila'
 			});
 		}
 
