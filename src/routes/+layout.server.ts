@@ -1,6 +1,8 @@
-export function load({ locals }) {
-	// DO DB STUFF HERE, OR CALL AN API, OR WHATEVER YOU WANT TO DO TO GET DATA FOR YOUR LAYOUT
+import { loadAdminNavData } from '$lib/server/admin-nav';
+
+export async function load({ locals, url }) {
 	return {
-		user: locals.user
+		user: locals.user,
+		adminNav: url.pathname.startsWith('/admin') ? await loadAdminNavData(locals.user) : null
 	};
 }

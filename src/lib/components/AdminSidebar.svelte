@@ -1,15 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import type { AdminNavLink } from '$lib/server/admin-nav';
 	import { BellIcon, CircleUserRoundIcon, HomeIcon, PlusIcon, UsersIcon } from 'lucide-svelte';
 	import Logout from './Logout.svelte';
-
-	export type AdminNavLink = {
-		href: string;
-		label: string;
-		match?: 'exact' | 'prefix';
-		rightText?: string;
-		rightVariant?: 'default' | 'alert';
-	};
 
 	let { links } = $props<{
 		links: AdminNavLink[];
@@ -35,7 +28,7 @@
 </script>
 
 <aside
-	class="sticky flex h-fit w-[300px] flex-col gap-2 self-start rounded-lg bg-white/70 p-4 shadow-md"
+	class="sticky hidden h-fit w-[300px] flex-col gap-2 self-start rounded-lg bg-white/70 p-4 shadow-md md:flex"
 >
 	<ul class="flex flex-col gap-1">
 		{#each links as link (link.href)}

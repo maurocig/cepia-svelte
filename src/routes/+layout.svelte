@@ -12,11 +12,17 @@
 		children?: import('svelte').Snippet;
 	}
 
-	let { children } = $props();
+	let { children, data } = $props();
 </script>
 
-<div class="slate-200 w-full bg-slate-200/80 text-gray-700">
+<div
+	class={
+		'w-full text-gray-700 ' +
+		(data.adminNav ? 'bg-white/70 md:bg-slate-200/80' : 'slate-200 bg-slate-200/80')
+	}
+>
 	<Nav
+		adminLinks={data.adminNav?.links}
 		links={[
 			{ name: 'Inicio', href: '/' },
 			{ name: 'Servicios', href: '/servicios' },
@@ -30,7 +36,12 @@
 		</div>
 	{/if}
 
-	<main class="mx-auto mt-[90px] h-full min-h-[calc(100vh-80px-300px)]">
+	<main
+		class={
+			'mx-auto h-full min-h-[calc(100vh-80px-300px)] ' +
+			(data.adminNav ? 'pt-[90px] md:mt-[90px] md:pt-0' : 'mt-[90px]')
+		}
+	>
 		{@render children?.()}
 	</main>
 

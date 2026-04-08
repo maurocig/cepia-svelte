@@ -1,13 +1,21 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import * as Sheet from '$lib/components/ui/sheet';
-	import { LogOutIcon } from 'lucide-svelte';
-	import Logout from './Logout.svelte';
+	import type { AdminNavLink } from '$lib/server/admin-nav';
 	import MobileMenu from './MobileMenu.svelte';
 	import NavLogo from './NavLogo.svelte';
 
-	let { links } = $props();
+	type PublicNavLink = {
+		name: string;
+		href: string;
+	};
+
+	let {
+		links,
+		adminLinks = []
+	}: {
+		links: PublicNavLink[];
+		adminLinks?: AdminNavLink[];
+	} = $props();
 </script>
 
 <nav
@@ -16,7 +24,7 @@
 	<div class="mx-auto flex h-[70px] w-full max-w-[1280px] items-center justify-between">
 		<NavLogo />
 
-		<MobileMenu buttonClass="block md:hidden" {links} />
+		<MobileMenu buttonClass="block md:hidden" {links} {adminLinks} />
 		<ul class="font-quicksand hidden gap-6 font-normal text-gray-600 md:flex">
 			{#each links as { name, href }, i}
 				<li>
