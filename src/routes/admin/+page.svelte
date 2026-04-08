@@ -6,10 +6,7 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import {
 		ArrowRight,
-		BellRing,
 		CalendarClock,
-		CircleUserRound,
-		Files,
 		Plus,
 		Search,
 		Users
@@ -19,9 +16,6 @@
 
 	let { data }: { data: PageData } = $props();
 	let patientSearch = $state('');
-	const particularPatients = $derived(
-		Math.max(data.stats.totalPatients - data.stats.agreementPatients, 0)
-	);
 
 	function submitPatientSearch(event: SubmitEvent) {
 		event.preventDefault();
@@ -36,33 +30,6 @@
 
 		void goto('/admin/pacientes');
 	}
-
-	const statCards = $derived([
-		{
-			label: 'Pacientes activos',
-			value: data.stats.activePatients,
-			helper: `${data.stats.totalPatients} en total`,
-			icon: CircleUserRound
-		},
-		{
-			label: 'Convenios',
-			value: data.stats.agreementPatients,
-			helper: 'Inscripciones por convenio',
-			icon: Files
-		},
-		{
-			label: particularPatients === 1 ? 'Particular' : 'Particulares',
-			value: particularPatients,
-			helper: particularPatients === 1 ? 'Inscripción particular' : 'Inscripciones particulares',
-			icon: Users
-		},
-		{
-			label: 'Vencen en 30 días',
-			value: data.stats.upcomingRenewals30d,
-			helper: 'Requieren atención cercana',
-			icon: BellRing
-		}
-	]);
 
 	const quickActions = [
 		{
@@ -152,23 +119,6 @@
 				</div>
 			</div>
 		</div>
-	</section>
-
-	<section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-		{#each statCards as card (card.label)}
-			<div class="rounded-lg border border-slate-900/15 bg-white/80 p-3.5 shadow-sm">
-				<div class="flex items-start justify-between gap-4">
-					<div>
-						<p class="text-sm text-slate-500">{card.label}</p>
-						<p class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">{card.value}</p>
-					</div>
-					<div class="rounded-md bg-slate-100 p-2 text-slate-600">
-						<card.icon size={20} />
-					</div>
-				</div>
-				<p class="mt-2.5 text-sm text-slate-500">{card.helper}</p>
-			</div>
-		{/each}
 	</section>
 
 	<section class="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
