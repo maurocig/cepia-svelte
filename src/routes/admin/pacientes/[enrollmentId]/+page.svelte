@@ -1610,7 +1610,9 @@
 					</div>
 				</dl>
 			</section>
-			<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
+			<Dialog.Content
+				class="max-h-[90vh] overflow-y-auto sm:max-w-3xl lg:max-w-5xl xl:max-w-6xl"
+			>
 				<form
 					method="POST"
 					action="?/treatments"
@@ -1626,11 +1628,11 @@
 						<Form.Field form={treatmentsEditForm} name="treatmentAssignments">
 							<Form.Control>
 								{#snippet children({ props }: { props: Record<string, any> })}
-									<div class="flex items-center justify-between">
+									<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 										<Label>Asignaciones</Label>
 										<button
 											type="button"
-											class="rounded-md border px-3 py-2 text-sm hover:cursor-pointer"
+											class="w-full rounded-md border px-3 py-2 text-sm hover:cursor-pointer sm:w-auto"
 											onclick={addModalTreatmentAssignment}
 										>
 											Agregar tratamiento
@@ -1640,9 +1642,9 @@
 									{#if modalTreatmentAssignments.length > 0}
 										<div class="space-y-3">
 											{#each modalTreatmentAssignments as assignment, index (index)}
-												<div class="rounded-md border p-4">
+												<div class="rounded-md border p-4 sm:p-5">
 													<div
-														class="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,0.8fr)_minmax(11.5rem,0.9fr)] xl:items-end"
+														class="grid gap-3 md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.35fr)_minmax(0,0.8fr)_minmax(11.5rem,0.9fr)] xl:items-end"
 													>
 														<div>
 															<Label>Tratamiento</Label>
@@ -1779,7 +1781,7 @@
 														<button
 															type="button"
 															class={buttonVariants({ variant: 'destructiveOutline', size: 'sm' }) +
-																' gap-2'}
+																' w-full gap-2 sm:w-auto'}
 															onclick={() => removeModalTreatmentAssignment(index)}
 														>
 															<Trash2 size={16} />
@@ -1822,13 +1824,17 @@
 							<Form.FieldErrors />
 						</Form.Field>
 					</div>
-					<Dialog.Footer>
+					<Dialog.Footer class="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 						<Dialog.Close
 							type="button"
-							class={buttonVariants({ variant: 'outline' })}
+							class={buttonVariants({ variant: 'outline' }) + ' w-full sm:w-auto'}
 							onclick={cancelTreatmentsModal}>Cancelar</Dialog.Close
 						>
-						<Button type="submit" disabled={$submittingTreatmentsEdit}>
+						<Button
+							type="submit"
+							class="w-full sm:w-auto"
+							disabled={$submittingTreatmentsEdit}
+						>
 							{#if $submittingTreatmentsEdit}
 								<span
 									class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
@@ -1845,7 +1851,14 @@
 	</div>
 
 	{#if data.canManage}
-		<div class="flex justify-end">
+		<div class="space-y-3">
+			{#if data.patient.createdByEmail || data.patient.createdAtLabel}
+				<p class="text-sm text-muted-foreground">
+					Creado por {data.patient.createdByEmail ?? 'usuario desconocido'} el{' '}
+					{data.patient.createdAtLabel ?? '-'}
+				</p>
+			{/if}
+			<div class="flex justify-end">
 			<AlertDialog.Root>
 				<AlertDialog.Trigger
 					class={buttonVariants({ variant: 'destructive', size: 'sm' }) + ' cursor-pointer gap-2'}
@@ -1884,6 +1897,7 @@
 					</AlertDialog.Footer>
 				</AlertDialog.Content>
 			</AlertDialog.Root>
+			</div>
 		</div>
 	{/if}
 </div>

@@ -10,10 +10,11 @@ import { db } from '$lib/server/db';
 import { isDuplicatePatientDocumentError } from '$lib/server/db/errors';
 import { addDaysUtc, daysBetweenUtc, todayInTimeZone } from '$lib/server/agreement-reminders';
 import { buildLegacyTreatmentAssignments, summarizeTreatmentAssignments } from '$lib/treatments';
-import { enrollmentTreatments, enrollments, patients } from '$lib/server/db/schema';
+import { enrollmentTreatments, enrollments, patients, user } from '$lib/server/db/schema';
 import { syncAgreementReminders } from '$lib/server/sync-agreement-reminders';
 import {
 	formatPersonName,
+	formatDateUy,
 	normalizeWhitespace,
 	sanitizeDocumentNumber,
 	type DocumentIdType
@@ -27,6 +28,11 @@ import type { Actions, PageServerLoad } from './$types';
 const emptyToNull = (value: string | null | undefined) => {
 	const text = String(value ?? '').trim();
 	return text.length ? text : null;
+};
+
+const formatTimestampToUyDate = (value: Date | null | undefined) => {
+	if (!value) return null;
+	return formatDateUy(value.toISOString().slice(0, 10));
 };
 
 const patientEditValidator = zod4(patientEditSchema);
@@ -123,7 +129,9 @@ const selection = {
 	fatherOccupation: patients.fatherOccupation,
 	fatherPhone: patients.fatherPhone,
 	siblingsCount: patients.siblingsCount,
-	familyNotes: patients.familyNotes
+	familyNotes: patients.familyNotes,
+	createdAt: enrollments.createdAt,
+	createdByEmail: user.email
 } as const;
 
 const getEditableRow = async (enrollmentId: string) => {
@@ -131,6 +139,7 @@ const getEditableRow = async (enrollmentId: string) => {
 		.select(selection)
 		.from(enrollments)
 		.innerJoin(patients, eq(patients.enrollmentId, enrollments.id))
+		.leftJoin(user, eq(user.id, enrollments.createdByUserId))
 		.where(and(eq(enrollments.id, enrollmentId), eq(enrollments.formStatus, 'completed')))
 		.limit(1);
 
@@ -149,6 +158,7 @@ const getEditableRow = async (enrollmentId: string) => {
 
 	return {
 		...row,
+		createdAtLabel: formatTimestampToUyDate(row.createdAt),
 		treatmentAssignments:
 			assignmentRows.length > 0
 				? assignmentRows
