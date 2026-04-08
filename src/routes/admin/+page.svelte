@@ -1,29 +1,40 @@
 <script lang="ts">
 	import { formatDateUy, formatPersonName } from '$lib/utils';
 	import Button from '@/components/ui/button/button.svelte';
-	import { Activity, ArrowRight, BellRing, CalendarClock, Files, Plus, Users } from 'lucide-svelte';
+	import {
+		ArrowRight,
+		BellRing,
+		CalendarClock,
+		CircleUserRound,
+		Files,
+		Plus,
+		Users
+	} from 'lucide-svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+	const particularPatients = $derived(
+		Math.max(data.stats.totalPatients - data.stats.agreementPatients, 0)
+	);
 
 	const statCards = $derived([
 		{
 			label: 'Pacientes activos',
 			value: data.stats.activePatients,
 			helper: `${data.stats.totalPatients} en total`,
-			icon: Activity
-		},
-		{
-			label: 'Pacientes inactivos',
-			value: data.stats.inactivePatients,
-			helper: 'Para seguimiento administrativo',
-			icon: Users
+			icon: CircleUserRound
 		},
 		{
 			label: 'Convenios',
 			value: data.stats.agreementPatients,
 			helper: 'Inscripciones por convenio',
 			icon: Files
+		},
+		{
+			label: particularPatients === 1 ? 'Particular' : 'Particulares',
+			value: particularPatients,
+			helper: particularPatients === 1 ? 'Inscripción particular' : 'Inscripciones particulares',
+			icon: Users
 		},
 		{
 			label: 'Vencen en 30 días',
@@ -79,7 +90,9 @@
 				</div>
 			</div>
 
-			<div class="hidden rounded-lg border border-slate-900/15 bg-white/85 p-3.5 shadow-sm md:block">
+			<div
+				class="hidden rounded-lg border border-slate-900/15 bg-white/85 p-3.5 shadow-sm md:block"
+			>
 				<p class="text-sm font-medium text-slate-500">Hoy</p>
 				<p class="mt-1 text-2xl font-semibold text-slate-900">{formatDateUy(data.today)}</p>
 				<div class="mt-3 grid grid-cols-2 gap-2">
