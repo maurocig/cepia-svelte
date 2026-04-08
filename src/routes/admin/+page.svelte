@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { formatDateUy, formatPersonName } from '$lib/utils';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { defaultPatientsTableState, patientsTableState } from '$lib/stores/patients-table';
 	import Button from '@/components/ui/button/button.svelte';
 	import {
 		ArrowRight,
@@ -8,14 +11,31 @@
 		CircleUserRound,
 		Files,
 		Plus,
+		Search,
 		Users
 	} from 'lucide-svelte';
 	import type { PageData } from './$types';
+	import { get } from 'svelte/store';
 
 	let { data }: { data: PageData } = $props();
+	let patientSearch = $state('');
 	const particularPatients = $derived(
 		Math.max(data.stats.totalPatients - data.stats.agreementPatients, 0)
 	);
+
+	function submitPatientSearch(event: SubmitEvent) {
+		event.preventDefault();
+		const query = patientSearch.trim();
+		const currentState = get(patientsTableState);
+
+		patientsTableState.set({
+			filterColumnId: query && /^\d/.test(query) ? 'enrolledIdNumber' : 'patientName',
+			filterValue: query,
+			columnVisibility: currentState.columnVisibility ?? defaultPatientsTableState.columnVisibility
+		});
+
+		void goto('/admin/pacientes');
+	}
 
 	const statCards = $derived([
 		{
@@ -79,15 +99,38 @@
 					Resumen general
 				</h1>
 				<div class="flex flex-col gap-2.5 sm:flex-row">
-					<Button href="/admin/pacientes/nuevo" class="gap-2">
-						<Plus size={18} />
-						Ingresar paciente
-					</Button>
-					<Button href="/admin/pacientes" variant="outline" class="gap-2">
+					<Button href="/admin/pacientes" class="gap-2">
 						Ir a pacientes
 						<ArrowRight size={18} />
 					</Button>
+					<Button href="/admin/pacientes/nuevo" variant="outline" class="gap-2">
+						<Plus size={18} />
+						Ingresar paciente
+					</Button>
 				</div>
+				<form class="pt-3" onsubmit={submitPatientSearch}>
+					<div class="md:max-w-md">
+						<div
+							class="flex h-11 min-w-0 overflow-hidden rounded-md border border-slate-900/15 bg-white/95 shadow-sm"
+						>
+							<Input
+								bind:value={patientSearch}
+								autofocus
+								placeholder="Buscar paciente por nombre o documento"
+								class="h-11 flex-1 rounded-none border-0 bg-transparent px-4 text-sm shadow-none focus-visible:ring-0 placeholder:text-slate-400"
+							/>
+							<div class="w-px bg-slate-900/15"></div>
+							<Button
+								type="submit"
+								variant="ghost"
+								class="h-11 rounded-none px-4 text-sm text-slate-700 hover:bg-slate-50"
+							>
+								<Search size={15} class="mr-2" />
+								Buscar
+							</Button>
+						</div>
+					</div>
+				</form>
 			</div>
 
 			<div
