@@ -15,6 +15,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const in30Days = new Date(`${today}T00:00:00.000Z`);
 	in30Days.setUTCDate(in30Days.getUTCDate() + 30);
 	const in30DaysYyyyMmDd = in30Days.toISOString().slice(0, 10);
+	const in90Days = new Date(`${today}T00:00:00.000Z`);
+	in90Days.setUTCDate(in90Days.getUTCDate() + 90);
+	const in90DaysYyyyMmDd = in90Days.toISOString().slice(0, 10);
 
 	const enrollmentRows = await db
 		.select({
@@ -40,7 +43,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.innerJoin(patients, eq(patients.enrollmentId, enrollments.id))
 		.where(eq(enrollments.formStatus, 'completed'))
 		.orderBy(desc(enrollments.updatedAt))
-		.limit(6);
+		.limit(5);
 
 	const upcomingExpirations = await db
 		.select({
@@ -60,11 +63,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 				eq(enrollments.admissionMode, 'agreement'),
 				eq(enrollments.agreementOrganization, 'BPS'),
 				isNotNull(enrollments.agreementExpirationDate),
-				lte(enrollments.agreementExpirationDate, in30DaysYyyyMmDd)
+				lte(enrollments.agreementExpirationDate, in90DaysYyyyMmDd)
 			)
 		)
 		.orderBy(asc(enrollments.agreementExpirationDate))
-		.limit(6);
+		.limit(5);
 
 	const totalPatients = enrollmentRows.length;
 	const activePatients = enrollmentRows.filter((row) => row.status === 'active').length;

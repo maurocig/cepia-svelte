@@ -1208,8 +1208,8 @@
 			<h2 class="mt-12 mb-4 text-base font-semibold">Núcleo familiar</h2>
 
 			<div class="space-y-4">
-				<div class="grid gap-3 rounded-md border p-4 md:grid-cols-2 md:gap-4 xl:grid-cols-5">
-					<Form.Field form={patientForm} name="motherName" class="md:col-span-2 xl:col-span-2">
+				<div class="grid gap-3 rounded-md border p-4 md:grid-cols-2 md:gap-4">
+					<Form.Field form={patientForm} name="motherName">
 						<Form.Control>
 							{#snippet children({ props }: { props: Record<string, any> })}
 								<div class="flex items-center justify-between gap-3">
@@ -1273,8 +1273,8 @@
 					</Form.Field>
 				</div>
 
-				<div class="grid gap-3 rounded-md border p-4 md:grid-cols-2 md:gap-4 xl:grid-cols-5">
-					<Form.Field form={patientForm} name="fatherName" class="md:col-span-2 xl:col-span-2">
+				<div class="grid gap-3 rounded-md border p-4 md:grid-cols-2 md:gap-4">
+					<Form.Field form={patientForm} name="fatherName">
 						<Form.Control>
 							{#snippet children({ props }: { props: Record<string, any> })}
 								<div class="flex items-center justify-between gap-3">

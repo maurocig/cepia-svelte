@@ -17,6 +17,7 @@
 		type VisibilityState
 	} from '@tanstack/table-core';
 	import { ChevronDown } from 'lucide-svelte';
+	import { onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
 	import type { PatientRow } from './columns';
 
@@ -35,6 +36,7 @@
 		pageIndex: 0,
 		pageSize: 10
 	});
+	let searchField = $state<HTMLDivElement | null>(null);
 
 	function columnLabel(id: string) {
 		if (id === 'patientName') return 'Nombre';
@@ -114,11 +116,17 @@
 		applySingleColumnFilter(filterColumnId, filterValue);
 		persistTableState();
 	});
+
+	onMount(async () => {
+		await tick();
+		searchField?.querySelector('input')?.focus();
+	});
 </script>
 
 <div class="space-y-3">
 	<div class="relative flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
 		<div
+			bind:this={searchField}
 			class="flex h-11 w-full overflow-hidden rounded-md border border-slate-900/15 bg-white/90 shadow-sm sm:w-auto"
 		>
 			<Select.Root

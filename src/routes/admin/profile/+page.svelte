@@ -90,8 +90,8 @@
 		</div>
 	</section>
 
-	<section class="grid gap-4 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-		<div class="rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm">
+	<section class="grid gap-4 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] xl:items-start">
+		<div class="h-fit rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm">
 			<div class="mb-3.5">
 				<h2 class="text-lg font-semibold text-slate-900">Resumen</h2>
 				<p class="text-sm text-slate-500">Información básica de la cuenta.</p>

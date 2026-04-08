@@ -1376,8 +1376,8 @@
 									>
 										Información de la madre
 									</Accordion.Trigger>
-									<Accordion.Content class="mt-2 ml-4 rounded-lg border border-slate-900/15 bg-white px-4 py-3">
-										<div class="grid gap-2">
+									<Accordion.Content class="mt-2 ml-4 pl-4">
+										<div class="grid gap-1.5">
 											<div>
 												<span class="font-medium">Nombre:</span>
 												{data.patient.motherName || '-'}
@@ -1407,8 +1407,8 @@
 									>
 										Información del padre
 									</Accordion.Trigger>
-									<Accordion.Content class="mt-2 ml-4 rounded-lg border border-slate-900/15 bg-white px-4 py-3">
-										<div class="grid gap-2">
+									<Accordion.Content class="mt-2 ml-4 pl-4">
+										<div class="grid gap-1.5">
 											<div>
 												<span class="font-medium">Nombre:</span>
 												{data.patient.fatherName || '-'}
@@ -1456,7 +1456,7 @@
 					>
 					<div class="space-y-4 py-4">
 						<div class="grid gap-4 rounded-md border p-4 md:grid-cols-2">
-							<Form.Field form={familyEditForm} name="motherName" class="md:col-span-2">
+							<Form.Field form={familyEditForm} name="motherName">
 								<Form.Control>
 									{#snippet children({ props }: { props: Record<string, any> })}
 										<Label for="motherName">Nombre completo de la madre</Label>
@@ -1510,7 +1510,7 @@
 							</Form.Field>
 						</div>
 						<div class="grid gap-4 rounded-md border p-4 md:grid-cols-2">
-							<Form.Field form={familyEditForm} name="fatherName" class="md:col-span-2">
+							<Form.Field form={familyEditForm} name="fatherName">
 								<Form.Control>
 									{#snippet children({ props }: { props: Record<string, any> })}
 										<Label for="fatherName">Nombre completo del padre</Label>

@@ -1,18 +1,20 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { formatDateUy, formatPersonName } from '$lib/utils';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { defaultPatientsTableState, patientsTableState } from '$lib/stores/patients-table';
+	import { formatDateUy, formatPersonName } from '$lib/utils';
 	import Button from '@/components/ui/button/button.svelte';
 	import {
 		ArrowRight,
 		CalendarClock,
+		Handshake,
 		Plus,
 		Search,
+		UserRound,
 		Users
 	} from 'lucide-svelte';
-	import type { PageData } from './$types';
 	import { get } from 'svelte/store';
+	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 	let patientSearch = $state('');
@@ -51,6 +53,33 @@
 			icon: CalendarClock
 		}
 	];
+
+	const dashboardSummaryCards = [
+		{
+			label: 'Pacientes activos',
+			value: data.stats.activePatients,
+			helper: `${data.stats.totalPatients} en total`,
+			icon: Users
+		},
+		{
+			label: 'Vencen en 30 días',
+			value: data.stats.upcomingRenewals30d,
+			helper: 'Requieren atención cercana',
+			icon: CalendarClock
+		},
+		{
+			label: 'Convenios',
+			value: data.stats.agreementPatients,
+			helper: 'Inscripciones por convenio',
+			icon: Handshake
+		},
+		{
+			label: 'Particular',
+			value: data.stats.totalPatients - data.stats.agreementPatients,
+			helper: 'Inscripciones particulares',
+			icon: UserRound
+		}
+	];
 </script>
 
 <div class="space-y-5">
@@ -84,7 +113,7 @@
 								bind:value={patientSearch}
 								autofocus
 								placeholder="Buscar paciente por nombre o documento"
-								class="h-11 flex-1 rounded-none border-0 bg-transparent px-4 text-sm shadow-none focus-visible:ring-0 placeholder:text-slate-400"
+								class="h-11 flex-1 rounded-none border-0 bg-transparent px-4 text-sm shadow-none placeholder:text-slate-400 focus-visible:ring-0"
 							/>
 							<div class="w-px bg-slate-900/15"></div>
 							<Button
@@ -121,7 +150,53 @@
 		</div>
 	</section>
 
-	<section class="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+	<section class="grid gap-4 xl:grid-cols-2">
+		<div class="rounded-lg border border-slate-900/15 bg-white/80 p-3.5 shadow-sm md:p-4">
+			<div class="mb-3.5">
+				<h2 class="text-lg font-semibold text-slate-900">Accesos rápidos</h2>
+				<p class="text-sm text-slate-500">Tareas frecuentes para arrancar más rápido.</p>
+			</div>
+			<div class="space-y-2.5">
+				{#each quickActions as action (action.href)}
+					<a
+						href={action.href}
+						class="flex items-start gap-3 rounded-lg border border-slate-900/15 bg-white px-3 py-3 transition hover:border-slate-300 hover:bg-slate-50"
+					>
+						<div class="rounded-md bg-slate-100 p-2 text-slate-700">
+							<action.icon size={18} />
+						</div>
+						<div>
+							<p class="font-medium text-slate-900">{action.label}</p>
+							<p class="text-xs text-slate-500">{action.description}</p>
+						</div>
+					</a>
+				{/each}
+			</div>
+		</div>
+
+		<div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
+			{#each dashboardSummaryCards as card (card.label)}
+				<div class="rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm">
+					<div class="flex items-start justify-between gap-3">
+						<div>
+							<p class="text-[11px] font-medium tracking-wide text-slate-500 uppercase">
+								{card.label}
+							</p>
+							<p class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
+								{card.value}
+							</p>
+							<p class="mt-1 text-sm text-slate-500">{card.helper}</p>
+						</div>
+						<div class="rounded-md bg-slate-100 p-2 text-slate-700">
+							<card.icon size={18} />
+						</div>
+					</div>
+				</div>
+			{/each}
+		</div>
+	</section>
+
+	<section class="grid gap-4 xl:grid-cols-2 xl:items-start">
 		<div class="rounded-lg border border-slate-900/15 bg-white/80 p-3.5 shadow-sm md:p-4">
 			<div class="mb-3.5 flex items-center justify-between gap-3">
 				<div>
@@ -132,7 +207,7 @@
 			</div>
 
 			{#if data.recentPatients.length > 0}
-				<div class="space-y-2.5">
+				<div class="flex flex-col gap-2.5">
 					{#each data.recentPatients as patient (patient.enrollmentId)}
 						<a
 							href={`/admin/pacientes/${patient.enrollmentId}`}
@@ -173,87 +248,59 @@
 			{/if}
 		</div>
 
-		<div class="space-y-4">
-			<div class="rounded-lg border border-slate-900/15 bg-white/80 p-3.5 shadow-sm md:p-4">
-				<div class="mb-3.5">
-					<h2 class="text-lg font-semibold text-slate-900">Accesos rápidos</h2>
-					<p class="text-sm text-slate-500">Tareas frecuentes para arrancar más rápido.</p>
+		<div class="rounded-lg border border-slate-900/15 bg-white/80 p-3.5 shadow-sm md:p-4">
+			<div class="mb-3.5 flex items-center justify-between gap-3">
+				<div>
+					<h2 class="text-lg font-semibold text-slate-900">Próximos vencimientos</h2>
+					<p class="text-sm text-slate-500">Hasta 5 registros dentro de los próximos 90 días.</p>
 				</div>
-				<div class="space-y-2.5">
-					{#each quickActions as action (action.href)}
+				<Button href="/admin/recordatorios" variant="outline" size="sm">Abrir</Button>
+			</div>
+
+			{#if data.upcomingExpirations.length > 0}
+				<div class="flex flex-col gap-2.5">
+					{#each data.upcomingExpirations as item (item.enrollmentId)}
 						<a
-							href={action.href}
-							class="flex items-start gap-3 rounded-lg border border-slate-900/15 bg-white px-3 py-3 transition hover:border-slate-300 hover:bg-slate-50"
+							href={`/admin/pacientes/${item.enrollmentId}`}
+							class="block rounded-lg border border-slate-900/15 bg-white px-3 py-2.5 transition hover:border-slate-300 hover:bg-slate-50"
 						>
-							<div class="rounded-md bg-slate-100 p-2 text-slate-700">
-								<action.icon size={18} />
-							</div>
-							<div>
-								<p class="font-medium text-slate-900">{action.label}</p>
-								<p class="text-sm text-slate-500">{action.description}</p>
+							<div class="flex items-start justify-between gap-3">
+								<div class="min-w-0">
+									<p class="truncate font-medium text-slate-900">
+										{formatPersonName(item.enrolledFirstName)}{' '}
+										{formatPersonName(item.enrolledLastName)}
+									</p>
+									<p class="truncate text-sm text-slate-500">
+										Titular: {formatPersonName(item.holderFirstName)}{' '}
+										{formatPersonName(item.holderLastName)}
+									</p>
+								</div>
+								<div class="text-right">
+									<p class="text-sm font-medium text-slate-900">
+										{formatDateUy(item.expirationDate)}
+									</p>
+									<p
+										class={'mt-1 text-sm ' +
+											((item.daysUntil ?? 0) <= 7 ? 'text-rose-600' : 'text-amber-700')}
+									>
+										{#if (item.daysUntil ?? 0) < 0}
+											Vencido
+										{:else}
+											En {item.daysUntil} días
+										{/if}
+									</p>
+								</div>
 							</div>
 						</a>
 					{/each}
 				</div>
-			</div>
-
-			<div class="rounded-lg border border-slate-900/15 bg-white/80 p-3.5 shadow-sm md:p-4">
-				<div class="mb-3.5 flex items-center justify-between gap-3">
-					<div>
-						<h2 class="text-lg font-semibold text-slate-900">Próximos vencimientos</h2>
-						<p class="text-sm text-slate-500">Convenios BPS con atención cercana.</p>
-					</div>
-					<Button href="/admin/recordatorios" variant="outline" size="sm">Abrir</Button>
+			{:else}
+				<div
+					class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500"
+				>
+					No hay convenios BPS con vencimiento cercano en los próximos 90 días.
 				</div>
-
-				{#if data.upcomingExpirations.length > 0}
-					<div class="space-y-2.5">
-						{#each data.upcomingExpirations as item (item.enrollmentId)}
-							<a
-								href={`/admin/pacientes/${item.enrollmentId}`}
-								class="block rounded-lg border border-slate-900/15 bg-white px-3 py-2.5 transition hover:border-slate-300 hover:bg-slate-50"
-							>
-								<div class="flex items-start justify-between gap-3">
-									<div class="min-w-0">
-										<p class="truncate font-medium text-slate-900">
-											{formatPersonName(item.enrolledFirstName)}{' '}
-											{formatPersonName(item.enrolledLastName)}
-										</p>
-										<p class="truncate text-sm text-slate-500">
-											Titular: {formatPersonName(item.holderFirstName)}{' '}
-											{formatPersonName(item.holderLastName)}
-										</p>
-										{#if item.holderEmail}
-											<p class="truncate text-sm text-slate-400">{item.holderEmail}</p>
-										{/if}
-									</div>
-									<div class="text-right">
-										<p class="text-sm font-medium text-slate-900">
-											{formatDateUy(item.expirationDate)}
-										</p>
-										<p
-											class={'mt-1 text-sm ' +
-												((item.daysUntil ?? 0) <= 7 ? 'text-rose-600' : 'text-amber-700')}
-										>
-											{#if (item.daysUntil ?? 0) < 0}
-												Vencido
-											{:else}
-												En {item.daysUntil} días
-											{/if}
-										</p>
-									</div>
-								</div>
-							</a>
-						{/each}
-					</div>
-				{:else}
-					<div
-						class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500"
-					>
-						No hay convenios BPS con vencimiento cercano en los próximos 30 días.
-					</div>
-				{/if}
-			</div>
+			{/if}
 		</div>
 	</section>
 </div>

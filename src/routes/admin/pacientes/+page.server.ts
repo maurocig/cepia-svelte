@@ -16,6 +16,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			status: enrollments.status,
 			admissionMode: enrollments.admissionMode,
 			admissionDate: enrollments.admissionDate,
+			agreementExpirationDate: enrollments.agreementExpirationDate,
 			updatedAt: enrollments.updatedAt,
 			enrolledFirstName: patients.enrolledFirstName,
 			enrolledLastName: patients.enrolledLastName,
