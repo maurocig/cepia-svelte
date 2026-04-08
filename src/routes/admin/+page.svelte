@@ -4,15 +4,7 @@
 	import { defaultPatientsTableState, patientsTableState } from '$lib/stores/patients-table';
 	import { formatDateUy, formatPersonName } from '$lib/utils';
 	import Button from '@/components/ui/button/button.svelte';
-	import {
-		ArrowRight,
-		CalendarClock,
-		Handshake,
-		Plus,
-		Search,
-		UserRound,
-		Users
-	} from 'lucide-svelte';
+	import { CalendarClock, Handshake, Plus, Search, UserRound, Users } from 'lucide-svelte';
 	import { get } from 'svelte/store';
 	import type { PageData } from './$types';
 
@@ -64,7 +56,7 @@
 		{
 			label: 'Vencen en 30 días',
 			value: data.stats.upcomingRenewals30d,
-			helper: 'Requieren atención cercana',
+			helper: 'Requieren atención',
 			icon: CalendarClock
 		},
 		{
@@ -74,7 +66,7 @@
 			icon: Handshake
 		},
 		{
-			label: 'Particular',
+			label: 'Particulares',
 			value: data.stats.totalPatients - data.stats.agreementPatients,
 			helper: 'Inscripciones particulares',
 			icon: UserRound
@@ -94,20 +86,10 @@
 				<h1 class="text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
 					Resumen general
 				</h1>
-				<div class="flex flex-col gap-2.5 sm:flex-row">
-					<Button href="/admin/pacientes" class="gap-2">
-						Ir a pacientes
-						<ArrowRight size={18} />
-					</Button>
-					<Button href="/admin/pacientes/nuevo" variant="outline" class="gap-2">
-						<Plus size={18} />
-						Ingresar paciente
-					</Button>
-				</div>
 				<form class="pt-3" onsubmit={submitPatientSearch}>
 					<div class="md:max-w-md">
 						<div
-							class="flex h-11 min-w-0 overflow-hidden rounded-md border border-slate-900/15 bg-white/95 shadow-sm"
+							class="flex h-11 min-w-0 overflow-hidden rounded-md border border-slate-900/20 bg-white/95 shadow-md shadow-slate-200/70"
 						>
 							<Input
 								bind:value={patientSearch}
@@ -133,7 +115,7 @@
 				class="hidden rounded-lg border border-slate-900/15 bg-white/85 p-3.5 shadow-sm md:block"
 			>
 				<p class="text-sm font-medium text-slate-500">Hoy</p>
-				<p class="mt-1 text-2xl font-semibold text-slate-900">{formatDateUy(data.today)}</p>
+				<p class="mt-1 text-lg font-semibold text-slate-900">{formatDateUy(data.today)}</p>
 				<div class="mt-3 grid grid-cols-2 gap-2">
 					<div class="rounded-md bg-slate-100/80 p-2">
 						<p class="text-xs text-slate-500 uppercase">Activos</p>
@@ -174,23 +156,25 @@
 			</div>
 		</div>
 
-		<div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
+		<div class="grid grid-cols-2 gap-3">
 			{#each dashboardSummaryCards as card (card.label)}
-				<div class="rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm">
+				<div class="flex min-h-[152px] flex-col rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm">
 					<div class="flex items-start justify-between gap-3">
 						<div>
 							<p class="text-[11px] font-medium tracking-wide text-slate-500 uppercase">
 								{card.label}
 							</p>
-							<p class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
-								{card.value}
-							</p>
-							<p class="mt-1 text-sm text-slate-500">{card.helper}</p>
 						</div>
 						<div class="rounded-md bg-slate-100 p-2 text-slate-700">
 							<card.icon size={18} />
 						</div>
 					</div>
+					<div class="flex flex-1 items-center">
+						<p class="text-3xl font-semibold tracking-tight text-slate-900">
+							{card.value}
+						</p>
+					</div>
+					<p class="mt-auto text-sm text-slate-500">{card.helper}</p>
 				</div>
 			{/each}
 		</div>
