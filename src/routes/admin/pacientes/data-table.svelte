@@ -5,12 +5,8 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
-	import {
-		defaultPatientsTableState,
-		patientsTableState
-	} from '$lib/stores/patients-table';
 	import * as Table from '$lib/components/ui/table/index.js';
-	import { get } from 'svelte/store';
+	import { defaultPatientsTableState, patientsTableState } from '$lib/stores/patients-table';
 	import {
 		getCoreRowModel,
 		getFilteredRowModel,
@@ -21,13 +17,16 @@
 		type VisibilityState
 	} from '@tanstack/table-core';
 	import { ChevronDown } from 'lucide-svelte';
+	import { get } from 'svelte/store';
 	import type { PatientRow } from './columns';
 
 	let { data, columns }: { data: PatientRow[]; columns: ColumnDef<PatientRow>[] } = $props();
 	const persistedState = get(patientsTableState);
 
 	let columnFilters = $state<ColumnFiltersState>([]);
-	let filterColumnId = $state(persistedState.filterColumnId ?? defaultPatientsTableState.filterColumnId);
+	let filterColumnId = $state(
+		persistedState.filterColumnId ?? defaultPatientsTableState.filterColumnId
+	);
 	let filterValue = $state(persistedState.filterValue ?? defaultPatientsTableState.filterValue);
 	let columnVisibility = $state<VisibilityState>(
 		persistedState.columnVisibility ?? defaultPatientsTableState.columnVisibility
@@ -117,9 +116,11 @@
 	});
 </script>
 
-<div class="mt-4 space-y-4">
-	<div class="relative flex flex-col gap-4 sm:flex-row sm:items-center">
-		<div class="flex h-10 w-full overflow-hidden rounded-md border shadow-xs sm:w-auto">
+<div class="space-y-3">
+	<div class="relative flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+		<div
+			class="flex h-11 w-full overflow-hidden rounded-md border border-slate-900/15 bg-white/90 shadow-sm sm:w-auto"
+		>
 			<Select.Root
 				type="single"
 				bind:value={filterColumnId}
@@ -129,7 +130,7 @@
 				}}
 			>
 				<Select.Trigger
-					class="mt-px h-10 w-fit items-center justify-between rounded-none border-0 border-r border-slate-200 shadow-none"
+					class="mt-px h-11 w-fit items-center justify-between rounded-none border-0 border-r border-slate-900/15 bg-transparent px-3 text-sm shadow-none"
 				>
 					{columnLabel(filterColumnId)}
 				</Select.Trigger>
@@ -149,14 +150,18 @@
 					applySingleColumnFilter(filterColumnId, filterValue);
 					persistTableState();
 				}}
-				class="h-10 w-full min-w-0 rounded-none border-0 shadow-none focus-visible:ring-0 sm:w-60 sm:flex-none"
+				class="h-11 w-full min-w-0 rounded-none border-0 bg-transparent px-3 text-sm shadow-none focus-visible:ring-0 sm:w-72 sm:flex-none"
 			/>
 		</div>
 
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger>
 				{#snippet child({ props })}
-					<Button {...props} variant="outline" class="sm:ms-auto">
+					<Button
+						{...props}
+						variant="outline"
+						class="h-11 border-slate-900/15 bg-white/90 px-4 text-slate-700 shadow-sm hover:bg-slate-50"
+					>
 						Columnas <ChevronDown class="ms-2 size-4" />
 					</Button>
 				{/snippet}
@@ -174,58 +179,60 @@
 		</DropdownMenu.Root>
 	</div>
 
-	<div class="min-w-0 rounded-md border bg-white/90 shadow-sm">
+	<div
+		class="min-w-0 overflow-hidden rounded-lg border border-slate-900/15 bg-white/90 shadow-md shadow-slate-200/60"
+	>
 		<div class="max-w-full overflow-x-auto">
 			<Table.Root class="min-w-max">
-			<Table.Header class="bg-muted/80">
-				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-					<Table.Row>
-						{#each headerGroup.headers as header (header.id)}
-							<Table.Head class="px-3 py-2 text-left font-medium">
-								{#if !header.isPlaceholder}
-									<FlexRender
-										content={header.column.columnDef.header}
-										context={header.getContext()}
-									/>
-								{/if}
-							</Table.Head>
-						{/each}
-					</Table.Row>
-				{/each}
-			</Table.Header>
-			<Table.Body>
-				{#if table.getRowModel().rows.length}
-					{#each table.getRowModel().rows as row (row.id)}
-						<Table.Row
+				<Table.Header class="bg-muted/80">
+					{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+						<Table.Row>
+							{#each headerGroup.headers as header (header.id)}
+								<Table.Head class="px-4 py-3.5 text-left font-medium">
+									{#if !header.isPlaceholder}
+										<FlexRender
+											content={header.column.columnDef.header}
+											context={header.getContext()}
+										/>
+									{/if}
+								</Table.Head>
+							{/each}
+						</Table.Row>
+					{/each}
+				</Table.Header>
+				<Table.Body>
+					{#if table.getRowModel().rows.length}
+						{#each table.getRowModel().rows as row (row.id)}
+							<Table.Row
 								class="hover:bg-muted/30 cursor-pointer border-t transition-colors"
 								role="button"
 								tabindex={0}
 								onclick={() => goto(`/admin/pacientes/${row.original.enrollmentId}`)}
-							onkeydown={(event: any) => {
-								if (event.key === 'Enter' || event.key === ' ') {
-									event.preventDefault();
-									void goto(`/admin/pacientes/${row.original.enrollmentId}`);
-								}
-							}}
-						>
-							{#each row.getVisibleCells() as cell (cell.id)}
-								<Table.Cell class="px-3 py-2">
-									<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
-								</Table.Cell>
-							{/each}
+								onkeydown={(event: any) => {
+									if (event.key === 'Enter' || event.key === ' ') {
+										event.preventDefault();
+										void goto(`/admin/pacientes/${row.original.enrollmentId}`);
+									}
+								}}
+							>
+								{#each row.getVisibleCells() as cell (cell.id)}
+									<Table.Cell class="px-4 py-3.5">
+										<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+									</Table.Cell>
+								{/each}
+							</Table.Row>
+						{/each}
+					{:else}
+						<Table.Row>
+							<Table.Cell
+								class="text-muted-foreground px-4 py-8 text-center"
+								colspan={columns.length}
+							>
+								No hay resultados.
+							</Table.Cell>
 						</Table.Row>
-					{/each}
-				{:else}
-					<Table.Row>
-						<Table.Cell
-							class="text-muted-foreground px-3 py-6 text-center"
-							colspan={columns.length}
-						>
-							No hay resultados.
-						</Table.Cell>
-					</Table.Row>
-				{/if}
-			</Table.Body>
+					{/if}
+				</Table.Body>
 			</Table.Root>
 		</div>
 	</div>

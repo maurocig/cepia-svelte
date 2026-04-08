@@ -17,8 +17,7 @@
 
 <div
 	class={
-		'w-full text-gray-700 ' +
-		(data.adminNav ? 'bg-white/70 md:bg-slate-200/80' : 'slate-200 bg-slate-200/80')
+		'w-full bg-slate-200/80 text-gray-700'
 	}
 >
 	<Nav

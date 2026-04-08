@@ -330,21 +330,22 @@
 	});
 </script>
 
-<h1 class="mb-4 text-xl font-semibold">Ingresar nuevo paciente</h1>
+<div class="rounded-lg border border-slate-900/15 bg-white/70 p-4 shadow-md md:p-6 lg:p-8">
+	<h1 class="mb-4 text-xl font-semibold">Ingresar nuevo paciente</h1>
 
-<!-- progreso -->
-<div class="mb-4 flex items-center gap-3 text-sm">
-	<span class="text-md px-2 py-1 font-semibold">Paso {step} de 2</span>
-	<div class="bg-muted h-2 flex-1 rounded-full">
-		<div
-			class="h-2 rounded-full bg-emerald-600 transition-all"
-			style="width: {step === '1' ? '50%' : step === '2' ? '100%' : '100%'}"
-		></div>
+	<!-- progreso -->
+	<div class="mb-4 flex items-center gap-3 text-sm">
+		<span class="text-md px-2 py-1 font-semibold">Paso {step} de 2</span>
+		<div class="bg-muted h-2 flex-1 rounded-full">
+			<div
+				class="h-2 rounded-full bg-emerald-600 transition-all"
+				style="width: {step === '1' ? '50%' : step === '2' ? '100%' : '100%'}"
+			></div>
+		</div>
 	</div>
-</div>
 
-<!-- Tabs -->
-<Tabs.Root bind:value={step}>
+	<!-- Tabs -->
+	<Tabs.Root bind:value={step}>
 	<Tabs.List class="mb-6 grid w-full grid-cols-2">
 		<Tabs.Trigger value="1">1. Inscripción</Tabs.Trigger>
 		<Tabs.Trigger value="2" disabled={!enrollmentId || !enrollmentValid}>2. Paciente</Tabs.Trigger>
@@ -1387,7 +1388,8 @@
 			</div>
 		</form>
 	</Tabs.Content>
-</Tabs.Root>
+	</Tabs.Root>
+</div>
 
 <!-- <pre class="mt-6 text-xs opacity-70">{JSON.stringify(
 		{ enrollment: $enrollmentData, patient, family },

@@ -28,16 +28,16 @@
 </script>
 
 <aside
-	class="sticky hidden h-fit w-[300px] flex-col gap-2 self-start rounded-lg bg-white/70 p-4 shadow-md md:flex"
+	class="top-[86px] sticky hidden h-fit w-[300px] flex-col gap-2 self-start rounded-lg border border-slate-900/15 bg-white/70 p-4 shadow-md md:flex"
 >
 	<ul class="flex flex-col gap-1">
 		{#each links as link (link.href)}
 			<li>
 				<a
 					href={link.href}
-					class={'flex items-center gap-4 rounded-md p-2 px-4 text-slate-700 transition hover:text-gray-500' +
+					class={'flex items-center gap-4 rounded-md border border-transparent p-2 px-4 text-slate-700 transition hover:bg-white/70 hover:text-gray-500' +
 						(isActive(link)
-							? 'border border-1 border-slate-900/10 bg-slate-100 font-medium transition'
+							? ' border-slate-900/10 bg-slate-100 text-slate-950 shadow-sm ring-1 ring-slate-900/10 font-medium'
 							: '')}
 				>
 					{#if iconKeyFor(link.href) === 'home'}

@@ -380,24 +380,72 @@
 	};
 </script>
 
-<div class="space-y-6">
-	<div class="flex items-center gap-3">
-		<Button
-			href="/admin/pacientes"
-			class="border border-transparent bg-transparent text-slate-600 hover:border-slate-400/20 hover:bg-transparent"
-			aria-label="Volver"
-		>
-			<ArrowLeft strokeWidth="1.5" size={26} />
-		</Button>
-		<h1 class="text-xl font-semibold">
-			{formatPersonName(data.patient.enrolledFirstName)}
-			{formatPersonName(data.patient.enrolledLastName)}
-		</h1>
-	</div>
+<div class="space-y-5">
+	<section class="rounded-lg border border-slate-900/15 bg-linear-to-br from-white via-white to-slate-100/70 p-4 shadow-sm md:p-5">
+		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+			<div class="space-y-3">
+				<div class="flex items-center gap-3">
+					<Button
+						href="/admin/pacientes"
+						class="border border-transparent bg-transparent text-slate-600 hover:border-slate-400/20 hover:bg-transparent"
+						aria-label="Volver"
+					>
+						<ArrowLeft strokeWidth="1.5" size={26} />
+					</Button>
+					<p class="text-xs font-semibold tracking-[0.22em] text-slate-500 uppercase">
+						Ficha de paciente
+					</p>
+				</div>
+				<div class="space-y-1.5">
+					<h1 class="text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl">
+						{formatPersonName(data.patient.enrolledFirstName)}
+						{formatPersonName(data.patient.enrolledLastName)}
+					</h1>
+					<p class="text-sm text-slate-500">
+						{data.patient.enrolledIdType}
+						{#if data.patient.enrolledIdNumber}
+							{formatDocumentNumber(
+								data.patient.enrolledIdNumber,
+								data.patient.enrolledIdType as DocumentIdType
+							)}
+						{:else}
+							Sin documento cargado
+						{/if}
+					</p>
+				</div>
+			</div>
 
-	<div class="grid gap-4 md:grid-cols-2">
+			<div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+				<div class="rounded-md bg-white/80 px-3 py-2 ring-1 ring-slate-900/15">
+					<p class="text-[11px] font-medium tracking-wide text-slate-500 uppercase">Estado</p>
+					<p class="mt-1 text-sm font-medium text-slate-900">
+						{data.patient.status === 'active' ? 'Activo' : 'Inactivo'}
+					</p>
+				</div>
+				<div class="rounded-md bg-white/80 px-3 py-2 ring-1 ring-slate-900/15">
+					<p class="text-[11px] font-medium tracking-wide text-slate-500 uppercase">Edad</p>
+					<p class="mt-1 text-sm font-medium text-slate-900">{ageFromDob(data.patient.enrolledDob) ?? '-'}</p>
+				</div>
+				<div class="rounded-md bg-white/80 px-3 py-2 ring-1 ring-slate-900/15">
+					<p class="text-[11px] font-medium tracking-wide text-slate-500 uppercase">Ingreso</p>
+					<p class="mt-1 text-sm font-medium text-slate-900">
+						{formatDateUy(data.patient.admissionDate)}
+					</p>
+				</div>
+				<div class="rounded-md bg-white/80 px-3 py-2 ring-1 ring-slate-900/15">
+					<p class="text-[11px] font-medium tracking-wide text-slate-500 uppercase">Modalidad</p>
+					<p class="mt-1 text-sm font-medium text-slate-900">
+						{getOptionLabel(admissionModeOptions, data.patient.admissionMode)}
+					</p>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<div class="columns-1 gap-4 md:columns-2">
+		<div class="mb-4 break-inside-avoid">
 		<Dialog.Root bind:open={openPatientDialog}>
-			<section class="group rounded-md border p-4 lg:p-6">
+			<section class="group rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm lg:p-5">
 				<h2
 					class="mb-5 flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-600 uppercase"
 				>
@@ -621,9 +669,11 @@
 				</form>
 			</Dialog.Content>
 		</Dialog.Root>
+		</div>
 
+		<div class="mb-4 break-inside-avoid">
 		<Dialog.Root bind:open={openEnrollmentDialog}>
-			<section class="group rounded-md border p-4 lg:p-6">
+			<section class="group rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm lg:p-5">
 				<h2
 					class="mb-5 flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-600 uppercase"
 				>
@@ -1025,9 +1075,11 @@
 				</form>
 			</Dialog.Content>
 		</Dialog.Root>
+		</div>
 
+		<div class="mb-4 break-inside-avoid">
 		<Dialog.Root bind:open={openResponsibleDialog}>
-			<section class="group rounded-md border p-4 lg:p-6">
+			<section class="group rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm lg:p-5">
 				<h2
 					class="mb-5 flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-600 uppercase"
 				>
@@ -1115,9 +1167,11 @@
 				</form>
 			</Dialog.Content>
 		</Dialog.Root>
+		</div>
 
+		<div class="mb-4 break-inside-avoid">
 		<Dialog.Root bind:open={openSchoolDialog}>
-			<section class="group rounded-md border p-4 lg:p-6">
+			<section class="group rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm lg:p-5">
 				<h2
 					class="mb-5 flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-600 uppercase"
 				>
@@ -1295,11 +1349,10 @@
 				</form>
 			</Dialog.Content>
 		</Dialog.Root>
-	</div>
-
-	<div class="grid gap-4 lg:grid-cols-2">
+		</div>
+		<div class="mb-4 break-inside-avoid">
 		<Dialog.Root bind:open={openFamilyDialog}>
-			<section class="group rounded-md border p-4 lg:p-6">
+			<section class="group rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm lg:p-5">
 				<h2
 					class="mb-5 flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-600 uppercase"
 				>
@@ -1318,10 +1371,12 @@
 						<dd>
 							<Accordion.Root type="multiple" class="space-y-4" bind:value={openFamilyPanels}>
 								<Accordion.Item value="mother" class="!border-b-0">
-									<Accordion.Trigger class="px-0 py-0 text-sm font-medium hover:no-underline">
+									<Accordion.Trigger
+										class="w-full cursor-pointer px-0 py-0 text-sm font-medium hover:no-underline"
+									>
 										Información de la madre
 									</Accordion.Trigger>
-									<Accordion.Content class="mt-2 ml-4 rounded-md border px-4 py-3">
+									<Accordion.Content class="mt-2 ml-4 rounded-lg border border-slate-900/15 bg-white px-4 py-3">
 										<div class="grid gap-2">
 											<div>
 												<span class="font-medium">Nombre:</span>
@@ -1347,10 +1402,12 @@
 									</Accordion.Content>
 								</Accordion.Item>
 								<Accordion.Item value="father" class="!border-b-0">
-									<Accordion.Trigger class="px-0 py-0 text-sm font-medium hover:no-underline">
+									<Accordion.Trigger
+										class="w-full cursor-pointer px-0 py-0 text-sm font-medium hover:no-underline"
+									>
 										Información del padre
 									</Accordion.Trigger>
-									<Accordion.Content class="mt-2 ml-4 rounded-md border px-4 py-3">
+									<Accordion.Content class="mt-2 ml-4 rounded-lg border border-slate-900/15 bg-white px-4 py-3">
 										<div class="grid gap-2">
 											<div>
 												<span class="font-medium">Nombre:</span>
@@ -1561,9 +1618,11 @@
 				</form>
 			</Dialog.Content>
 		</Dialog.Root>
+		</div>
 
+		<div class="mb-4 break-inside-avoid">
 		<Dialog.Root bind:open={openTreatmentsDialog}>
-			<section class="group rounded-md border p-4 lg:p-6">
+			<section class="group rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm lg:p-5">
 				<h2
 					class="mb-5 flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-600 uppercase"
 				>
@@ -1848,6 +1907,7 @@
 				</form>
 			</Dialog.Content>
 		</Dialog.Root>
+		</div>
 	</div>
 
 	{#if data.canManage}
