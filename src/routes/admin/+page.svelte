@@ -19,7 +19,8 @@
 		patientsTableState.set({
 			filterColumnId: query && /^\d/.test(query) ? 'enrolledIdNumber' : 'patientName',
 			filterValue: query,
-			columnVisibility: currentState.columnVisibility ?? defaultPatientsTableState.columnVisibility
+			columnVisibility: currentState.columnVisibility ?? defaultPatientsTableState.columnVisibility,
+			sorting: currentState.sorting ?? defaultPatientsTableState.sorting
 		});
 
 		void goto('/admin/pacientes');
@@ -158,7 +159,9 @@
 
 		<div class="grid grid-cols-2 gap-3">
 			{#each dashboardSummaryCards as card (card.label)}
-				<div class="flex min-h-[152px] flex-col rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm">
+				<div
+					class="flex min-h-[152px] flex-col rounded-lg border border-slate-900/15 bg-white/80 p-4 shadow-sm"
+				>
 					<div class="flex items-start justify-between gap-3">
 						<div>
 							<p class="text-[11px] font-medium tracking-wide text-slate-500 uppercase">

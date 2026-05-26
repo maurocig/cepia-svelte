@@ -11,12 +11,14 @@
 		getCoreRowModel,
 		getFilteredRowModel,
 		getPaginationRowModel,
+		getSortedRowModel,
 		type ColumnDef,
 		type ColumnFiltersState,
 		type PaginationState,
+		type SortingState,
 		type VisibilityState
 	} from '@tanstack/table-core';
-	import { ChevronDown } from 'lucide-svelte';
+	import { ChevronDown, ChevronUp } from 'lucide-svelte';
 	import { onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
 	import type { PatientRow } from './columns';
@@ -32,6 +34,7 @@
 	let columnVisibility = $state<VisibilityState>(
 		persistedState.columnVisibility ?? defaultPatientsTableState.columnVisibility
 	);
+	let sorting = $state<SortingState>(persistedState.sorting ?? defaultPatientsTableState.sorting);
 	let pagination = $state<PaginationState>({
 		pageIndex: 0,
 		pageSize: 10
@@ -63,7 +66,8 @@
 		patientsTableState.set({
 			filterColumnId,
 			filterValue,
-			columnVisibility
+			columnVisibility,
+			sorting
 		});
 	}
 
@@ -71,7 +75,9 @@
 		get data() {
 			return data;
 		},
-		columns,
+		get columns() {
+			return columns;
+		},
 		state: {
 			get columnFilters() {
 				return columnFilters;
@@ -81,6 +87,9 @@
 			},
 			get pagination() {
 				return pagination;
+			},
+			get sorting() {
+				return sorting;
 			}
 		},
 		onColumnFiltersChange: (updater) => {
@@ -93,9 +102,14 @@
 		onPaginationChange: (updater) => {
 			pagination = updater instanceof Function ? updater(pagination) : updater;
 		},
+		onSortingChange: (updater) => {
+			sorting = updater instanceof Function ? updater(sorting) : updater;
+			persistTableState();
+		},
 		getCoreRowModel: getCoreRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		getPaginationRowModel: getPaginationRowModel()
+		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel()
 	});
 
 	$effect(() => {
@@ -198,10 +212,34 @@
 							{#each headerGroup.headers as header (header.id)}
 								<Table.Head class="px-4 py-3.5 text-left font-medium">
 									{#if !header.isPlaceholder}
-										<FlexRender
-											content={header.column.columnDef.header}
-											context={header.getContext()}
-										/>
+										{#if header.column.getCanSort()}
+											<button
+												type="button"
+												class="flex items-center gap-1.5 text-left transition-colors hover:text-slate-900"
+												aria-label={`Ordenar por ${columnLabel(header.column.id)}`}
+												onclick={header.column.getToggleSortingHandler()}
+											>
+												<FlexRender
+													content={header.column.columnDef.header}
+													context={header.getContext()}
+												/>
+												{#if header.column.getIsSorted() === 'asc'}
+													<ChevronUp class="size-4 text-slate-600" />
+												{:else if header.column.getIsSorted() === 'desc'}
+													<ChevronDown class="size-4 text-slate-600" />
+												{:else}
+													<div class="flex flex-col items-center justify-center text-slate-300">
+														<ChevronUp class="-mb-1 size-3" />
+														<ChevronDown class="size-3" />
+													</div>
+												{/if}
+											</button>
+										{:else}
+											<FlexRender
+												content={header.column.columnDef.header}
+												context={header.getContext()}
+											/>
+										{/if}
 									{/if}
 								</Table.Head>
 							{/each}
