@@ -215,7 +215,7 @@
 										{#if header.column.getCanSort()}
 											<button
 												type="button"
-												class="flex items-center gap-1.5 text-left transition-colors hover:text-slate-900"
+												class="flex cursor-pointer items-center gap-1.5 text-left transition-colors hover:text-slate-900"
 												aria-label={`Ordenar por ${columnLabel(header.column.id)}`}
 												onclick={header.column.getToggleSortingHandler()}
 											>
