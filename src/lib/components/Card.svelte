@@ -11,6 +11,7 @@
 </script>
 
 <div
+	tabindex="0"
 	class="group flex h-full flex-col gap-4 rounded-lg border bg-gradient-to-b from-white/70 to-white/40 p-4 shadow-sm transition-all duration-500 hover:border-gray-900/10 hover:shadow-md hover:backdrop-blur-lg md:p-4 lg:p-8 {className}"
 >
 	<div class="space-y-3">
@@ -19,7 +20,9 @@
 		>
 			{title}
 			{#if showArrow}
-				<span class="transition duration-300 ease-in-out group-hover:translate-x-2">&rarr;</span>
+				<span class="transition duration-300 ease-in-out group-hover:translate-x-2 group-focus-within:translate-x-2"
+					>&rarr;</span
+				>
 			{/if}
 		</h2>
 		<div class="h-full">
