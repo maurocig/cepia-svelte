@@ -23,10 +23,10 @@
 	<Card
 		{title}
 		{showArrow}
-		className="h-full md:from-white/70 md:backdrop-blur-0 md:bg-gradient-to-b md:to-emerald-200/50  hover:bg-white/20 md:via-white/30 duration-700 border-slate-900/20 hover:border-slate-900/60 hover:bg-opacity-0 hover:backdrop-blur-xl transition group"
+		className="group h-full md:from-white/70 md:backdrop-blur-0 md:bg-gradient-to-b md:to-emerald-200/50 md:via-white/30 border-slate-900/20 duration-700 transition hover:border-slate-900/60 hover:bg-white/20 hover:bg-opacity-0 hover:backdrop-blur-xl focus-within:border-slate-900/60 focus-within:bg-white/20 focus-within:bg-opacity-0 focus-within:backdrop-blur-xl"
 	>
 		<p
-			class="group text-[17px] text-lg text-slate-800 opacity-0 drop-shadow-sm transition duration-700 group-hover:opacity-100"
+			class="text-[17px] text-lg text-slate-800 opacity-0 drop-shadow-sm transition duration-700 group-hover:opacity-100 group-focus-within:opacity-100"
 		>
 			{description}
 		</p>
