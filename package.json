@@ -2,6 +2,9 @@
 	"name": "cepia-svelte",
 	"version": "0.0.1",
 	"private": true,
+	"engines": {
+		"node": "24.x"
+	},
 	"scripts": {
 		"dev": "vite --host",
 		"build": "vite build",
@@ -20,7 +23,7 @@
 		"@better-auth/cli": "^1.4.18",
 		"@internationalized/date": "^3.12.0",
 		"@lucide/svelte": "^1.7.0",
-		"@sveltejs/adapter-auto": "^3.3.1",
+		"@sveltejs/adapter-vercel": "^6.3.4",
 		"@sveltejs/kit": "^2.20.0",
 		"@sveltejs/vite-plugin-svelte": "^4.0.4",
 		"@tailwindcss/postcss": "^4.1.18",
