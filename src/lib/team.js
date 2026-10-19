@@ -23,23 +23,23 @@ export const team = [
 		especialization: 'Ex Docente Universitaria (UDELAR)',
 		image: 'rosina-guaglianone.jpg'
 	},
-	{
-		name: 'Yoselyn Olivera',
-		role: 'Maestra',
-		especialization: 'Esp. en Dificultades de aprendizaje',
-		image: 'yoselin-olivera.jpg'
-	},
-	{
-		name: 'Dra Madelon Rodríguez',
-		role: 'Psiquiatra de niñas/os y adolescentes',
-		especialization: 'Dirección técnica',
-		image: 'madelon-rodriguez.jpg'
-	},
+	// {
+	// 	name: 'Yoselyn Olivera',
+	// 	role: 'Maestra',
+	// 	especialization: 'Esp. en Dificultades de aprendizaje',
+	// 	image: 'yoselin-olivera.jpg'
+	// },
+	// {
+	// 	name: 'Dra Madelon Rodríguez',
+	// 	role: 'Psiquiatra de niñas/os y adolescentes',
+	// 	especialization: 'Dirección técnica',
+	// 	image: 'madelon-rodriguez.jpg'
+	// },
 	{ name: 'Mercedes Otero', role: 'Lic. en Psicología', image: 'mercedes-otero.jpg' },
 	{ name: 'Mag Daniela Viera', role: 'Lic. en Psicomotricidad', image: 'daniela-viera.jpg' },
 	{ name: 'Romina Ferrari', role: 'Lic. en Psicomotricidad', image: 'romina-ferrari.jpg' },
 	{ name: 'Aracelli Feruglio', role: 'Lic. en Fonoaudiología', image: 'araceli-feruglio.jpg' },
-	{ name: 'Oriana Balerio', role: 'Lic. en Psicopedagogía', image: 'oriana-balerio.jpg' },
+	// { name: 'Oriana Balerio', role: 'Lic. en Psicopedagogía', image: 'oriana-balerio.jpg' },
 	{ name: 'Sofía Gutiérrez', role: 'Lic. en Psicopedagogía', image: 'sofia-gutierrez.jpg' },
 	{
 		name: 'Lucía Golfarini',
@@ -47,5 +47,30 @@ export const team = [
 		image: 'lucia-golfarini.jpeg',
 		especialization: 'Esp. en Primera infancia'
 	},
-	{ name: 'Mikaela Grollmus', role: 'Lic. en Fisioterapia' }
+	{ name: 'Mikaela Grollmus', role: 'Lic. en Fisioterapia' },
+	{
+		name: 'Jesica Facetti',
+		role: 'Maestra especializada',
+		especialization: 'Lic. en Psicopedagogía'
+	},
+	{
+		name: 'Sofía Cristina',
+		role: 'Lic. en Ciencias de la Educación',
+		image: 'sofia-cristina.jpeg'
+	},
+	{ name: 'Lucas Caffaro', role: 'Lic. en Psicología' },
+	{ name: 'Daiana Ibarra', role: 'Lic. en Psicología', image: 'daiana-ibarra.jpeg' },
+	{ name: 'María Eugenia Lanza', role: 'Lic. en Psicomotricidad' },
+	{
+		name: 'Melisa Martínez',
+		role: 'Lic. en Terapia Ocupacional',
+		image: 'melisa-martinez.jpeg'
+	},
+	{ name: 'Lidia Ginzalez', role: 'Lic. en Fonoaudiología', image: 'lidia-gonzalez.jpeg' },
+	{
+		name: 'Jorge Bello',
+		role: 'Psiquiatra de niños y adolescentes',
+		especialization: 'Dirección Técnica',
+		image: 'jorge-bello.jpeg'
+	}
 ];
