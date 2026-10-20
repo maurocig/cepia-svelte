@@ -66,7 +66,7 @@ export const team = [
 		role: 'Lic. en Terapia Ocupacional',
 		image: 'melisa-martinez.jpeg'
 	},
-	{ name: 'Lidia Ginzalez', role: 'Lic. en Fonoaudiología', image: 'lidia-gonzalez.jpeg' },
+	{ name: 'Lidia Gonzalez', role: 'Lic. en Fonoaudiología', image: 'lidia-gonzalez.jpeg' },
 	{
 		name: 'Jorge Bello',
 		role: 'Psiquiatra de niños y adolescentes',
